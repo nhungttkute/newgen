@@ -1,0 +1,21 @@
+server:
+    port: 9991
+    servlet:
+        context-path: /am
+spring:
+    data:
+        mongodb:
+            host: 209.58.164.25
+            port: 27017
+            database: system_am
+            username: application
+            password: b4dpwpr0v1d3d
+logging:
+#    config: classpath:logback-spring.xml
+    file: mxv_am
+    path: C:/u01/apps/AM/log/
+#    path: /opt/account-management/log/
+    level:
+        root: OFF
+        org.springframework: OFF
+        com.newgen.am: INFO
