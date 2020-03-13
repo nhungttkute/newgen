@@ -1,6 +1,7 @@
 package com.newgen.am.controller;
 
 //import com.google.gson.Gson;
+import com.google.gson.Gson;
 import com.newgen.am.common.AMLogger;
 import com.newgen.am.common.Constant;
 import com.newgen.am.common.Utility;
@@ -131,7 +132,7 @@ public class LoginInvestorUserController {
         String methodName = "saveWatchList";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, "REQUEST_API: " + String.format("/users/%s/watchlist", userId));
-//        AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(input));
+        AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(input));
         AMResponseObj response = new AMResponseObj();
         try {
             LoginInvestorUser user = loginInvUserService.search(userId, refId);
@@ -159,7 +160,7 @@ public class LoginInvestorUserController {
         String methodName = "saveLayout";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, "REQUEST_API: " + String.format("/users/%s/layout", userId));
-//        AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(input));
+        AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(input));
         AMResponseObj response = new AMResponseObj();
         try {
             LoginInvestorUser user = loginInvUserService.search(userId, refId);
@@ -201,14 +202,14 @@ public class LoginInvestorUserController {
         String methodName = "changePassword";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, "REQUEST_API: " + String.format("/users/%s/password", userId));
-//        AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(input));
+        AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(input));
         AMResponseObj response = new AMResponseObj();
         try {
-            LoginInvestorUser user = loginInvUserService.search(userId, refId);
-            if (user != null) {
+            if (loginInvUserService.changePassword(userId, input.getOldPassword(), input.getNewPassword(), refId)) {
+                response.setStatus(Constant.RESPONSE_OK);
             } else {
                 response.setStatus(Constant.RESPONSE_ERROR);
-                response.setErrMsg("This user doesn't exist.");
+                response.setErrMsg("Cannot change password.");
             }
         } catch (Exception ex) {
             AMLogger.logError(className, methodName, refId, ex);

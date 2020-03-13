@@ -2,7 +2,6 @@ package com.newgen.am.service;
 
 import com.newgen.am.common.AMLogger;
 import com.newgen.am.common.Utility;
-import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -108,11 +107,7 @@ public class LoginInvestorUserService {
             throw new CustomException("The user doesn't exist", HttpStatus.NOT_FOUND);
         }
     }
-
-    public LoginInvestorUser whoami(HttpServletRequest req) {
-        return loginInvUserRepository.findByUsername(jwtTokenProvider.getUsername(jwtTokenProvider.resolveToken(req)));
-    }
-
+    
     public String refresh(String username, long refId) throws CustomException {
         String methodName = "refresh";
         try {
@@ -135,4 +130,21 @@ public class LoginInvestorUserService {
         return false;
     }
 
+    public boolean changePassword(Long userId, String oldPassword, String newPassword, long refId) {
+        String methodName = "changePassword";
+        try {
+            LoginInvestorUser user = loginInvUserRepository.findById(userId).get();
+            if (user!= null && passwordEncoder.matches(oldPassword, user.getPassword())) {
+                user.setPassword(passwordEncoder.encode(newPassword));
+                LoginInvestorUser newUser = loginInvUserRepository.save(user);
+                if (newUser != null) {
+                    return true;
+                }
+            }
+        } catch (Exception e) {
+            AMLogger.logError(className, methodName, refId, e);
+            throw new CustomException("The user doesn't exist", HttpStatus.NOT_FOUND);
+        }
+        return false;
+    }
 }

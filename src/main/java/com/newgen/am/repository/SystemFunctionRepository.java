@@ -12,6 +12,6 @@ import org.springframework.data.mongodb.repository.MongoRepository;
  *
  * @author nhungtt
  */
-public interface SystemFunctionRepository extends MongoRepository<SystemFunction, String>{
+public interface SystemFunctionRepository extends MongoRepository<SystemFunction, Long>{
     
 }

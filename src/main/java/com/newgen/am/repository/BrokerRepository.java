@@ -5,13 +5,13 @@
  */
 package com.newgen.am.repository;
 
-import com.newgen.am.model.MemberRole;
+import com.newgen.am.model.Broker;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
 /**
  *
  * @author nhungtt
  */
-public interface MemberRoleRepository extends MongoRepository<MemberRole, Long>{
+public interface BrokerRepository extends MongoRepository<Broker, Long>{
     
 }

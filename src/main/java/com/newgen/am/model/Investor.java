@@ -5,18 +5,38 @@
  */
 package com.newgen.am.model;
 
-import java.util.ArrayList;
 import java.util.List;
 import org.springframework.data.annotation.Transient;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 /**
  *
  * @author nhungtt
  */
+@Document(collection = "investors")
 public class Investor {
     @Transient
     public static final String SEQUENCE_NAME = "investor_seq";
     private Long id;
+    @Field(name = "member_id")
+    private Long memberId;
+    @Field(name = "broker_id")
+    private Long brokerId;
+    @Field(name = "collaborator_id")
+    private Long collaboratorId;
+    @Field(name = "member_code")
+    private String memberCode;
+    @Field(name = "member_name")
+    private String memberName;
+    @Field(name = "broker_code")
+    private String brokerCode;
+    @Field(name = "broker_name")
+    private String brokerName;
+    @Field(name = "collaborator_code")
+    private String collaboratorCode;
+    @Field(name = "collaborator_name")
+    private String collaboratorName;
     private String code;
     private String name;
     private String status;
@@ -39,6 +59,30 @@ public class Investor {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Long getMemberId() {
+        return memberId;
+    }
+
+    public void setMemberId(Long memberId) {
+        this.memberId = memberId;
+    }
+
+    public Long getBrokerId() {
+        return brokerId;
+    }
+
+    public void setBrokerId(Long brokerId) {
+        this.brokerId = brokerId;
+    }
+
+    public Long getCollaboratorId() {
+        return collaboratorId;
+    }
+
+    public void setCollaboratorId(Long collaboratorId) {
+        this.collaboratorId = collaboratorId;
     }
 
     public String getCode() {
@@ -159,6 +203,54 @@ public class Investor {
 
     public void setOrderLimit(Integer orderLimit) {
         this.orderLimit = orderLimit;
+    }
+
+    public String getMemberCode() {
+        return memberCode;
+    }
+
+    public void setMemberCode(String memberCode) {
+        this.memberCode = memberCode;
+    }
+
+    public String getMemberName() {
+        return memberName;
+    }
+
+    public void setMemberName(String memberName) {
+        this.memberName = memberName;
+    }
+
+    public String getBrokerCode() {
+        return brokerCode;
+    }
+
+    public void setBrokerCode(String brokerCode) {
+        this.brokerCode = brokerCode;
+    }
+
+    public String getBrokerName() {
+        return brokerName;
+    }
+
+    public void setBrokerName(String brokerName) {
+        this.brokerName = brokerName;
+    }
+
+    public String getCollaboratorCode() {
+        return collaboratorCode;
+    }
+
+    public void setCollaboratorCode(String collaboratorCode) {
+        this.collaboratorCode = collaboratorCode;
+    }
+
+    public String getCollaboratorName() {
+        return collaboratorName;
+    }
+
+    public void setCollaboratorName(String collaboratorName) {
+        this.collaboratorName = collaboratorName;
     }
     
 }

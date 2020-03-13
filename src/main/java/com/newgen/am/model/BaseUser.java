@@ -15,8 +15,6 @@ import java.util.List;
 public class BaseUser {
     private Long id;
     private String username;
-    private String password;
-    private String pin;
     private String fullName;
     private String email;
     private String phoneNumber;
@@ -27,8 +25,6 @@ public class BaseUser {
     private Integer expiryAlertDays;
     private Date createdAt;
     private Date updatedAt;
-    private List<UserRole> roles;
-    private List<RoleFunction> functions;
 
     public Long getId() {
         return id;
@@ -44,14 +40,6 @@ public class BaseUser {
 
     public void setUsername(String username) {
         this.username = username;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
     }
 
     public String getFullName() {
@@ -94,22 +82,6 @@ public class BaseUser {
         this.isPasswordExpiryCheck = isPasswordExpiryCheck;
     }
 
-    public List<UserRole> getRoles() {
-        return roles;
-    }
-
-    public void setRoles(List<UserRole> roles) {
-        this.roles = roles;
-    }
-
-    public List<RoleFunction> getFunctions() {
-        return functions;
-    }
-
-    public void setFunctions(List<RoleFunction> functions) {
-        this.functions = functions;
-    }
-
     public Integer getPasswordExpiryDays() {
         return passwordExpiryDays;
     }
@@ -150,12 +122,4 @@ public class BaseUser {
         this.note = note;
     }
 
-    public String getPin() {
-        return pin;
-    }
-
-    public void setPin(String pin) {
-        this.pin = pin;
-    }
-    
 }

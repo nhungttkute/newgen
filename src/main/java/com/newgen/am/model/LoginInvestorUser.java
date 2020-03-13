@@ -44,15 +44,15 @@ public class LoginInvestorUser extends AuditModel implements Serializable {
     @Field
     private Boolean logined = false;
     @Field(name = "member_id")
-    private Integer memberId;
+    private Long memberId;
     @Field(name = "broker_id")
-    private Integer brokerId;
+    private Long brokerId;
     @Field(name = "collaborator_id")
-    private Integer collaboratorId;
+    private Long collaboratorId;
     @Field(name = "investor_id")
-    private Integer investorId;
+    private Long investorId;
     @Field(name = "investor_user_id")
-    private Integer investorUserId;
+    private Long investorUserId;
     @Field
     @Length(max = 10000)
     private String layout;
@@ -125,44 +125,44 @@ public class LoginInvestorUser extends AuditModel implements Serializable {
         this.logined = logined;
     }
 
-    public Integer getInvestorId() {
-        return investorId;
-    }
-
-    public void setInvestorId(Integer investorId) {
-        this.investorId = investorId;
-    }
-
-    public Integer getInvestorUserId() {
-        return investorUserId;
-    }
-
-    public void setInvestorUserId(Integer investorUserId) {
-        this.investorUserId = investorUserId;
-    }
-
-    public Integer getMemberId() {
+    public Long getMemberId() {
         return memberId;
     }
 
-    public void setMemberId(Integer memberId) {
+    public void setMemberId(Long memberId) {
         this.memberId = memberId;
     }
 
-    public Integer getBrokerId() {
+    public Long getBrokerId() {
         return brokerId;
     }
 
-    public void setBrokerId(Integer brokerId) {
+    public void setBrokerId(Long brokerId) {
         this.brokerId = brokerId;
     }
 
-    public Integer getCollaboratorId() {
+    public Long getCollaboratorId() {
         return collaboratorId;
     }
 
-    public void setCollaboratorId(Integer collaboratorId) {
+    public void setCollaboratorId(Long collaboratorId) {
         this.collaboratorId = collaboratorId;
+    }
+
+    public Long getInvestorId() {
+        return investorId;
+    }
+
+    public void setInvestorId(Long investorId) {
+        this.investorId = investorId;
+    }
+
+    public Long getInvestorUserId() {
+        return investorUserId;
+    }
+
+    public void setInvestorUserId(Long investorUserId) {
+        this.investorUserId = investorUserId;
     }
 
     public List<WatchList> getWatchlists() {

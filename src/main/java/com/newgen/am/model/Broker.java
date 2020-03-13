@@ -5,27 +5,36 @@
  */
 package com.newgen.am.model;
 
-import java.util.ArrayList;
-import java.util.Date;
+import java.io.Serializable;
 import java.util.List;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Transient;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 /**
  *
  * @author nhungtt
  */
-public class Broker {
+@Document(collection = "brokers")
+public class Broker extends AuditModel implements Serializable {
     @Transient
     public static final String SEQUENCE_NAME = "broker_seq";
+    @Id
     private Long id;
+    @Field(name = "member_id")
+    private Long memberId;
+    @Field(name = "member_code")
+    private String memberCode;
+    @Field(name = "member_name")
+    private String memberName;
     private String code;
     private String name;
     private String note;
     private String status;
     private String type;
+    @Field(name = "business_type")
     private String businessType;
-    private Date createdAt;
-    private Date updatedAt;
     private Company company;
     private Individual individual;
     private Contact contact;
@@ -34,8 +43,6 @@ public class Broker {
     private List<RoleFunction> functions;
     private Integer orderLimit;
     private List<Commodity> commodities;
-    private List<Collaborator> collaborators;
-    private List<Investor> investors;
 
     public Long getId() {
         return id;
@@ -43,6 +50,14 @@ public class Broker {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Long getMemberId() {
+        return memberId;
+    }
+
+    public void setMemberId(Long memberId) {
+        this.memberId = memberId;
     }
 
     public String getCode() {
@@ -93,22 +108,6 @@ public class Broker {
         this.businessType = businessType;
     }
 
-    public Date getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(Date createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public Date getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(Date updatedAt) {
-        this.updatedAt = updatedAt;
-    }
-
     public Company getCompany() {
         return company;
     }
@@ -157,22 +156,6 @@ public class Broker {
         this.functions = functions;
     }
 
-    public List<Collaborator> getCollaborators() {
-        return collaborators;
-    }
-
-    public void setCollaborators(List<Collaborator> collaborators) {
-        this.collaborators = collaborators;
-    }
-
-    public List<Investor> getInvestors() {
-        return investors;
-    }
-
-    public void setInvestors(List<Investor> investors) {
-        this.investors = investors;
-    }
-
     public List<Commodity> getCommodities() {
         return commodities;
     }
@@ -187,6 +170,22 @@ public class Broker {
 
     public void setOrderLimit(Integer orderLimit) {
         this.orderLimit = orderLimit;
+    }
+
+    public String getMemberCode() {
+        return memberCode;
+    }
+
+    public void setMemberCode(String memberCode) {
+        this.memberCode = memberCode;
+    }
+
+    public String getMemberName() {
+        return memberName;
+    }
+
+    public void setMemberName(String memberName) {
+        this.memberName = memberName;
     }
     
 }

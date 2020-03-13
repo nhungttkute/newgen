@@ -12,6 +12,6 @@ import org.springframework.data.mongodb.repository.MongoRepository;
  *
  * @author nhungtt
  */
-public interface LoginAdminUserRepository extends MongoRepository<LoginAdminUser, String>{
+public interface LoginAdminUserRepository extends MongoRepository<LoginAdminUser, Long>{
     
 }

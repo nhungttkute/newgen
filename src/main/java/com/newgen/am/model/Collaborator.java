@@ -5,46 +5,69 @@
  */
 package com.newgen.am.model;
 
+import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Transient;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 /**
  *
  * @author nhungtt
  */
-public class Collaborator {
+@Document(collection = "collaborators")
+public class Collaborator extends AuditModel implements Serializable {
     @Transient
     public static final String SEQUENCE_NAME = "collaborator_seq";
-    private Integer id;
+    @Id
+    private Long id;
+    @Field(name = "member_id")
+    private Long memberId;
+    @Field(name = "broker_id")
+    private Long brokerId;
+    @Field(name = "member_code")
+    private String memberCode;
+    @Field(name = "member_name")
+    private String memberName;
+    @Field(name = "broker_code")
+    private String brokerCode;
+    @Field(name = "broker_name")
+    private String brokerName;
     private String code;
     private String name;
     private String note;
     private String status;
-    private String username;
-    private String password;
-    private String pin;
-    private Date createdAt;
-    private Date updatedAt;
-    private String fullName;
-    private String birthday;
-    private String identityCard;
-    private String idCreatedDate;
-    private String idCreatedLocation;
-    private String email;
-    private String phoneNumber;
-    private String address;
-    private String scannedIdCard; //image data
-    private String scannedSignature; //image data
+    @Field(name = "individual_info")
+    private Individual individualInfo;
     private Contact contact;
-    private List<Investor> investors;
+    private CollaboratorUser user;
+    private List<UserRole> roles;
+    private List<RoleFunction> functions;
 
-    public Integer getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(Long id) {
         this.id = id;
+    }
+
+    public Long getMemberId() {
+        return memberId;
+    }
+
+    public void setMemberId(Long memberId) {
+        this.memberId = memberId;
+    }
+
+    public Long getBrokerId() {
+        return brokerId;
+    }
+
+    public void setBrokerId(Long brokerId) {
+        this.brokerId = brokerId;
     }
 
     public String getCode() {
@@ -79,126 +102,6 @@ public class Collaborator {
         this.status = status;
     }
 
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public String getPin() {
-        return pin;
-    }
-
-    public void setPin(String pin) {
-        this.pin = pin;
-    }
-
-    public Date getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(Date createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public Date getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(Date updatedAt) {
-        this.updatedAt = updatedAt;
-    }
-
-    public String getFullName() {
-        return fullName;
-    }
-
-    public void setFullName(String fullName) {
-        this.fullName = fullName;
-    }
-
-    public String getBirthday() {
-        return birthday;
-    }
-
-    public void setBirthday(String birthday) {
-        this.birthday = birthday;
-    }
-
-    public String getIdentityCard() {
-        return identityCard;
-    }
-
-    public void setIdentityCard(String identityCard) {
-        this.identityCard = identityCard;
-    }
-
-    public String getIdCreatedDate() {
-        return idCreatedDate;
-    }
-
-    public void setIdCreatedDate(String idCreatedDate) {
-        this.idCreatedDate = idCreatedDate;
-    }
-
-    public String getIdCreatedLocation() {
-        return idCreatedLocation;
-    }
-
-    public void setIdCreatedLocation(String idCreatedLocation) {
-        this.idCreatedLocation = idCreatedLocation;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getPhoneNumber() {
-        return phoneNumber;
-    }
-
-    public void setPhoneNumber(String phoneNumber) {
-        this.phoneNumber = phoneNumber;
-    }
-
-    public String getAddress() {
-        return address;
-    }
-
-    public void setAddress(String address) {
-        this.address = address;
-    }
-
-    public String getScannedIdCard() {
-        return scannedIdCard;
-    }
-
-    public void setScannedIdCard(String scannedIdCard) {
-        this.scannedIdCard = scannedIdCard;
-    }
-
-    public String getScannedSignature() {
-        return scannedSignature;
-    }
-
-    public void setScannedSignature(String scannedSignature) {
-        this.scannedSignature = scannedSignature;
-    }
-
     public Contact getContact() {
         return contact;
     }
@@ -207,12 +110,68 @@ public class Collaborator {
         this.contact = contact;
     }
 
-    public List<Investor> getInvestors() {
-        return investors;
+    public String getMemberCode() {
+        return memberCode;
     }
 
-    public void setInvestors(List<Investor> investors) {
-        this.investors = investors;
+    public void setMemberCode(String memberCode) {
+        this.memberCode = memberCode;
     }
-    
+
+    public String getMemberName() {
+        return memberName;
+    }
+
+    public void setMemberName(String memberName) {
+        this.memberName = memberName;
+    }
+
+    public String getBrokerCode() {
+        return brokerCode;
+    }
+
+    public void setBrokerCode(String brokerCode) {
+        this.brokerCode = brokerCode;
+    }
+
+    public String getBrokerName() {
+        return brokerName;
+    }
+
+    public void setBrokerName(String brokerName) {
+        this.brokerName = brokerName;
+    }
+
+    public Individual getIndividualInfo() {
+        return individualInfo;
+    }
+
+    public void setIndividualInfo(Individual individualInfo) {
+        this.individualInfo = individualInfo;
+    }
+
+    public CollaboratorUser getUser() {
+        return user;
+    }
+
+    public void setUser(CollaboratorUser user) {
+        this.user = user;
+    }
+
+    public List<UserRole> getRoles() {
+        return roles;
+    }
+
+    public void setRoles(List<UserRole> roles) {
+        this.roles = roles;
+    }
+
+    public List<RoleFunction> getFunctions() {
+        return functions;
+    }
+
+    public void setFunctions(List<RoleFunction> functions) {
+        this.functions = functions;
+    }
+
 }

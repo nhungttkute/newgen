@@ -5,11 +5,13 @@
  */
 package com.newgen.am.service;
 
+import com.newgen.am.dto.OutType;
 import com.newgen.am.model.Broker;
 import com.newgen.am.model.Investor;
 import com.newgen.am.model.InvestorUser;
 import com.newgen.am.model.Member;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.aggregation.AggregationResults;
@@ -17,6 +19,9 @@ import org.springframework.data.mongodb.core.aggregation.MatchOperation;
 import org.springframework.data.mongodb.core.aggregation.ProjectionOperation;
 import org.springframework.data.mongodb.core.aggregation.UnwindOperation;
 import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 /**
@@ -28,37 +33,31 @@ public class InvestorUserService {
 
     @Autowired
     private MongoTemplate mongoTemplate;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
     
-    public InvestorUser changePassword(Long memberId, Long brokerId, Long investorId, Long investorUserId, Long loginInvUserId, String oldPassword, String newPassword) {
-        MatchOperation matchStage = Aggregation.match(new Criteria("_id").is(memberId)
-                .and("brokers").elemMatch(Criteria.where("_id").is(brokerId)
-                .and("investors").elemMatch(Criteria.where("_id").is(investorId))
-                .and("users").elemMatch(Criteria.where("_id").is(investorUserId))));
-        ProjectionOperation projectStage = Aggregation.project(InvestorUser.class);
-        
-        Aggregation aggregation = Aggregation.newAggregation(matchStage, projectStage);
-//        Aggregation aggregation = Aggregation.newAggregation(matchStage);
-        AggregationResults<InvestorUser> output
-                = mongoTemplate.aggregate(aggregation, Member.class, InvestorUser.class);
-        InvestorUser user = output.getUniqueMappedResult();
-        return user;
+    public Investor backup(Long investorId, Long investorUserId, Long loginInvUserId, String oldPassword, String newPassword) {
+        // Select investor_user
+        Query checkPassQuery = new Query(Criteria.where("_id").is(investorId).andOperator(Criteria.where("users._id").is(investorUserId)).andOperator(Criteria.where("users.password").is(passwordEncoder.encode(oldPassword))));
+        Investor existedInv = mongoTemplate.findOne(checkPassQuery, Investor.class);
+        Query query = new Query(Criteria.where("_id").is(investorId).andOperator(Criteria.where("users._id").is(investorUserId)));
+        Update update = new Update().set("users.$.password", newPassword);
+        Investor newInvestor = mongoTemplate.findAndModify(query, update, Investor.class);
+        return newInvestor;
     }
     
-    public String getData (Long memberId, Long brokerId) {
-        MatchOperation matchStage = Aggregation.match(new Criteria("_id").is(memberId));
-        UnwindOperation unwindStage = Aggregation.unwind("brokers");
-        ProjectionOperation projectStage = Aggregation.project(Broker.class);
+    public String getData (Long investorId, Long investorUserId) {
+        MatchOperation matchStage = Aggregation.match(new Criteria("_id").is(investorId));
+        UnwindOperation unwindStage = Aggregation.unwind("$users");
+        MatchOperation matchStage2 = Aggregation.match(new Criteria("users._id").is(investorUserId));
+        ProjectionOperation projectStage = Aggregation.project(InvestorUser.class);
         
-        Aggregation aggregation = Aggregation.newAggregation(matchStage, unwindStage, projectStage);
+        Aggregation aggregation = Aggregation.newAggregation(matchStage, unwindStage, matchStage2, projectStage);
 
-        MatchOperation matchStage2 = Aggregation.match(new Criteria("_id").is(brokerId));
-        UnwindOperation unwindStage2 = Aggregation.unwind("investors");
-        ProjectionOperation projectStage2 = Aggregation.project(Investor.class);
-        Aggregation aggregation2 = Aggregation.newAggregation(matchStage2, unwindStage2, projectStage2);
-        
-        mongoTemplate.aggregateStream(aggregation, Member.class, Broker.class);
-        Broker broker = output.getUniqueMappedResult();
-        
+        AggregationResults<InvestorUser> output
+                = mongoTemplate.aggregate(aggregation, Investor.class, InvestorUser.class);
+        InvestorUser result = output.getUniqueMappedResult();
+        return result.getUsername();
     }
     
 }

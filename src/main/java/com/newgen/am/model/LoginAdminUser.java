@@ -9,8 +9,10 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.Serializable;
 import org.springframework.data.mongodb.core.mapping.Field;
 import com.mongodb.lang.NonNull;
+import org.hibernate.validator.constraints.Length;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Transient;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 /**
@@ -24,6 +26,7 @@ public class LoginAdminUser extends AuditModel implements Serializable {
     @Id
     private Long id;
     @NonNull
+    @Indexed(unique = true)
     private String username;
     @NonNull
     @JsonIgnore
@@ -39,18 +42,28 @@ public class LoginAdminUser extends AuditModel implements Serializable {
     @Field
     private Boolean logined = false;
     @Field(name = "department_id")
-    private Integer departmentId;
+    private Long departmentId;
     @Field(name = "user_id")
-    private Integer userId;
+    private Long userId;
     @Field(name = "member_id")
-    private Integer memberId;
+    private Long memberId;
     @Field(name = "member_user_id")
-    private Integer memberUserId;
+    private Long memberUserId;
     @Field(name = "broker_id")
-    private Integer brokerId;
+    private Long brokerId;
+    @Field(name = "broker_user_id")
+    private Long brokerUserId;
     @Field(name = "collaborator_id")
-    private Integer collaboratorId;
-
+    private Long collaboratorId;
+    @Field(name = "collaborator_user_id")
+    private Long collaboratorUserId;
+    @Field
+    @Length(max = 10000)
+    private String layout;
+    private String language;
+    private String theme;
+    private Integer fontSize;
+    
     public Long getId() {
         return id;
     }
@@ -115,52 +128,100 @@ public class LoginAdminUser extends AuditModel implements Serializable {
         this.logined = logined;
     }
 
-    public Integer getDepartmentId() {
+    public Long getDepartmentId() {
         return departmentId;
     }
 
-    public void setDepartmentId(Integer departmentId) {
+    public void setDepartmentId(Long departmentId) {
         this.departmentId = departmentId;
     }
 
-    public Integer getUserId() {
+    public Long getUserId() {
         return userId;
     }
 
-    public void setUserId(Integer userId) {
+    public void setUserId(Long userId) {
         this.userId = userId;
     }
 
-    public Integer getMemberId() {
+    public String getLayout() {
+        return layout;
+    }
+
+    public void setLayout(String layout) {
+        this.layout = layout;
+    }
+
+    public String getLanguage() {
+        return language;
+    }
+
+    public void setLanguage(String language) {
+        this.language = language;
+    }
+
+    public String getTheme() {
+        return theme;
+    }
+
+    public void setTheme(String theme) {
+        this.theme = theme;
+    }
+
+    public Integer getFontSize() {
+        return fontSize;
+    }
+
+    public void setFontSize(Integer fontSize) {
+        this.fontSize = fontSize;
+    }
+
+    public Long getMemberId() {
         return memberId;
     }
 
-    public void setMemberId(Integer memberId) {
+    public void setMemberId(Long memberId) {
         this.memberId = memberId;
     }
 
-    public Integer getMemberUserId() {
+    public Long getMemberUserId() {
         return memberUserId;
     }
 
-    public void setMemberUserId(Integer memberUserId) {
+    public void setMemberUserId(Long memberUserId) {
         this.memberUserId = memberUserId;
     }
 
-    public Integer getBrokerId() {
+    public Long getBrokerId() {
         return brokerId;
     }
 
-    public void setBrokerId(Integer brokerId) {
+    public void setBrokerId(Long brokerId) {
         this.brokerId = brokerId;
     }
 
-    public Integer getCollaboratorId() {
+    public Long getBrokerUserId() {
+        return brokerUserId;
+    }
+
+    public void setBrokerUserId(Long brokerUserId) {
+        this.brokerUserId = brokerUserId;
+    }
+
+    public Long getCollaboratorId() {
         return collaboratorId;
     }
 
-    public void setCollaboratorId(Integer collaboratorId) {
+    public void setCollaboratorId(Long collaboratorId) {
         this.collaboratorId = collaboratorId;
     }
-  
+
+    public Long getCollaboratorUserId() {
+        return collaboratorUserId;
+    }
+
+    public void setCollaboratorUserId(Long collaboratorUserId) {
+        this.collaboratorUserId = collaboratorUserId;
+    }
+
 }

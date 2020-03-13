@@ -21,4 +21,7 @@ public class Constant {
     public static final String REDIS_HOST = "REDIS_HOST";
     public static final String REDIS_PORT = "REDIS_PORT";
     public static final String REDIS_PASSWORD = "REDIS_PASSWORD";
+    
+    public static final String STATUS_ACTIVE = "ACTIVE";
+    public static final String STATUS_INACTIVE = "INACTIVE";
 }

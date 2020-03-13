@@ -10,9 +10,9 @@
     </parent>
     <groupId>com.newgen.am</groupId>
     <artifactId>NEWGEN_AM</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.0.1</version>
     <name>NEWGEN_AM</name>
-    <description>Demo project for Spring Boot</description>
+    <description>Newgen account management</description>
 
     <properties>
         <java.version>1.8</java.version>

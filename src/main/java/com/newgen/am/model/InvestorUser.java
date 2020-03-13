@@ -11,7 +11,26 @@ import org.springframework.data.annotation.Transient;
  *
  * @author nhungtt
  */
-public class InvestorUser extends MemberUser {
+public class InvestorUser extends BaseUser {
     @Transient
     public static final String SEQUENCE_NAME = "investor_user_seq";
+    private String title;
+    private String department;
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(String department) {
+        this.department = department;
+    }
+
 }

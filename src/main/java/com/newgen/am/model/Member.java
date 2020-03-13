@@ -12,6 +12,7 @@ import java.util.List;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 /**
  *
@@ -33,10 +34,10 @@ public class Member extends AuditModel implements Serializable {
     private Contact contact;
     private List<UserRole> roles;
     private List<RoleFunction> functions;
+    @Field(name = "order_limit")
     private Integer orderLimit;
     private List<Commodity> comodities;
     private List<MemberUser> users;
-    private List<Broker> brokers;
 
     public Long getId() {
         return id;
@@ -94,14 +95,6 @@ public class Member extends AuditModel implements Serializable {
         this.users = users;
     }
 
-    public List<Broker> getBrokers() {
-        return brokers;
-    }
-
-    public void setBrokers(List<Broker> brokers) {
-        this.brokers = brokers;
-    }
-    
     public List<Commodity> getComodities() {
         return comodities;
     }

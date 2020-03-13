@@ -5,6 +5,7 @@
  */
 package com.newgen.am.model;
 
+import java.util.List;
 import org.springframework.data.annotation.Transient;
 
 /**
@@ -16,6 +17,7 @@ public class MemberUser extends BaseUser {
     public static final String SEQUENCE_NAME = "member_user_seq";
     private String title;
     private String department;
+    private List<UserRole> roles;
 
     public String getTitle() {
         return title;
@@ -31,6 +33,14 @@ public class MemberUser extends BaseUser {
 
     public void setDepartment(String department) {
         this.department = department;
+    }
+
+    public List<UserRole> getRoles() {
+        return roles;
+    }
+
+    public void setRoles(List<UserRole> roles) {
+        this.roles = roles;
     }
 
 }
