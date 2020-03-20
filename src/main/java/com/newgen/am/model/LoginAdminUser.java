@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.Serializable;
 import org.springframework.data.mongodb.core.mapping.Field;
 import com.mongodb.lang.NonNull;
+import java.util.Date;
 import org.hibernate.validator.constraints.Length;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Transient;
@@ -41,6 +42,10 @@ public class LoginAdminUser extends AuditModel implements Serializable {
     private Long tokenExpiration;
     @Field
     private Boolean logined = false;
+    @Field
+    private Boolean mustChangePassword = true;
+    private Integer logonCounts;
+    private Date logonTime;
     @Field(name = "department_id")
     private Long departmentId;
     @Field(name = "user_id")
@@ -222,6 +227,30 @@ public class LoginAdminUser extends AuditModel implements Serializable {
 
     public void setCollaboratorUserId(Long collaboratorUserId) {
         this.collaboratorUserId = collaboratorUserId;
+    }
+
+    public Integer getLogonCounts() {
+        return logonCounts;
+    }
+
+    public void setLogonCounts(Integer logonCounts) {
+        this.logonCounts = logonCounts;
+    }
+
+    public Date getLogonTime() {
+        return logonTime;
+    }
+
+    public void setLogonTime(Date logonTime) {
+        this.logonTime = logonTime;
+    }
+
+    public Boolean getMustChangePassword() {
+        return mustChangePassword;
+    }
+
+    public void setMustChangePassword(Boolean mustChangePassword) {
+        this.mustChangePassword = mustChangePassword;
     }
 
 }

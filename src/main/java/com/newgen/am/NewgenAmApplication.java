@@ -1,7 +1,10 @@
 package com.newgen.am;
 
+import com.google.gson.Gson;
+import com.newgen.am.common.ConfigLoader;
 import com.newgen.am.common.Constant;
 import com.newgen.am.common.SystemFunctionCode;
+import com.newgen.am.dto.UserInfoDTO;
 import com.newgen.am.model.Broker;
 import com.newgen.am.model.BrokerUser;
 import com.newgen.am.model.Collaborator;
@@ -22,6 +25,7 @@ import com.newgen.am.model.MarginRatioAlert;
 import com.newgen.am.model.Member;
 import com.newgen.am.model.MemberRole;
 import com.newgen.am.model.MemberUser;
+import com.newgen.am.model.RedisUserInfo;
 import com.newgen.am.model.RoleFunction;
 import com.newgen.am.model.SystemFunction;
 import com.newgen.am.model.SystemRole;
@@ -35,13 +39,16 @@ import com.newgen.am.repository.LoginAdminUserRepository;
 import com.newgen.am.repository.LoginInvestorUserRepository;
 import com.newgen.am.repository.MemberRepository;
 import com.newgen.am.repository.MemberRoleRepository;
+import com.newgen.am.repository.RedisUserInfoRepository;
 import com.newgen.am.repository.SystemFunctionRepository;
 import com.newgen.am.repository.SystemRoleRepository;
 import com.newgen.am.service.DBSequenceService;
 import com.newgen.am.service.InvestorUserService;
+import com.newgen.am.service.LoginInvestorUserService;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import jdk.nashorn.internal.objects.NativeArray;
 import jdk.nashorn.internal.runtime.regexp.joni.ast.ConsAltNode;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,13 +57,15 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.mongodb.config.EnableMongoAuditing;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 @EnableMongoAuditing
 @SpringBootApplication
 public class NewgenAmApplication {
 
-    @Autowired DBSequenceRepository dbSequenceRepo;
+    @Autowired
+    DBSequenceRepository dbSequenceRepo;
     @Autowired
     private PasswordEncoder passwordEncoder;
     @Autowired
@@ -83,7 +92,13 @@ public class NewgenAmApplication {
     private SystemRoleRepository sysRoleRepo;
     @Autowired
     private InvestorUserService invUserService;
-    
+    @Autowired
+    private LoginInvestorUserService loginInvUserService;
+    @Autowired
+    private RedisUserInfoRepository redisUsrInfoRepo;
+    @Autowired
+    private RedisTemplate template;
+
     public static void main(String[] args) {
         SpringApplication.run(NewgenAmApplication.class, args);
     }
@@ -92,7 +107,25 @@ public class NewgenAmApplication {
     public ModelMapper modelMapper() {
         return new ModelMapper();
     }
-    
+
+//    @Bean
+//    public CommandLineRunner testRedis() {
+//        return args -> {
+////            //Save redis user info
+//            template.opsForValue().set("nhungkute1","hello world");
+////            template.delete("nhungkute");
+//            System.out.println("Value of key loda: "+template.opsForValue().get("nhungkute"));
+//            
+//            Get redis user info
+//            RedisUserInfo redisUsrInfo = redisUsrInfoRepo.findById("nhung").get();
+//            System.out.println("redisUsrInfo: " + redisUsrInfo.getValue());
+//            UserInfoDTO userInfoDto = loginInvUserService.testGetUserInfoDTO(15l);
+//            System.out.println("userinfo: " + new Gson().toJson(userInfoDto));
+//            String secretKey = configLoader.getMainConfig().getString(Constant.REDIS_HOST);
+//            System.out.println("secretKey: " + secretKey);
+//        };
+//    }
+
 //    @Bean
 //    public CommandLineRunner testDemo() {
 //        // Insert new SystemRole
@@ -220,10 +253,7 @@ public class NewgenAmApplication {
 //        collaRoles.add(ctvRole2);
 //        collaborator.setRoles(collaRoles);
 //        
-
 //        
-
-
 //                
 //        collaborator.setUser(new CollaboratorUser());
 //        collaborator.getUser().setId(dbSeqService.generateSequence(CollaboratorUser.SEQUENCE_NAME));
@@ -313,14 +343,13 @@ public class NewgenAmApplication {
 //            deptRepo.save(dept);
 //            loginAdmUserRepo.save(loginAdmUser);
 //            memberRoleRepo.save(mRole1);
-            // test Mongodb Aggregation
+    // test Mongodb Aggregation
 //            Investor investor = invUserService.changePassword(15l, 113l, 1l, "nhung", "nhungtt");
 //            System.out.println("investor.name: " + investor.getName());
 //            String data = invUserService.getData(15l, 113l);
 //            System.out.println("data: " + data);
 //        };
 //    }
-    
 //    @Bean
 //    public CommandLineRunner startSequence() {
 //        // Insert new SystemRole
@@ -784,7 +813,6 @@ public class NewgenAmApplication {
 //            loginInvUserRepo.save(loginInvUser6);
 //            loginInvUserRepo.save(loginInvUser7);
 //            loginInvUserRepo.save(loginInvUser8);
-            
 //            dbSequenceRepo.deleteAll();
 //            // init for all sequences
 //            dbSequenceRepo.save(new DBSequence("pending_approval_seq", 0));
@@ -802,7 +830,6 @@ public class NewgenAmApplication {
 //            dbSequenceRepo.save(new DBSequence("member_user_seq", 0));
 //            dbSequenceRepo.save(new DBSequence("system_function_seq", 0));
 //            dbSequenceRepo.save(new DBSequence("system_role_seq", 0));
-            
             // test Mongodb Aggregation
 //            InvestorUser nestedUser = invUserService.changePassword(1l, 1l, 1l, 1l, 1l, "nhung", "nhung");
 //            String data = invUserService.getData(1l, 1l);

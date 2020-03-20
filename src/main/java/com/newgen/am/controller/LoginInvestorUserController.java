@@ -4,6 +4,7 @@ package com.newgen.am.controller;
 import com.google.gson.Gson;
 import com.newgen.am.common.AMLogger;
 import com.newgen.am.common.Constant;
+import com.newgen.am.common.ErrorMessage;
 import com.newgen.am.common.Utility;
 import javax.servlet.http.HttpServletRequest;
 
@@ -19,9 +20,12 @@ import org.springframework.web.bind.annotation.RestController;
 import com.newgen.am.dto.LoginInvestorUserDataDTO;
 import com.newgen.am.dto.AMResponseObj;
 import com.newgen.am.dto.DataObj;
+import com.newgen.am.dto.ListUserDTO;
 import com.newgen.am.dto.LoginInvestorUserResponseDTO;
 import com.newgen.am.model.LoginInvestorUser;
 import com.newgen.am.service.LoginInvestorUserService;
+import java.util.ArrayList;
+import java.util.List;
 
 @RestController
 public class LoginInvestorUserController {
@@ -85,15 +89,11 @@ public class LoginInvestorUserController {
         AMLogger.logMessage(className, methodName, refId, "INPUT:" + userId);
         AMResponseObj response = new AMResponseObj();
         try {
-            LoginInvestorUser user = loginInvUserService.search(userId, refId);
-            if (user != null) {
-                user.setAccessToken(null);
-                user.setLogined(false);
-                loginInvUserService.save(user, refId);
+            if (loginInvUserService.logout(userId, refId)) {
                 response.setStatus(Constant.RESPONSE_OK);
             } else {
                 response.setStatus(Constant.RESPONSE_ERROR);
-                response.setErrMsg("This user doesn't exist.");
+                response.setErrMsg(ErrorMessage.ERROR_OCCURRED);
             }
         } catch (Exception ex) {
             AMLogger.logError(className, methodName, refId, ex);
@@ -103,7 +103,7 @@ public class LoginInvestorUserController {
         AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.convertObjectToJson(response));
         return response;
     }
-    
+
     @PostMapping("/users/verifyPin/{userId}")
     public AMResponseObj verifyPin(@PathVariable Long userId, @RequestBody LoginInvestorUserDataDTO user) {
         String methodName = "verifyPin";
@@ -144,7 +144,7 @@ public class LoginInvestorUserController {
                 response.getData().setWatchLists(newUser.getWatchlists());
             } else {
                 response.setStatus(Constant.RESPONSE_ERROR);
-                response.setErrMsg("This user doesn't exist.");
+                response.setErrMsg(ErrorMessage.USER_DOES_NOT_EXIST);
             }
         } catch (Exception ex) {
             AMLogger.logError(className, methodName, refId, ex);
@@ -154,7 +154,7 @@ public class LoginInvestorUserController {
         AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.convertObjectToJson(response));
         return response;
     }
-    
+
     @PostMapping("/users/{userId}/layout")
     public AMResponseObj saveLayout(@PathVariable Long userId, @RequestBody LoginInvestorUserDataDTO input) {
         String methodName = "saveLayout";
@@ -186,7 +186,7 @@ public class LoginInvestorUserController {
                 response.getData().setFontSize(newUser.getFontSize());
             } else {
                 response.setStatus(Constant.RESPONSE_ERROR);
-                response.setErrMsg("This user doesn't exist.");
+                response.setErrMsg(ErrorMessage.USER_DOES_NOT_EXIST);
             }
         } catch (Exception ex) {
             AMLogger.logError(className, methodName, refId, ex);
@@ -196,7 +196,7 @@ public class LoginInvestorUserController {
         AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.convertObjectToJson(response));
         return response;
     }
-    
+
     @PostMapping("/users/{userId}/password")
     public AMResponseObj changePassword(@PathVariable Long userId, @RequestBody LoginInvestorUserDataDTO input) {
         String methodName = "changePassword";
@@ -220,4 +220,62 @@ public class LoginInvestorUserController {
         return response;
     }
 
+    @GetMapping("/users/{userId}")
+    public AMResponseObj getUserDetail(@PathVariable Long userId) {
+        String methodName = "getUserDetail";
+        long refId = System.currentTimeMillis();
+        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: " + String.format("/users/%s", userId));
+        AMLogger.logMessage(className, methodName, refId, "INPUT:" + userId);
+        AMResponseObj response = new AMResponseObj();
+        try {
+            LoginInvestorUser user = loginInvUserService.search(userId, refId);
+            if (user != null) {
+                user.setAccessToken(null);
+                LoginInvestorUserResponseDTO userDto = modelMapper.map(user, LoginInvestorUserResponseDTO.class);
+                response.setStatus(Constant.RESPONSE_OK);
+                response.setData(new DataObj());
+                response.getData().setUser(userDto);
+            } else {
+                response.setStatus(Constant.RESPONSE_ERROR);
+                response.setErrMsg(ErrorMessage.USER_DOES_NOT_EXIST);
+            }
+        } catch (Exception ex) {
+            AMLogger.logError(className, methodName, refId, ex);
+            response.setStatus(Constant.RESPONSE_ERROR);
+            response.setErrMsg(ex.getMessage());
+        }
+        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.convertObjectToJson(response));
+        return response;
+    }
+
+    @GetMapping("/users")
+    public AMResponseObj listUsers() {
+        String methodName = "listUsers";
+        long refId = System.currentTimeMillis();
+        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: /users");
+        AMResponseObj response = new AMResponseObj();
+        try {
+            List<ListUserDTO> userDtos = new ArrayList<>();
+            List<LoginInvestorUser> users = loginInvUserService.list(refId);
+
+            if (users != null && users.size() > 0) {
+                for (LoginInvestorUser user : users) {
+                    ListUserDTO userDto = new ListUserDTO(user.getId(), user.getUsername());
+                    userDtos.add(userDto);
+                }
+                response.setStatus(Constant.RESPONSE_OK);
+                response.setData(new DataObj());
+                response.getData().setUsers(userDtos);
+            } else {
+                response.setStatus(Constant.RESPONSE_ERROR);
+                response.setErrMsg(ErrorMessage.USER_DOES_NOT_EXIST);
+            }
+        } catch (Exception ex) {
+            AMLogger.logError(className, methodName, refId, ex);
+            response.setStatus(Constant.RESPONSE_ERROR);
+            response.setErrMsg(ex.getMessage());
+        }
+        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.convertObjectToJson(response));
+        return response;
+    }
 }

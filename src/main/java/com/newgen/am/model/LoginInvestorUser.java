@@ -8,6 +8,7 @@ package com.newgen.am.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.mongodb.lang.NonNull;
 import java.io.Serializable;
+import java.util.Date;
 import java.util.List;
 import org.hibernate.validator.constraints.Length;
 import org.springframework.data.annotation.Id;
@@ -37,12 +38,18 @@ public class LoginInvestorUser extends AuditModel implements Serializable {
     private Boolean checkPin = true;
     @NonNull
     private String pin;
+    private String status;
     @Field(name = "access_token")
     private String accessToken;
     @Field(name = "token_expiration")
     private Long tokenExpiration;
     @Field
     private Boolean logined = false;
+    @Field
+    private Boolean mustChangePassword  = true;
+    @Field
+    private Integer logonCounts = 0;
+    private Date logonTime;
     @Field(name = "member_id")
     private Long memberId;
     @Field(name = "broker_id")
@@ -99,6 +106,14 @@ public class LoginInvestorUser extends AuditModel implements Serializable {
 
     public void setPin(String pin) {
         this.pin = pin;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 
     public String getAccessToken() {
@@ -204,4 +219,29 @@ public class LoginInvestorUser extends AuditModel implements Serializable {
     public void setFontSize(Integer fontSize) {
         this.fontSize = fontSize;
     }
+
+    public Integer getLogonCounts() {
+        return logonCounts;
+    }
+
+    public void setLogonCounts(Integer logonCounts) {
+        this.logonCounts = logonCounts;
+    }
+
+    public Date getLogonTime() {
+        return logonTime;
+    }
+
+    public void setLogonTime(Date logonTime) {
+        this.logonTime = logonTime;
+    }
+
+    public Boolean getMustChangePassword() {
+        return mustChangePassword;
+    }
+
+    public void setMustChangePassword(Boolean mustChangePassword) {
+        this.mustChangePassword = mustChangePassword;
+    }
+    
 }

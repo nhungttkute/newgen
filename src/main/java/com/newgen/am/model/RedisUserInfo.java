@@ -6,25 +6,33 @@
 package com.newgen.am.model;
 
 import java.io.Serializable;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.redis.core.RedisHash;
 //import org.springframework.data.redis.core.RedisHash;
 
 /**
  *
  * @author nhungtt
  */
-//@RedisHash("Student")
+@RedisHash("user_info")
 public class RedisUserInfo implements Serializable {
-    private String decryptedAccessToken;
+    @Id
+    private String key;
     private String value;
 
-    public String getDecryptedAccessToken() {
-        return decryptedAccessToken;
+    public RedisUserInfo(String key, String value) {
+        this.key = key;
+        this.value = value;
     }
 
-    public void setDecryptedAccessToken(String decryptedAccessToken) {
-        this.decryptedAccessToken = decryptedAccessToken;
+    public String getKey() {
+        return key;
     }
 
+    public void setKey(String key) {
+        this.key = key;
+    }
+    
     public String getValue() {
         return value;
     }

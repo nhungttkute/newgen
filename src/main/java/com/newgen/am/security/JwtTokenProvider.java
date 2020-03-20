@@ -36,14 +36,11 @@ public class JwtTokenProvider {
 
     @Autowired
     private MyUserDetails myUserDetails;
-    
-    @Autowired
-    private ConfigLoader configLoader;
 
     @PostConstruct
     protected void init() {
-        secretKey = Base64.getEncoder().encodeToString(configLoader.getMainConfig().getString(Constant.JWT_SECRET).getBytes());
-        validityInMilliseconds = configLoader.getMainConfig().getLong(Constant.JWT_EXPIRATION, 3600000);
+        secretKey = Base64.getEncoder().encodeToString(ConfigLoader.getMainConfig().getString(Constant.JWT_SECRET).getBytes());
+        validityInMilliseconds = ConfigLoader.getMainConfig().getLong(Constant.JWT_EXPIRATION, 3600000);
     }
 
     public String createToken(String username, List<SimpleGrantedAuthority> roles) {

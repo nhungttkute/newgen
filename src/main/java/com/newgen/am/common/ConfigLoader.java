@@ -16,11 +16,11 @@ import org.springframework.stereotype.Component;
 @Component
 public class ConfigLoader {
 
-    private final long reloadInterval = 60000;     // 60 seconds = 1 min
+    private static final long reloadInterval = 60000;     // 60 seconds = 1 min
 
-    private final PropertiesConfiguration mainConfig = initConfig("main");
+    private static final PropertiesConfiguration mainConfig = initConfig("main");
 
-    private PropertiesConfiguration initConfig(String configType) {
+    private static PropertiesConfiguration initConfig(String configType) {
         PropertiesConfiguration config = new PropertiesConfiguration();
         File configFile = new File(Constant.CONFIG_DIR + configType + ".properties");
         FileChangedReloadingStrategy reload = new FileChangedReloadingStrategy();
@@ -34,7 +34,7 @@ public class ConfigLoader {
         return config;
     }
 
-    public PropertiesConfiguration getMainConfig() {
+    public static PropertiesConfiguration getMainConfig() {
         return mainConfig;
     }
 }

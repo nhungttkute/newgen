@@ -47,11 +47,12 @@ public class Investor {
     private Contact contact;
     private InvestorAccount account;
     private List<InvestorUser> users;
-    private List<UserRole> roles;
+    private UserRole role;
     private Integer orderLimit;
     private List<Commodity> commodities;
     private MarginRatioAlert marginRatioAlert;
     private Double marginMultiplier;
+    private Long otherFee;
 
     public Long getId() {
         return id;
@@ -157,12 +158,12 @@ public class Investor {
         this.contact = contact;
     }
 
-    public List<UserRole> getRoles() {
-        return roles;
+    public UserRole getRole() {
+        return role;
     }
 
-    public void setRoles(List<UserRole> roles) {
-        this.roles = roles;
+    public void setRole(UserRole role) {
+        this.role = role;
     }
 
     public MarginRatioAlert getMarginRatioAlert() {
@@ -251,6 +252,14 @@ public class Investor {
 
     public void setCollaboratorName(String collaboratorName) {
         this.collaboratorName = collaboratorName;
+    }
+
+    public Long getOtherFee() {
+        return otherFee;
+    }
+
+    public void setOtherFee(Long otherFee) {
+        this.otherFee = otherFee;
     }
     
 }
