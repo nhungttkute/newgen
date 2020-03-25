@@ -17,15 +17,15 @@ public class InvestorAccount {
     private Double marginSurplusInterestRate;
     private Double marginDeficitInterestRate;
     private Double amountHold;
-    private Double dayBeginBalance; // So du TKKQ dau ngay
+    private Double sodBalance; // So du TKKQ dau ngay
     private Double currentBalance; // So du TKKQ hien ta
     private Double dayEndBalance; // So du TKKQ cuoi ngay
     private Double changedAmount; // Nop rut trong phien
-    private Double transactionTotalFee; // Phi giao dich
+    private Double transactionFee; // Phi giao dich
     private Double generalFee; // Thue/phi
     private Double otherFee; // Phi khac
-    private Double actualProfitOrLoss; // Lo lai thuc te
-    private Double expectedProfitOrLoss; // Lo lai du kien
+    private Double actualProfitVND; // Lo lai thuc te
+    private Double estimatedProfitVND; // Lo lai du kien
     private Double initialRequiredMargin; // Ky quy ban dau yeu cau
     private Double availableMargin; // Ky quy kha dung
     private Double netMargin; // Gia tri rong ky quy
@@ -75,12 +75,12 @@ public class InvestorAccount {
         this.amountHold = amountHold;
     }
 
-    public Double getDayBeginBalance() {
-        return dayBeginBalance;
+    public Double getSodBalance() {
+        return sodBalance;
     }
 
-    public void setDayBeginBalance(Double dayBeginBalance) {
-        this.dayBeginBalance = dayBeginBalance;
+    public void setSodBalance(Double sodBalance) {
+        this.sodBalance = sodBalance;
     }
 
     public Double getCurrentBalance() {
@@ -107,12 +107,12 @@ public class InvestorAccount {
         this.changedAmount = changedAmount;
     }
 
-    public Double getTransactionTotalFee() {
-        return transactionTotalFee;
+    public Double getTransactionFee() {
+        return transactionFee;
     }
 
-    public void setTransactionTotalFee(Double transactionTotalFee) {
-        this.transactionTotalFee = transactionTotalFee;
+    public void setTransactionFee(Double transactionFee) {
+        this.transactionFee = transactionFee;
     }
 
     public Double getGeneralFee() {
@@ -131,20 +131,20 @@ public class InvestorAccount {
         this.otherFee = otherFee;
     }
 
-    public Double getActualProfitOrLoss() {
-        return actualProfitOrLoss;
+    public Double getActualProfitVND() {
+        return actualProfitVND;
     }
 
-    public void setActualProfitOrLoss(Double actualProfitOrLoss) {
-        this.actualProfitOrLoss = actualProfitOrLoss;
+    public void setActualProfitVND(Double actualProfitVND) {
+        this.actualProfitVND = actualProfitVND;
     }
 
-    public Double getExpectedProfitOrLoss() {
-        return expectedProfitOrLoss;
+    public Double getEstimatedProfitVND() {
+        return estimatedProfitVND;
     }
 
-    public void setExpectedProfitOrLoss(Double expectedProfitOrLoss) {
-        this.expectedProfitOrLoss = expectedProfitOrLoss;
+    public void setEstimatedProfitVND(Double estimatedProfitVND) {
+        this.estimatedProfitVND = estimatedProfitVND;
     }
 
     public Double getInitialRequiredMargin() {

@@ -43,7 +43,7 @@ public class LoginInvestorUserController {
         String methodName = "login";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, "REQUEST_API: /users/login");
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.convertObjectToJson(userDto));
+        AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(userDto));
         AMResponseObj response = new AMResponseObj();
         try {
             LoginInvestorUserResponseDTO loginUserDto = modelMapper.map(loginInvUserService.signin(userDto.getUsername(), userDto.getPassword(), refId), LoginInvestorUserResponseDTO.class);
@@ -55,7 +55,7 @@ public class LoginInvestorUserController {
             response.setStatus(Constant.RESPONSE_ERROR);
             response.setErrMsg(ex.getMessage());
         }
-        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.convertObjectToJson(response));
+        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
         return response;
     }
 
@@ -77,7 +77,7 @@ public class LoginInvestorUserController {
             response.setStatus(Constant.RESPONSE_ERROR);
             response.setErrMsg(ex.getMessage());
         }
-        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.convertObjectToJson(response));
+        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
         return response;
     }
 
@@ -100,7 +100,7 @@ public class LoginInvestorUserController {
             response.setStatus(Constant.RESPONSE_ERROR);
             response.setErrMsg(ex.getMessage());
         }
-        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.convertObjectToJson(response));
+        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
         return response;
     }
 
@@ -109,7 +109,7 @@ public class LoginInvestorUserController {
         String methodName = "verifyPin";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, "REQUEST_API: /users/verifyPin/" + userId);
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.convertObjectToJson(user));
+        AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(user));
         AMResponseObj response = new AMResponseObj();
         try {
             if (loginInvUserService.verifyPin(userId, user.getPin(), refId)) {
@@ -123,7 +123,7 @@ public class LoginInvestorUserController {
             response.setStatus(Constant.RESPONSE_ERROR);
             response.setErrMsg(ex.getMessage());
         }
-        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.convertObjectToJson(response));
+        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
         return response;
     }
 
@@ -151,7 +151,7 @@ public class LoginInvestorUserController {
             response.setStatus(Constant.RESPONSE_ERROR);
             response.setErrMsg(ex.getMessage());
         }
-        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.convertObjectToJson(response));
+        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
         return response;
     }
 
@@ -193,7 +193,7 @@ public class LoginInvestorUserController {
             response.setStatus(Constant.RESPONSE_ERROR);
             response.setErrMsg(ex.getMessage());
         }
-        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.convertObjectToJson(response));
+        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
         return response;
     }
 
@@ -216,7 +216,7 @@ public class LoginInvestorUserController {
             response.setStatus(Constant.RESPONSE_ERROR);
             response.setErrMsg(ex.getMessage());
         }
-        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.convertObjectToJson(response));
+        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
         return response;
     }
 
@@ -244,7 +244,7 @@ public class LoginInvestorUserController {
             response.setStatus(Constant.RESPONSE_ERROR);
             response.setErrMsg(ex.getMessage());
         }
-        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.convertObjectToJson(response));
+        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
         return response;
     }
 
@@ -275,7 +275,7 @@ public class LoginInvestorUserController {
             response.setStatus(Constant.RESPONSE_ERROR);
             response.setErrMsg(ex.getMessage());
         }
-        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.convertObjectToJson(response));
+        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
         return response;
     }
 }

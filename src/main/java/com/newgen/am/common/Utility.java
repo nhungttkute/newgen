@@ -37,18 +37,10 @@ public class Utility {
     public static boolean isNotNull(Object obj) {
         return !isNull(obj);
     }
-
-    public static String convertObjectToJson(Object obj) {
-        String json = "";
-        try {
-            ObjectMapper mapper = new ObjectMapper();
-            mapper.setSerializationInclusion(JsonInclude.Include.NON_DEFAULT);
-            mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
-            json = mapper.writeValueAsString(obj);
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
-        return json;
+    
+    public static double getDouble(Double obj) {
+        if (isNull(obj)) return 0;
+        return obj;
     }
 
     public static String genRedisKey(String input) {

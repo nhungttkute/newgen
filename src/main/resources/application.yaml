@@ -17,8 +17,8 @@ spring:
         port: 6379
 logging:
 #    config: classpath:logback-spring.xml
-#    file: C:/u01/apps/AM/log/init.log
-    file: /opt/account-management/log/init.log
+    file: C:/u01/apps/AM/log/init.log
+#    file: /opt/account-management/log/init.log
     level:
         root: OFF
         org.springframework: OFF

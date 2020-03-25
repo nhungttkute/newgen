@@ -5,13 +5,9 @@
  */
 package com.newgen.am.service;
 
-import com.newgen.am.dto.OutType;
-import com.newgen.am.model.Broker;
 import com.newgen.am.model.Investor;
 import com.newgen.am.model.InvestorUser;
-import com.newgen.am.model.Member;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.aggregation.AggregationResults;

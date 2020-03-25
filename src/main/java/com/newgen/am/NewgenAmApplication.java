@@ -17,6 +17,7 @@ import com.newgen.am.model.Department;
 import com.newgen.am.model.DeptUser;
 import com.newgen.am.model.Individual;
 import com.newgen.am.model.Investor;
+import com.newgen.am.model.InvestorAccTransApproval;
 import com.newgen.am.model.InvestorAccount;
 import com.newgen.am.model.InvestorUser;
 import com.newgen.am.model.LoginAdminUser;
@@ -34,6 +35,7 @@ import com.newgen.am.repository.BrokerRepository;
 import com.newgen.am.repository.CollaboratorRepository;
 import com.newgen.am.repository.DBSequenceRepository;
 import com.newgen.am.repository.DepartmentRepository;
+import com.newgen.am.repository.InvestorAccTransApprovalRepository;
 import com.newgen.am.repository.InvestorRepository;
 import com.newgen.am.repository.LoginAdminUserRepository;
 import com.newgen.am.repository.LoginInvestorUserRepository;
@@ -43,6 +45,7 @@ import com.newgen.am.repository.RedisUserInfoRepository;
 import com.newgen.am.repository.SystemFunctionRepository;
 import com.newgen.am.repository.SystemRoleRepository;
 import com.newgen.am.service.DBSequenceService;
+import com.newgen.am.service.InvestorService;
 import com.newgen.am.service.InvestorUserService;
 import com.newgen.am.service.LoginInvestorUserService;
 import java.util.ArrayList;
@@ -98,6 +101,10 @@ public class NewgenAmApplication {
     private RedisUserInfoRepository redisUsrInfoRepo;
     @Autowired
     private RedisTemplate template;
+    @Autowired
+    private InvestorService investorService;
+    @Autowired
+    private InvestorAccTransApprovalRepository accTransApprovalRepo;
 
     public static void main(String[] args) {
         SpringApplication.run(NewgenAmApplication.class, args);
@@ -110,19 +117,35 @@ public class NewgenAmApplication {
 
 //    @Bean
 //    public CommandLineRunner testRedis() {
+//        InvestorAccTransApproval accTrans1 = new InvestorAccTransApproval();
+//        accTrans1.setId(dbSeqService.generateSequence(InvestorAccTransApproval.SEQUENCE_NAME));
+//        accTrans1.setMemberId(15l);
+//        accTrans1.setMemberCode("001");
+//        accTrans1.setMemberName("TVKD1");
+//        accTrans1.setBrokerId(15l);
+//        accTrans1.setBrokerCode("00001");
+//        accTrans1.setBrokerName("Nguyen Van A");
+//        accTrans1.setInvestorId(15l);
+//        accTrans1.setInvestorCode("001C000001");
+//        accTrans1.setInvestorName("Bui Thi Lien Huong");
+//        accTrans1.setTransactionType("Nộp ký quỹ tài khoản");
+//        accTrans1.setApprovalDetail("Nộp ký quỹ tài khoản giao dịch \"001C000001\"");
+//        accTrans1.setAmount(200000000d);
+//        accTrans1.setCurrency("VND");
+//        accTrans1.setCreatorUsername("huongtra");
+//        accTrans1.setCreatorDate(new Date());
+//        accTrans1.setApprovalUser("newgen");
+//        accTrans1.setApprovalDate(new Date());
+//        accTrans1.setStatus(Constant.APPROVAL_STATUS_APPROVED);
 //        return args -> {
-////            //Save redis user info
-//            template.opsForValue().set("nhungkute1","hello world");
-////            template.delete("nhungkute");
-//            System.out.println("Value of key loda: "+template.opsForValue().get("nhungkute"));
+//            Save redis user info
+//            template.opsForValue().set("001C000001","{\"transactionFee\": 8500000, \"initialRequiredMargin\": 750000000, \"actualProfitVND\": 150000000, \"estimatedProfitVND\": 120000000}");
+//            template.delete("nhungkute");
+//            System.out.println("Value of key loda: "+template.opsForValue().get("001C000001"));
 //            
-//            Get redis user info
-//            RedisUserInfo redisUsrInfo = redisUsrInfoRepo.findById("nhung").get();
-//            System.out.println("redisUsrInfo: " + redisUsrInfo.getValue());
-//            UserInfoDTO userInfoDto = loginInvUserService.testGetUserInfoDTO(15l);
-//            System.out.println("userinfo: " + new Gson().toJson(userInfoDto));
-//            String secretKey = configLoader.getMainConfig().getString(Constant.REDIS_HOST);
-//            System.out.println("secretKey: " + secretKey);
+//             Test account summary
+//            System.out.println("investor acocunt: " + new Gson().toJson(investorService.getInvestorAccount(15l)));
+//            accTransApprovalRepo.save(accTrans1);
 //        };
 //    }
 
@@ -714,91 +737,113 @@ public class NewgenAmApplication {
 //        
 //        LoginInvestorUser loginInvUser = new LoginInvestorUser();
 //        loginInvUser.setId(dbSeqService.generateSequence(LoginInvestorUser.SEQUENCE_NAME));
-//        loginInvUser.setUsername("newgen");
-//        loginInvUser.setPassword(passwordEncoder.encode("Newgen@123"));
+//        loginInvUser.setUsername("newgen1");
+//        loginInvUser.setPassword(passwordEncoder.encode("Password@123"));
 //        loginInvUser.setCheckPin(Boolean.TRUE);
 //        loginInvUser.setPin("123456");
-//        loginInvUser.setMemberId(member.getId());
-//        loginInvUser.setBrokerId(broker.getId());
-//        loginInvUser.setInvestorId(investor.getId());
-//        loginInvUser.setInvestorUserId(user.getId());
+//        loginInvUser.setMemberId(15l);
+//        loginInvUser.setBrokerId(15l);
+//        loginInvUser.setInvestorId(15l);
+//        loginInvUser.setInvestorUserId(15l);
 //        
 //        // insert into login_investor_users
 //        LoginInvestorUser loginInvUser2 = new LoginInvestorUser();
 //        loginInvUser2.setId(dbSeqService.generateSequence(LoginInvestorUser.SEQUENCE_NAME));
-//        loginInvUser2.setUsername("thanhdo");
-//        loginInvUser2.setPassword(passwordEncoder.encode("Thanhdo@123"));
+//        loginInvUser2.setUsername("newgen2");
+//        loginInvUser2.setPassword(passwordEncoder.encode("Password@123"));
 //        loginInvUser2.setCheckPin(Boolean.TRUE);
 //        loginInvUser2.setPin("123456");
-//        loginInvUser2.setMemberId(member.getId());
-//        loginInvUser2.setBrokerId(broker.getId());
-//        loginInvUser2.setInvestorId(investor.getId());
-//        loginInvUser2.setInvestorUserId(user2.getId());
+//        loginInvUser2.setMemberId(15l);
+//        loginInvUser2.setBrokerId(15l);
+//        loginInvUser2.setInvestorId(15l);
+//        loginInvUser2.setInvestorUserId(15l);
 //        
 //        LoginInvestorUser loginInvUser3 = new LoginInvestorUser();
 //        loginInvUser3.setId(dbSeqService.generateSequence(LoginInvestorUser.SEQUENCE_NAME));
-//        loginInvUser3.setUsername("huongtra");
-//        loginInvUser3.setPassword(passwordEncoder.encode("Huongtra@123"));
+//        loginInvUser3.setUsername("newgen3");
+//        loginInvUser3.setPassword(passwordEncoder.encode("Password@123"));
 //        loginInvUser3.setCheckPin(Boolean.TRUE);
 //        loginInvUser3.setPin("123456");
-//        loginInvUser3.setMemberId(member.getId());
-//        loginInvUser3.setBrokerId(broker.getId());
-//        loginInvUser3.setInvestorId(investor.getId());
-//        loginInvUser3.setInvestorUserId(user3.getId());
+//        loginInvUser3.setMemberId(15l);
+//        loginInvUser3.setBrokerId(15l);
+//        loginInvUser3.setInvestorId(15l);
+//        loginInvUser3.setInvestorUserId(15l);
 //        
 //        LoginInvestorUser loginInvUser4 = new LoginInvestorUser();
 //        loginInvUser4.setId(dbSeqService.generateSequence(LoginInvestorUser.SEQUENCE_NAME));
-//        loginInvUser4.setUsername("usertest1");
-//        loginInvUser4.setPassword(passwordEncoder.encode("Usertest@123"));
+//        loginInvUser4.setUsername("newgen4");
+//        loginInvUser4.setPassword(passwordEncoder.encode("Password@123"));
 //        loginInvUser4.setCheckPin(Boolean.TRUE);
 //        loginInvUser4.setPin("123456");
-//        loginInvUser4.setMemberId(member.getId());
-//        loginInvUser4.setBrokerId(broker.getId());
-//        loginInvUser4.setInvestorId(investor.getId());
-//        loginInvUser4.setInvestorUserId(user4.getId());
+//        loginInvUser4.setMemberId(15l);
+//        loginInvUser4.setBrokerId(15l);
+//        loginInvUser4.setInvestorId(15l);
+//        loginInvUser4.setInvestorUserId(15l);
 //        
 //        LoginInvestorUser loginInvUser5 = new LoginInvestorUser();
 //        loginInvUser5.setId(dbSeqService.generateSequence(LoginInvestorUser.SEQUENCE_NAME));
-//        loginInvUser5.setUsername("usertest2");
-//        loginInvUser5.setPassword(passwordEncoder.encode("Usertest@123"));
+//        loginInvUser5.setUsername("newgen5");
+//        loginInvUser5.setPassword(passwordEncoder.encode("Password@123"));
 //        loginInvUser5.setCheckPin(Boolean.TRUE);
 //        loginInvUser5.setPin("123456");
-//        loginInvUser5.setMemberId(member.getId());
-//        loginInvUser5.setBrokerId(broker.getId());
-//        loginInvUser5.setInvestorId(investor.getId());
-//        loginInvUser5.setInvestorUserId(user5.getId());
-//        
+//        loginInvUser5.setMemberId(15l);
+//        loginInvUser5.setBrokerId(15l);
+//        loginInvUser5.setInvestorId(15l);
+//        loginInvUser5.setInvestorUserId(15l);
+        
 //        LoginInvestorUser loginInvUser6 = new LoginInvestorUser();
 //        loginInvUser6.setId(dbSeqService.generateSequence(LoginInvestorUser.SEQUENCE_NAME));
-//        loginInvUser6.setUsername("usertest3");
-//        loginInvUser6.setPassword(passwordEncoder.encode("Usertest@123"));
+//        loginInvUser6.setUsername("newgen6");
+//        loginInvUser6.setPassword(passwordEncoder.encode("Password@123"));
 //        loginInvUser6.setCheckPin(Boolean.TRUE);
 //        loginInvUser6.setPin("123456");
-//        loginInvUser6.setMemberId(member.getId());
-//        loginInvUser6.setBrokerId(broker.getId());
-//        loginInvUser6.setInvestorId(investor.getId());
-//        loginInvUser6.setInvestorUserId(user6.getId());
+//        loginInvUser6.setMemberId(15l);
+//        loginInvUser6.setBrokerId(15l);
+//        loginInvUser6.setInvestorId(15l);
+//        loginInvUser6.setInvestorUserId(15l);
 //        
 //        LoginInvestorUser loginInvUser7 = new LoginInvestorUser();
 //        loginInvUser7.setId(dbSeqService.generateSequence(LoginInvestorUser.SEQUENCE_NAME));
-//        loginInvUser7.setUsername("usertest4");
-//        loginInvUser7.setPassword(passwordEncoder.encode("Usertest@123"));
+//        loginInvUser7.setUsername("newgen7");
+//        loginInvUser7.setPassword(passwordEncoder.encode("Password@123"));
 //        loginInvUser7.setCheckPin(Boolean.TRUE);
-//        loginInvUser7.setMemberId(member.getId());
-//        loginInvUser7.setBrokerId(broker.getId());
-//        loginInvUser7.setInvestorId(investor.getId());
-//        loginInvUser7.setInvestorUserId(user7.getId());
+//        loginInvUser7.setMemberId(15l);
+//        loginInvUser7.setBrokerId(15l);
+//        loginInvUser7.setInvestorId(15l);
+//        loginInvUser7.setInvestorUserId(15l);
 //        
 //        LoginInvestorUser loginInvUser8 = new LoginInvestorUser();
 //        loginInvUser8.setId(dbSeqService.generateSequence(LoginInvestorUser.SEQUENCE_NAME));
-//        loginInvUser8.setUsername("usertest5");
-//        loginInvUser8.setPassword(passwordEncoder.encode("Usertest@123"));
+//        loginInvUser8.setUsername("newgen8");
+//        loginInvUser8.setPassword(passwordEncoder.encode("Password@123"));
 //        loginInvUser8.setCheckPin(Boolean.TRUE);
 //        loginInvUser8.setPin("123456");
-//        loginInvUser8.setMemberId(member.getId());
-//        loginInvUser8.setBrokerId(broker.getId());
-//        loginInvUser8.setInvestorId(investor.getId());
-//        loginInvUser8.setInvestorUserId(user8.getId());
+//        loginInvUser8.setMemberId(15l);
+//        loginInvUser8.setBrokerId(15l);
+//        loginInvUser8.setInvestorId(15l);
+//        loginInvUser8.setInvestorUserId(15l);
+//        
+//        LoginInvestorUser loginInvUser9 = new LoginInvestorUser();
+//        loginInvUser9.setId(dbSeqService.generateSequence(LoginInvestorUser.SEQUENCE_NAME));
+//        loginInvUser9.setUsername("newgen9");
+//        loginInvUser9.setPassword(passwordEncoder.encode("Password@123"));
+//        loginInvUser9.setCheckPin(Boolean.TRUE);
+//        loginInvUser9.setPin("123456");
+//        loginInvUser9.setMemberId(15l);
+//        loginInvUser9.setBrokerId(15l);
+//        loginInvUser9.setInvestorId(15l);
+//        loginInvUser9.setInvestorUserId(15l);
+//        
+//        LoginInvestorUser loginInvUser10 = new LoginInvestorUser();
+//        loginInvUser10.setId(dbSeqService.generateSequence(LoginInvestorUser.SEQUENCE_NAME));
+//        loginInvUser10.setUsername("newgen10");
+//        loginInvUser10.setPassword(passwordEncoder.encode("Password@123"));
+//        loginInvUser10.setCheckPin(Boolean.TRUE);
+//        loginInvUser10.setPin("123456");
+//        loginInvUser10.setMemberId(15l);
+//        loginInvUser10.setBrokerId(15l);
+//        loginInvUser10.setInvestorId(15l);
+//        loginInvUser10.setInvestorUserId(15l);
 //        
 //        return args -> {
 //            memberRepo.save(member);
@@ -813,6 +858,8 @@ public class NewgenAmApplication {
 //            loginInvUserRepo.save(loginInvUser6);
 //            loginInvUserRepo.save(loginInvUser7);
 //            loginInvUserRepo.save(loginInvUser8);
+//            loginInvUserRepo.save(loginInvUser9);
+//            loginInvUserRepo.save(loginInvUser10);
 //            dbSequenceRepo.deleteAll();
 //            // init for all sequences
 //            dbSequenceRepo.save(new DBSequence("pending_approval_seq", 0));

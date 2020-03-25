@@ -27,6 +27,7 @@ public class DataObj implements Serializable {
     private String theme;
     private Integer fontSize;
     private List<ListUserDTO> users;
+    private InvestorAccountDTO investorAccount;
 
     public LoginInvestorUserResponseDTO getUser() {
         return user;
@@ -98,6 +99,14 @@ public class DataObj implements Serializable {
 
     public void setUsers(List<ListUserDTO> users) {
         this.users = users;
+    }
+
+    public InvestorAccountDTO getInvestorAccount() {
+        return investorAccount;
+    }
+
+    public void setInvestorAccount(InvestorAccountDTO investorAccount) {
+        this.investorAccount = investorAccount;
     }
     
 }

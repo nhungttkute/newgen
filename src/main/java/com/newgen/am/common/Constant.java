@@ -10,8 +10,8 @@ package com.newgen.am.common;
  * @author nhungtt
  */
 public class Constant {
-    public static final String CONFIG_DIR = "/opt/account-management/settings/properties/";
-//    public static final String CONFIG_DIR = "C:/u01/apps/AM/settings/properties/";
+//    public static final String CONFIG_DIR = "/opt/account-management/settings/properties/";
+    public static final String CONFIG_DIR = "C:/u01/apps/AM/settings/properties/";
     public static final String RESPONSE_OK = "ok";
     public static final String RESPONSE_ERROR = "error";
     
@@ -26,6 +26,10 @@ public class Constant {
     public static final String STATUS_ACTIVE = "ACTIVE";
     public static final String STATUS_INACTIVE = "INACTIVE";
     public static final String STATUS_PENDING = "PENDING";
+    
+    public static final String APPROVAL_STATUS_APPROVED = "APPROVED";
+    public static final String APPROVAL_STATUS_REJECTED = "REJECTED";
+    public static final String APPROVAL_STATUS_PENDING = "PENDING";
     
     public static final String SERVICE_CONNECTION_TIMEOUT = "SERVICE_CONNECTION_TIMEOUT";
     public static final String SERVICE_SOCKET_TIMEOUT = "SERVICE_SOCKET_TIMEOUT";
