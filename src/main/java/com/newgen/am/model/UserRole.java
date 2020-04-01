@@ -10,16 +10,16 @@ package com.newgen.am.model;
  * @author nhungtt
  */
 public class UserRole {
-    private Long id;
+    private long id;
     private String name;
     private String description;
     private String status;
 
-    public Long getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(long id) {
         this.id = id;
     }
 

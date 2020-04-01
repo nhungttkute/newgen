@@ -15,8 +15,17 @@ public class Constant {
     public static final String RESPONSE_OK = "ok";
     public static final String RESPONSE_ERROR = "error";
     
-    public static final String JWT_SECRET = "JWT_SECRET";
-    public static final String JWT_EXPIRATION = "JWT_EXPIRATION";
+    public static final String MONGODB_HOST = "MONGODB_HOST";
+    public static final String MONGODB_PORT = "MONGODB_PORT";
+    public static final String MONGODB_USERNAME = "MONGODB_USERNAME";
+    public static final String MONGODB_PASSWORD = "MONGODB_PASSWORD";
+    public static final String MONGODB_DATABASE = "MONGODB_DATABASE";
+    
+    public static final String INVESTOR_JWT_SECRET = "INVESTOR_JWT_SECRET";
+    public static final String INVESTOR_JWT_EXPIRATION = "INVESTOR_JWT_EXPIRATION";
+    
+    public static final String ADMIN_JWT_SECRET = "ADMIN_JWT_SECRET";
+    public static final String ADMIN_JWT_EXPIRATION = "ADMIN_JWT_EXPIRATION";
     
     public static final String REDIS_HOST = "REDIS_HOST";
     public static final String REDIS_PORT = "REDIS_PORT";

@@ -8,7 +8,6 @@ package com.newgen.am.model;
 import java.util.List;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.mapping.Field;
 
 /**
  *
@@ -18,27 +17,18 @@ import org.springframework.data.mongodb.core.mapping.Field;
 public class Investor {
     @Transient
     public static final String SEQUENCE_NAME = "investor_seq";
-    private Long id;
-    @Field(name = "member_id")
-    private Long memberId;
-    @Field(name = "broker_id")
-    private Long brokerId;
-    @Field(name = "collaborator_id")
-    private Long collaboratorId;
-    @Field(name = "member_code")
+    private long id;
+    private long memberId;
+    private long brokerId;
+    private long collaboratorId;
     private String memberCode;
-    @Field(name = "member_name")
     private String memberName;
-    @Field(name = "broker_code")
     private String brokerCode;
-    @Field(name = "broker_name")
     private String brokerName;
-    @Field(name = "collaborator_code")
     private String collaboratorCode;
-    @Field(name = "collaborator_name")
     private String collaboratorName;
-    private String code;
-    private String name;
+    private String investorCode;
+    private String investorName;
     private String status;
     private String note;
     private String type;
@@ -48,58 +38,58 @@ public class Investor {
     private InvestorAccount account;
     private List<InvestorUser> users;
     private UserRole role;
-    private Integer orderLimit;
+    private int orderLimit;
     private List<Commodity> commodities;
     private MarginRatioAlert marginRatioAlert;
-    private Double marginMultiplier;
-    private Long otherFee;
+    private double marginMultiplier;
+    private long otherFee;
 
-    public Long getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(long id) {
         this.id = id;
     }
 
-    public Long getMemberId() {
+    public long getMemberId() {
         return memberId;
     }
 
-    public void setMemberId(Long memberId) {
+    public void setMemberId(long memberId) {
         this.memberId = memberId;
     }
 
-    public Long getBrokerId() {
+    public long getBrokerId() {
         return brokerId;
     }
 
-    public void setBrokerId(Long brokerId) {
+    public void setBrokerId(long brokerId) {
         this.brokerId = brokerId;
     }
 
-    public Long getCollaboratorId() {
+    public long getCollaboratorId() {
         return collaboratorId;
     }
 
-    public void setCollaboratorId(Long collaboratorId) {
+    public void setCollaboratorId(long collaboratorId) {
         this.collaboratorId = collaboratorId;
     }
 
-    public String getCode() {
-        return code;
+    public String getInvestorCode() {
+        return investorCode;
     }
 
-    public void setCode(String code) {
-        this.code = code;
+    public void setInvestorCode(String investorCode) {
+        this.investorCode = investorCode;
     }
 
-    public String getName() {
-        return name;
+    public String getInvestorName() {
+        return investorName;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setInvestorName(String investorName) {
+        this.investorName = investorName;
     }
 
     public String getStatus() {
@@ -174,11 +164,11 @@ public class Investor {
         this.marginRatioAlert = marginRatioAlert;
     }
 
-    public Double getMarginMultiplier() {
+    public double getMarginMultiplier() {
         return marginMultiplier;
     }
 
-    public void setMarginMultiplier(Double marginMultiplier) {
+    public void setMarginMultiplier(double marginMultiplier) {
         this.marginMultiplier = marginMultiplier;
     }
 
@@ -198,11 +188,11 @@ public class Investor {
         this.account = account;
     }
 
-    public Integer getOrderLimit() {
+    public int getOrderLimit() {
         return orderLimit;
     }
 
-    public void setOrderLimit(Integer orderLimit) {
+    public void setOrderLimit(int orderLimit) {
         this.orderLimit = orderLimit;
     }
 
@@ -254,11 +244,11 @@ public class Investor {
         this.collaboratorName = collaboratorName;
     }
 
-    public Long getOtherFee() {
+    public long getOtherFee() {
         return otherFee;
     }
 
-    public void setOtherFee(Long otherFee) {
+    public void setOtherFee(long otherFee) {
         this.otherFee = otherFee;
     }
     

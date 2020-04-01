@@ -27,7 +27,7 @@ public class LoginInvestorUser extends AuditModel implements Serializable {
     @Transient
     public static final String SEQUENCE_NAME = "login_investor_user_seq";
     @Id
-    private Long id;
+    private long id;
     @Indexed(unique = true)
     @NonNull
     private String username;
@@ -42,37 +42,37 @@ public class LoginInvestorUser extends AuditModel implements Serializable {
     @Field(name = "access_token")
     private String accessToken;
     @Field(name = "token_expiration")
-    private Long tokenExpiration;
+    private long tokenExpiration;
     @Field
     private Boolean logined = false;
     @Field
     private Boolean mustChangePassword  = true;
     @Field
-    private Integer logonCounts = 0;
+    private int logonCounts = 0;
     private Date logonTime;
     @Field(name = "member_id")
-    private Long memberId;
+    private long memberId;
     @Field(name = "broker_id")
-    private Long brokerId;
+    private long brokerId;
     @Field(name = "collaborator_id")
-    private Long collaboratorId;
+    private long collaboratorId;
     @Field(name = "investor_id")
-    private Long investorId;
+    private long investorId;
     @Field(name = "investor_user_id")
-    private Long investorUserId;
+    private long investorUserId;
     @Field
     @Length(max = 10000)
     private String layout;
     private String language;
     private String theme;
-    private Integer fontSize;
+    private int fontSize;
     private List<WatchList> watchlists;
 
-    public Long getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(long id) {
         this.id = id;
     }
 
@@ -124,11 +124,11 @@ public class LoginInvestorUser extends AuditModel implements Serializable {
         this.accessToken = accessToken;
     }
 
-    public Long getTokenExpiration() {
+    public long getTokenExpiration() {
         return tokenExpiration;
     }
 
-    public void setTokenExpiration(Long tokenExpiration) {
+    public void setTokenExpiration(long tokenExpiration) {
         this.tokenExpiration = tokenExpiration;
     }
 
@@ -140,43 +140,43 @@ public class LoginInvestorUser extends AuditModel implements Serializable {
         this.logined = logined;
     }
 
-    public Long getMemberId() {
+    public long getMemberId() {
         return memberId;
     }
 
-    public void setMemberId(Long memberId) {
+    public void setMemberId(long memberId) {
         this.memberId = memberId;
     }
 
-    public Long getBrokerId() {
+    public long getBrokerId() {
         return brokerId;
     }
 
-    public void setBrokerId(Long brokerId) {
+    public void setBrokerId(long brokerId) {
         this.brokerId = brokerId;
     }
 
-    public Long getCollaboratorId() {
+    public long getCollaboratorId() {
         return collaboratorId;
     }
 
-    public void setCollaboratorId(Long collaboratorId) {
+    public void setCollaboratorId(long collaboratorId) {
         this.collaboratorId = collaboratorId;
     }
 
-    public Long getInvestorId() {
+    public long getInvestorId() {
         return investorId;
     }
 
-    public void setInvestorId(Long investorId) {
+    public void setInvestorId(long investorId) {
         this.investorId = investorId;
     }
 
-    public Long getInvestorUserId() {
+    public long getInvestorUserId() {
         return investorUserId;
     }
 
-    public void setInvestorUserId(Long investorUserId) {
+    public void setInvestorUserId(long investorUserId) {
         this.investorUserId = investorUserId;
     }
 
@@ -212,19 +212,19 @@ public class LoginInvestorUser extends AuditModel implements Serializable {
         this.theme = theme;
     }
 
-    public Integer getFontSize() {
+    public int getFontSize() {
         return fontSize;
     }
 
-    public void setFontSize(Integer fontSize) {
+    public void setFontSize(int fontSize) {
         this.fontSize = fontSize;
     }
 
-    public Integer getLogonCounts() {
+    public int getLogonCounts() {
         return logonCounts;
     }
 
-    public void setLogonCounts(Integer logonCounts) {
+    public void setLogonCounts(int logonCounts) {
         this.logonCounts = logonCounts;
     }
 

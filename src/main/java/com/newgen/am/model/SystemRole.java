@@ -20,17 +20,17 @@ public class SystemRole extends AuditModel implements Serializable {
     @Transient
     public static final String SEQUENCE_NAME = "system_role_seq";
     @Id
-    private Long id;
+    private long id;
     private String name;
     private String description;
     private String status;
     private List<RoleFunction> functions;
 
-    public Long getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(long id) {
         this.id = id;
     }
 

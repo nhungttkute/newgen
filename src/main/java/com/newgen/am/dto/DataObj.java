@@ -18,22 +18,22 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class DataObj implements Serializable {
 
-    private LoginInvestorUserResponseDTO user;
+    private LoginUserOutputDTO user;
     private String accessToken;
     private List<Commodity> commodities;
     private List<WatchList> watchLists;
     private String layout;
     private String language;
     private String theme;
-    private Integer fontSize;
+    private int fontSize;
     private List<ListUserDTO> users;
     private InvestorAccountDTO investorAccount;
 
-    public LoginInvestorUserResponseDTO getUser() {
+    public LoginUserOutputDTO getUser() {
         return user;
     }
 
-    public void setUser(LoginInvestorUserResponseDTO user) {
+    public void setUser(LoginUserOutputDTO user) {
         this.user = user;
     }
 
@@ -85,11 +85,11 @@ public class DataObj implements Serializable {
         this.theme = theme;
     }
 
-    public Integer getFontSize() {
+    public int getFontSize() {
         return fontSize;
     }
 
-    public void setFontSize(Integer fontSize) {
+    public void setFontSize(int fontSize) {
         this.fontSize = fontSize;
     }
 

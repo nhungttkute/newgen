@@ -12,17 +12,17 @@ package com.newgen.am.dto;
 public class InvestorAccountDTO {
     private String investorName; // Ten TK
     private String investorCode; // So TK
-    private Double sodBalance; //So du TK dau ngay
-    private Double changedAmount; //Nop rut trong phien
-    private Double transactionFee; // Phi giao dich
-    private Double generalFee; // Thue/phi
-    private Double initialRequiredMargin; // Ky quy ban dau yeu cau
-    private Double availableMargin; // Ky quy kha dung
-    private Double actualProfitVND; // Lo lai thuc te
-    private Double estimatedProfitVND; // Lo lai du kien
-    private Double netMargin; // Gia tri rong ky quy
-    private Double currentBalance; // So du hien tai
-    private Double additionalMargin; //Muc bo sung ky quy
+    private double sodBalance; //So du TK dau ngay
+    private double changedAmount; //Nop rut trong phien
+    private double transactionFee; // Phi giao dich
+    private double generalFee; // Thue/phi
+    private double initialRequiredMargin; // Ky quy ban dau yeu cau
+    private double availableMargin; // Ky quy kha dung
+    private double actualProfitVND; // Lo lai thuc te
+    private double estimatedProfitVND; // Lo lai du kien
+    private double netMargin; // Gia tri rong ky quy
+    private double currentBalance; // So du hien tai
+    private double additionalMargin; //Muc bo sung ky quy
 
     public String getInvestorName() {
         return investorName;
@@ -40,91 +40,91 @@ public class InvestorAccountDTO {
         this.investorCode = investorCode;
     }
 
-    public Double getSodBalance() {
+    public double getSodBalance() {
         return sodBalance;
     }
 
-    public void setSodBalance(Double sodBalance) {
+    public void setSodBalance(double sodBalance) {
         this.sodBalance = sodBalance;
     }
 
-    public Double getChangedAmount() {
+    public double getChangedAmount() {
         return changedAmount;
     }
 
-    public void setChangedAmount(Double changedAmount) {
+    public void setChangedAmount(double changedAmount) {
         this.changedAmount = changedAmount;
     }
 
-    public Double getTransactionFee() {
+    public double getTransactionFee() {
         return transactionFee;
     }
 
-    public void setTransactionFee(Double transactionFee) {
+    public void setTransactionFee(double transactionFee) {
         this.transactionFee = transactionFee;
     }
 
-    public Double getGeneralFee() {
+    public double getGeneralFee() {
         return generalFee;
     }
 
-    public void setGeneralFee(Double generalFee) {
+    public void setGeneralFee(double generalFee) {
         this.generalFee = generalFee;
     }
 
-    public Double getInitialRequiredMargin() {
+    public double getInitialRequiredMargin() {
         return initialRequiredMargin;
     }
 
-    public void setInitialRequiredMargin(Double initialRequiredMargin) {
+    public void setInitialRequiredMargin(double initialRequiredMargin) {
         this.initialRequiredMargin = initialRequiredMargin;
     }
 
-    public Double getAvailableMargin() {
+    public double getAvailableMargin() {
         return availableMargin;
     }
 
-    public void setAvailableMargin(Double availableMargin) {
+    public void setAvailableMargin(double availableMargin) {
         this.availableMargin = availableMargin;
     }
 
-    public Double getActualProfitVND() {
+    public double getActualProfitVND() {
         return actualProfitVND;
     }
 
-    public void setActualProfitVND(Double actualProfitVND) {
+    public void setActualProfitVND(double actualProfitVND) {
         this.actualProfitVND = actualProfitVND;
     }
 
-    public Double getEstimatedProfitVND() {
+    public double getEstimatedProfitVND() {
         return estimatedProfitVND;
     }
 
-    public void setEstimatedProfitVND(Double estimatedProfitVND) {
+    public void setEstimatedProfitVND(double estimatedProfitVND) {
         this.estimatedProfitVND = estimatedProfitVND;
     }
 
-    public Double getNetMargin() {
+    public double getNetMargin() {
         return netMargin;
     }
 
-    public void setNetMargin(Double netMargin) {
+    public void setNetMargin(double netMargin) {
         this.netMargin = netMargin;
     }
 
-    public Double getCurrentBalance() {
+    public double getCurrentBalance() {
         return currentBalance;
     }
 
-    public void setCurrentBalance(Double currentBalance) {
+    public void setCurrentBalance(double currentBalance) {
         this.currentBalance = currentBalance;
     }
 
-    public Double getAdditionalMargin() {
+    public double getAdditionalMargin() {
         return additionalMargin;
     }
 
-    public void setAdditionalMargin(Double additionalMargin) {
+    public void setAdditionalMargin(double additionalMargin) {
         this.additionalMargin = additionalMargin;
     }
     

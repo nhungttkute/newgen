@@ -7,14 +7,20 @@ package com.newgen.am.service;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import com.mongodb.BasicDBObject;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
+import com.newgen.am.common.AMLogger;
+import com.newgen.am.common.ErrorMessage;
+import com.newgen.am.common.MongoDBConnection;
 import com.newgen.am.common.Utility;
 import com.newgen.am.dto.InvestorAccountDTO;
+import com.newgen.am.exception.CustomException;
 import com.newgen.am.model.Investor;
+import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 /**
@@ -24,37 +30,53 @@ import org.springframework.stereotype.Service;
 @Service
 public class InvestorService {
 
-    @Autowired
-    private MongoTemplate mongoTemplate;
+    private String className = "InvestorService";
 
     @Autowired
     private RedisTemplate redisTemplate;
 
-    public InvestorAccountDTO getInvestorAccount(Long investorId) {
-        Query selectInvestorQuery = new Query(Criteria.where("_id").is(investorId));
-        Investor investor = mongoTemplate.findOne(selectInvestorQuery, Investor.class);
-
-        // get info from redis
-        String investorInfo = (String) redisTemplate.opsForValue().get(investor.getCode());
+    public InvestorAccountDTO getInvestorAccount(Long investorId, long refId) {
+        String methodName = "getInvestorAccount";
         InvestorAccountDTO investorAccDto = new InvestorAccountDTO();
-        JsonObject jobj = new Gson().fromJson(investorInfo, JsonObject.class);
-        investorAccDto.setTransactionFee(jobj.get("transactionFee").getAsDouble());
-        investorAccDto.setInitialRequiredMargin(jobj.get("initialRequiredMargin").getAsDouble());
-        investorAccDto.setActualProfitVND(jobj.get("actualProfitVND").getAsDouble());
-        investorAccDto.setEstimatedProfitVND(jobj.get("estimatedProfitVND").getAsDouble());
+        try {
+            MongoDatabase database = MongoDBConnection.getMongoDatabase();
+            MongoCollection<Document> collection = database.getCollection("investors");
+            BasicDBObject searchQuery = new BasicDBObject();
+            searchQuery.put("_id", investorId);
+            BasicDBObject projection = new BasicDBObject();
+            projection.append("investorCode", 1);
+            projection.append("investorName", 1);
+            projection.append("account", 1);
+            Document invDoc = collection.find(searchQuery).projection(projection).first();
+            Investor investor = new Gson().fromJson(invDoc.toJson(), Investor.class);
 
-        // set infro from db
-        investorAccDto.setInvestorName(investor.getName());
-        investorAccDto.setInvestorCode(investor.getCode());
-        investorAccDto.setSodBalance(investor.getAccount().getSodBalance());
-        investorAccDto.setChangedAmount(investor.getAccount().getChangedAmount());
-        investorAccDto.setGeneralFee(investor.getAccount().getGeneralFee());
+            if (investor != null) {
+                // get info from redis
+                String investorInfo = (String) redisTemplate.opsForValue().get(investor.getInvestorCode());
+                JsonObject jobj = new Gson().fromJson(investorInfo, JsonObject.class);
+                investorAccDto.setTransactionFee(jobj.get("transactionFee").getAsDouble());
+                investorAccDto.setInitialRequiredMargin(jobj.get("initialRequiredMargin").getAsDouble());
+                investorAccDto.setActualProfitVND(jobj.get("actualProfitVND").getAsDouble());
+                investorAccDto.setEstimatedProfitVND(jobj.get("estimatedProfitVND").getAsDouble());
 
-        // caculate some fields
-        calculateCurrentBalance(investorAccDto, investor.getAccount().getOtherFee());
-        calculateNetMargin(investorAccDto);
-        calculateAvailableMargin(investorAccDto);
-        calculateAdditionalMargin(investorAccDto);
+                // set infro from db
+                investorAccDto.setInvestorName(investor.getInvestorName());
+                investorAccDto.setInvestorCode(investor.getInvestorCode());
+                investorAccDto.setSodBalance(investor.getAccount().getSodBalance());
+                investorAccDto.setChangedAmount(investor.getAccount().getChangedAmount());
+                investorAccDto.setGeneralFee(investor.getAccount().getGeneralFee());
+
+                // caculate some fields
+                calculateCurrentBalance(investorAccDto, investor.getAccount().getOtherFee());
+                calculateNetMargin(investorAccDto);
+                calculateAvailableMargin(investorAccDto);
+                calculateAdditionalMargin(investorAccDto);
+            }
+        } catch (Exception e) {
+            AMLogger.logError(className, methodName, refId, e);
+            throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.UNPROCESSABLE_ENTITY);
+        }
+
         return investorAccDto;
     }
 
@@ -67,8 +89,8 @@ public class InvestorService {
     }
 
     private void calculateCurrentBalance(InvestorAccountDTO investorAccDto, Double otherFee) {
-        Double currentBalance = Utility.getDouble(investorAccDto.getSodBalance()) + Utility.getDouble(investorAccDto.getChangedAmount()) 
-                - Utility.getDouble(investorAccDto.getTransactionFee()) - Utility.getDouble(otherFee) 
+        Double currentBalance = Utility.getDouble(investorAccDto.getSodBalance()) + Utility.getDouble(investorAccDto.getChangedAmount())
+                - Utility.getDouble(investorAccDto.getTransactionFee()) - Utility.getDouble(otherFee)
                 - Utility.getDouble(investorAccDto.getGeneralFee()) + Utility.getDouble(investorAccDto.getActualProfitVND());
         investorAccDto.setCurrentBalance(Utility.getDouble(currentBalance));
     }

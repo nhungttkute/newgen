@@ -5,32 +5,29 @@
  */
 package com.newgen.am.model;
 
-import java.util.Date;
-import java.util.List;
-
 /**
  *
  * @author nhungtt
  */
 public class BaseUser {
-    private Long id;
+    private long id;
     private String username;
     private String fullName;
     private String email;
     private String phoneNumber;
     private String status; //pending, active, inactive
     private String note;
-    private Boolean isPasswordExpiryCheck;
-    private Integer passwordExpiryDays;
-    private Integer expiryAlertDays;
-    private Date createdAt;
-    private Date updatedAt;
+    private boolean isPasswordExpiryCheck;
+    private int passwordExpiryDays;
+    private int expiryAlertDays;
+    private long createdAt;
+    private long updatedAt;
 
-    public Long getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(long id) {
         this.id = id;
     }
 
@@ -82,35 +79,43 @@ public class BaseUser {
         this.isPasswordExpiryCheck = isPasswordExpiryCheck;
     }
 
-    public Integer getPasswordExpiryDays() {
+    public int getPasswordExpiryDays() {
         return passwordExpiryDays;
     }
 
-    public void setPasswordExpiryDays(Integer passwordExpiryDays) {
+    public void setPasswordExpiryDays(int passwordExpiryDays) {
         this.passwordExpiryDays = passwordExpiryDays;
     }
 
-    public Integer getExpiryAlertDays() {
+    public int getExpiryAlertDays() {
         return expiryAlertDays;
     }
 
-    public void setExpiryAlertDays(Integer expiryAlertDays) {
+    public void setExpiryAlertDays(int expiryAlertDays) {
         this.expiryAlertDays = expiryAlertDays;
     }
 
-    public Date getCreatedAt() {
+    public boolean isIsPasswordExpiryCheck() {
+        return isPasswordExpiryCheck;
+    }
+
+    public void setIsPasswordExpiryCheck(boolean isPasswordExpiryCheck) {
+        this.isPasswordExpiryCheck = isPasswordExpiryCheck;
+    }
+
+    public long getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(Date createdAt) {
+    public void setCreatedAt(long createdAt) {
         this.createdAt = createdAt;
     }
 
-    public Date getUpdatedAt() {
+    public long getUpdatedAt() {
         return updatedAt;
     }
 
-    public void setUpdatedAt(Date updatedAt) {
+    public void setUpdatedAt(long updatedAt) {
         this.updatedAt = updatedAt;
     }
 

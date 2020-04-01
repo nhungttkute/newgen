@@ -14,20 +14,20 @@ import com.newgen.am.exception.CustomException;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 // We should use OncePerRequestFilter since we are doing a database call, there is no point in doing this more than once
-public class JwtTokenFilter extends OncePerRequestFilter {
+public class AdminJwtTokenFilter extends OncePerRequestFilter {
 
-  private JwtTokenProvider jwtTokenProvider;
+  private AdminJwtTokenProvider admJwtTokenProvider;
 
-  public JwtTokenFilter(JwtTokenProvider jwtTokenProvider) {
-    this.jwtTokenProvider = jwtTokenProvider;
+  public AdminJwtTokenFilter(AdminJwtTokenProvider admJwtTokenProvider) {
+    this.admJwtTokenProvider = admJwtTokenProvider;
   }
 
   @Override
   protected void doFilterInternal(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, FilterChain filterChain) throws ServletException, IOException {
-    String token = jwtTokenProvider.resolveToken(httpServletRequest);
+    String token = admJwtTokenProvider.resolveToken(httpServletRequest);
     try {
-      if (token != null && jwtTokenProvider.validateToken(token)) {
-        Authentication auth = jwtTokenProvider.getAuthentication(token);
+      if (token != null && admJwtTokenProvider.validateToken(token)) {
+        Authentication auth = admJwtTokenProvider.getAuthentication(token);
         SecurityContextHolder.getContext().setAuthentication(auth);
       }
     } catch (CustomException ex) {

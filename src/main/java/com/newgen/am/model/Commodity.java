@@ -16,8 +16,8 @@ public class Commodity implements Serializable {
     private String name;
     private String partner;
     private String partnerAccount;
-    private Long orderProcessFee;
-    private Integer positionLimit;
+    private long orderProcessFee;
+    private int positionLimit;
 
     public String getCode() {
         return code;
@@ -51,19 +51,19 @@ public class Commodity implements Serializable {
         this.partnerAccount = partnerAccount;
     }
 
-    public Long getOrderProcessFee() {
+    public long getOrderProcessFee() {
         return orderProcessFee;
     }
 
-    public void setOrderProcessFee(Long orderProcessFee) {
+    public void setOrderProcessFee(long orderProcessFee) {
         this.orderProcessFee = orderProcessFee;
     }
 
-    public Integer getPositionLimit() {
+    public int getPositionLimit() {
         return positionLimit;
     }
 
-    public void setPositionLimit(Integer positionLimit) {
+    public void setPositionLimit(int positionLimit) {
         this.positionLimit = positionLimit;
     }
 

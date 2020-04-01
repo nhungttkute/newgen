@@ -9,24 +9,10 @@ package com.newgen.am.dto;
  *
  * @author nhungtt
  */
-public class ListUserDTO {
-    private long id;
+public class TestUserDTO {
+
     private String username;
-
-    public ListUserDTO() {}
-    
-    public ListUserDTO (long id, String username) {
-        this.id = id;
-        this.username = username;
-    }
-    
-    public long getId() {
-        return id;
-    }
-
-    public void setId(long id) {
-        this.id = id;
-    }
+    private String fullName;
 
     public String getUsername() {
         return username;
@@ -35,5 +21,12 @@ public class ListUserDTO {
     public void setUsername(String username) {
         this.username = username;
     }
-    
+
+    public String getFullName() {
+        return fullName;
+    }
+
+    public void setFullName(String fullName) {
+        this.fullName = fullName;
+    }
 }

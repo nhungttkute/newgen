@@ -18,6 +18,7 @@ public class MemberUser extends BaseUser {
     private String title;
     private String department;
     private List<UserRole> roles;
+    private List<RoleFunction> functions;
 
     public String getTitle() {
         return title;
@@ -41,6 +42,14 @@ public class MemberUser extends BaseUser {
 
     public void setRoles(List<UserRole> roles) {
         this.roles = roles;
+    }
+
+    public List<RoleFunction> getFunctions() {
+        return functions;
+    }
+
+    public void setFunctions(List<RoleFunction> functions) {
+        this.functions = functions;
     }
 
 }

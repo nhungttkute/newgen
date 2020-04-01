@@ -13,7 +13,6 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -24,9 +23,10 @@ import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import com.newgen.am.exception.CustomException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 
 @Component
-public class JwtTokenProvider {
+public class AdminJwtTokenProvider {
 
     private String secretKey;
 
@@ -35,12 +35,12 @@ public class JwtTokenProvider {
     private long tokenExpiration;
 
     @Autowired
-    private MyUserDetails myUserDetails;
+    private HybridUserDetailsService userService;
 
     @PostConstruct
     protected void init() {
-        secretKey = Base64.getEncoder().encodeToString(ConfigLoader.getMainConfig().getString(Constant.JWT_SECRET).getBytes());
-        validityInMilliseconds = ConfigLoader.getMainConfig().getLong(Constant.JWT_EXPIRATION, 3600000);
+        secretKey = Base64.getEncoder().encodeToString(ConfigLoader.getMainConfig().getString(Constant.ADMIN_JWT_SECRET).getBytes());
+        validityInMilliseconds = ConfigLoader.getMainConfig().getLong(Constant.ADMIN_JWT_EXPIRATION, 3600000);
     }
 
     public String createToken(String username, List<SimpleGrantedAuthority> roles) {
@@ -61,8 +61,7 @@ public class JwtTokenProvider {
     }
 
     public Authentication getAuthentication(String token) {
-//    UserDetails userDetails = myUserDetails.loadUserByUsername(getUsername(token));
-        UserDetails userDetails = myUserDetails.checkAccessTokenByUser(getUsername(token), token);
+        UserDetails userDetails = userService.checkAccessTokenByAdminUser(getUsername(token), token);
         return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
     }
 

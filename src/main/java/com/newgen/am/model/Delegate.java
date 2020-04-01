@@ -10,7 +10,7 @@ package com.newgen.am.model;
  * @author nhungtt
  */
 public class Delegate {
-    private Integer id;
+    private int id;
     private String fullName;
     private String birthDay;
     private String identityCard;
@@ -22,11 +22,11 @@ public class Delegate {
     private String scannedIdCard; //image data
     private String scannedSignature; //image data
 
-    public Integer getId() {
+    public int getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(int id) {
         this.id = id;
     }
 

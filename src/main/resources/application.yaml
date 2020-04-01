@@ -10,11 +10,6 @@ spring:
             database: system_am
             username: application
             password: b4dpwpr0v1d3d
-    cache:
-        type: redis
-    redis:
-        host: 209.58.164.25
-        port: 6379
 logging:
 #    config: classpath:logback-spring.xml
     file: C:/u01/apps/AM/log/init.log

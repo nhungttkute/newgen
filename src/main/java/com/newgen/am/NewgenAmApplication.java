@@ -4,6 +4,8 @@ import com.google.gson.Gson;
 import com.newgen.am.common.ConfigLoader;
 import com.newgen.am.common.Constant;
 import com.newgen.am.common.SystemFunctionCode;
+import com.newgen.am.dto.InvestorAccountDTO;
+import com.newgen.am.dto.UserFunctionOutputDTO;
 import com.newgen.am.dto.UserInfoDTO;
 import com.newgen.am.model.Broker;
 import com.newgen.am.model.BrokerUser;
@@ -47,12 +49,14 @@ import com.newgen.am.repository.SystemRoleRepository;
 import com.newgen.am.service.DBSequenceService;
 import com.newgen.am.service.InvestorService;
 import com.newgen.am.service.InvestorUserService;
+import com.newgen.am.service.LoginAdminUserService;
 import com.newgen.am.service.LoginInvestorUserService;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import jdk.nashorn.internal.objects.NativeArray;
 import jdk.nashorn.internal.runtime.regexp.joni.ast.ConsAltNode;
+import org.bson.Document;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
@@ -67,44 +71,47 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @SpringBootApplication
 public class NewgenAmApplication {
 
-    @Autowired
-    DBSequenceRepository dbSequenceRepo;
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+//    @Autowired
+//    DBSequenceRepository dbSequenceRepo;
+//    @Autowired
+//    private PasswordEncoder passwordEncoder;
     @Autowired
     private DBSequenceService dbSeqService;
-    @Autowired
-    private LoginInvestorUserRepository loginInvUserRepo;
-    @Autowired
-    private DepartmentRepository deptRepo;
-    @Autowired
-    private LoginAdminUserRepository loginAdmUserRepo;
-    @Autowired
-    private MemberRepository memberRepo;
-    @Autowired
-    private BrokerRepository brokerRepo;
-    @Autowired
-    private CollaboratorRepository collaboratorRepo;
-    @Autowired
-    private InvestorRepository investorRepo;
-    @Autowired
-    private MemberRoleRepository memberRoleRepo;
-    @Autowired
-    private SystemFunctionRepository sysFuncRepo;
+//    @Autowired
+//    private LoginInvestorUserRepository loginInvUserRepo;
+//    @Autowired
+//    private DepartmentRepository deptRepo;
+//    @Autowired
+//    private LoginAdminUserRepository loginAdmUserRepo;
+//    @Autowired
+//    private MemberRepository memberRepo;
+//    @Autowired
+//    private BrokerRepository brokerRepo;
+//    @Autowired
+//    private CollaboratorRepository collaboratorRepo;
+//    @Autowired
+//    private InvestorRepository investorRepo;
+//    @Autowired
+//    private MemberRoleRepository memberRoleRepo;
+//    @Autowired
+//    private SystemFunctionRepository sysFuncRepo;
     @Autowired
     private SystemRoleRepository sysRoleRepo;
+    
     @Autowired
-    private InvestorUserService invUserService;
-    @Autowired
-    private LoginInvestorUserService loginInvUserService;
-    @Autowired
-    private RedisUserInfoRepository redisUsrInfoRepo;
-    @Autowired
-    private RedisTemplate template;
+    private LoginAdminUserService loginAdmUserService;
+//    @Autowired
+//    private InvestorUserService invUserService;
+//    @Autowired
+//    private LoginInvestorUserService loginInvUserService;
+//    @Autowired
+//    private RedisUserInfoRepository redisUsrInfoRepo;
+//    @Autowired
+//    private RedisTemplate template;
     @Autowired
     private InvestorService investorService;
-    @Autowired
-    private InvestorAccTransApprovalRepository accTransApprovalRepo;
+//    @Autowired
+//    private InvestorAccTransApprovalRepository accTransApprovalRepo;
 
     public static void main(String[] args) {
         SpringApplication.run(NewgenAmApplication.class, args);
@@ -117,35 +124,11 @@ public class NewgenAmApplication {
 
 //    @Bean
 //    public CommandLineRunner testRedis() {
-//        InvestorAccTransApproval accTrans1 = new InvestorAccTransApproval();
-//        accTrans1.setId(dbSeqService.generateSequence(InvestorAccTransApproval.SEQUENCE_NAME));
-//        accTrans1.setMemberId(15l);
-//        accTrans1.setMemberCode("001");
-//        accTrans1.setMemberName("TVKD1");
-//        accTrans1.setBrokerId(15l);
-//        accTrans1.setBrokerCode("00001");
-//        accTrans1.setBrokerName("Nguyen Van A");
-//        accTrans1.setInvestorId(15l);
-//        accTrans1.setInvestorCode("001C000001");
-//        accTrans1.setInvestorName("Bui Thi Lien Huong");
-//        accTrans1.setTransactionType("Nộp ký quỹ tài khoản");
-//        accTrans1.setApprovalDetail("Nộp ký quỹ tài khoản giao dịch \"001C000001\"");
-//        accTrans1.setAmount(200000000d);
-//        accTrans1.setCurrency("VND");
-//        accTrans1.setCreatorUsername("huongtra");
-//        accTrans1.setCreatorDate(new Date());
-//        accTrans1.setApprovalUser("newgen");
-//        accTrans1.setApprovalDate(new Date());
-//        accTrans1.setStatus(Constant.APPROVAL_STATUS_APPROVED);
+//
 //        return args -> {
-//            Save redis user info
-//            template.opsForValue().set("001C000001","{\"transactionFee\": 8500000, \"initialRequiredMargin\": 750000000, \"actualProfitVND\": 150000000, \"estimatedProfitVND\": 120000000}");
-//            template.delete("nhungkute");
-//            System.out.println("Value of key loda: "+template.opsForValue().get("001C000001"));
-//            
-//             Test account summary
-//            System.out.println("investor acocunt: " + new Gson().toJson(investorService.getInvestorAccount(15l)));
-//            accTransApprovalRepo.save(accTrans1);
+//            long refId = System.currentTimeMillis();
+//            InvestorAccountDTO invAcc = investorService.getInvestorAccount(15l, refId);
+//            System.out.println("invAcc: " + new Gson().toJson(invAcc));
 //        };
 //    }
 
@@ -376,11 +359,11 @@ public class NewgenAmApplication {
 //    @Bean
 //    public CommandLineRunner startSequence() {
 //        // Insert new SystemRole
-//        SystemRole tvkdRole = new SystemRole();
-//        tvkdRole.setId(dbSeqService.generateSequence(SystemRole.SEQUENCE_NAME));
-//        tvkdRole.setName("TVKD");
-//        tvkdRole.setDescription("Nhom quyen cho Thanh vien kinh doanh");
-//        tvkdRole.setStatus("ACTIVE");
+//        SystemRole ketoanRole = new SystemRole();
+//        ketoanRole.setId(dbSeqService.generateSequence(SystemRole.SEQUENCE_NAME));
+//        ketoanRole.setName("Ke Toan");
+//        ketoanRole.setDescription("Nhom quyen cho phong ban Ke toan");
+//        ketoanRole.setStatus("ACTIVE");
 //        
 //        SystemRole mgRole = new SystemRole();
 //        mgRole.setId(dbSeqService.generateSequence(SystemRole.SEQUENCE_NAME));
@@ -844,8 +827,31 @@ public class NewgenAmApplication {
 //        loginInvUser10.setBrokerId(15l);
 //        loginInvUser10.setInvestorId(15l);
 //        loginInvUser10.setInvestorUserId(15l);
+        
+//        LoginInvestorUser loginInvUser11 = new LoginInvestorUser();
+//        loginInvUser11.setId(dbSeqService.generateSequence(LoginInvestorUser.SEQUENCE_NAME));
+//        loginInvUser11.setUsername("newgen11");
+//        loginInvUser11.setPassword(passwordEncoder.encode("Password@123"));
+//        loginInvUser11.setCheckPin(Boolean.TRUE);
+//        loginInvUser11.setPin("123456");
+//        loginInvUser11.setMemberId(15l);
+//        loginInvUser11.setBrokerId(15l);
+//        loginInvUser11.setInvestorId(15l);
+//        loginInvUser11.setInvestorUserId(15l);
+//        
+//        LoginInvestorUser loginInvUser12 = new LoginInvestorUser();
+//        loginInvUser12.setId(dbSeqService.generateSequence(LoginInvestorUser.SEQUENCE_NAME));
+//        loginInvUser12.setUsername("newgen12");
+//        loginInvUser12.setPassword(passwordEncoder.encode("Password@123"));
+//        loginInvUser12.setCheckPin(Boolean.TRUE);
+//        loginInvUser12.setPin("123456");
+//        loginInvUser12.setMemberId(15l);
+//        loginInvUser12.setBrokerId(15l);
+//        loginInvUser12.setInvestorId(15l);
+//        loginInvUser12.setInvestorUserId(15l);
 //        
 //        return args -> {
+//            sysRoleRepo.save(ketoanRole);
 //            memberRepo.save(member);
 //            brokerRepo.save(broker);
 //            investorRepo.save(investor);

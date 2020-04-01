@@ -10,94 +10,94 @@ package com.newgen.am.model;
  * @author nhungtt
  */
 public class NestedObjectInfo {
-    private Long departmentId;
-    private Long deptUserId;
-    private Long memberId;
-    private Long memberUserId;
-    private Long brokerId;
-    private Long brokerUserId;
-    private Long collaboratorId;
-    private Long collaboratorUserId;
-    private Long investorId;
-    private Long investorUserId;
+    private long departmentId;
+    private long deptUserId;
+    private long memberId;
+    private long memberUserId;
+    private long brokerId;
+    private long brokerUserId;
+    private long collaboratorId;
+    private long collaboratorUserId;
+    private long investorId;
+    private long investorUserId;
 
-    public Long getDepartmentId() {
+    public long getDepartmentId() {
         return departmentId;
     }
 
-    public void setDepartmentId(Long departmentId) {
+    public void setDepartmentId(long departmentId) {
         this.departmentId = departmentId;
     }
 
-    public Long getDeptUserId() {
+    public long getDeptUserId() {
         return deptUserId;
     }
 
-    public void setDeptUserId(Long deptUserId) {
+    public void setDeptUserId(long deptUserId) {
         this.deptUserId = deptUserId;
     }
 
-    public Long getMemberId() {
+    public long getMemberId() {
         return memberId;
     }
 
-    public void setMemberId(Long memberId) {
+    public void setMemberId(long memberId) {
         this.memberId = memberId;
     }
 
-    public Long getMemberUserId() {
+    public long getMemberUserId() {
         return memberUserId;
     }
 
-    public void setMemberUserId(Long memberUserId) {
+    public void setMemberUserId(long memberUserId) {
         this.memberUserId = memberUserId;
     }
 
-    public Long getBrokerId() {
+    public long getBrokerId() {
         return brokerId;
     }
 
-    public void setBrokerId(Long brokerId) {
+    public void setBrokerId(long brokerId) {
         this.brokerId = brokerId;
     }
 
-    public Long getBrokerUserId() {
+    public long getBrokerUserId() {
         return brokerUserId;
     }
 
-    public void setBrokerUserId(Long brokerUserId) {
+    public void setBrokerUserId(long brokerUserId) {
         this.brokerUserId = brokerUserId;
     }
 
-    public Long getCollaboratorId() {
+    public long getCollaboratorId() {
         return collaboratorId;
     }
 
-    public void setCollaboratorId(Long collaboratorId) {
+    public void setCollaboratorId(long collaboratorId) {
         this.collaboratorId = collaboratorId;
     }
 
-    public Long getCollaboratorUserId() {
+    public long getCollaboratorUserId() {
         return collaboratorUserId;
     }
 
-    public void setCollaboratorUserId(Long collaboratorUserId) {
+    public void setCollaboratorUserId(long collaboratorUserId) {
         this.collaboratorUserId = collaboratorUserId;
     }
 
-    public Long getInvestorId() {
+    public long getInvestorId() {
         return investorId;
     }
 
-    public void setInvestorId(Long investorId) {
+    public void setInvestorId(long investorId) {
         this.investorId = investorId;
     }
 
-    public Long getInvestorUserId() {
+    public long getInvestorUserId() {
         return investorUserId;
     }
 
-    public void setInvestorUserId(Long investorUserId) {
+    public void setInvestorUserId(long investorUserId) {
         this.investorUserId = investorUserId;
     }
     

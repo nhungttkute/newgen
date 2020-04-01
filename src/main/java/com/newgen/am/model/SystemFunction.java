@@ -19,16 +19,16 @@ public class SystemFunction extends AuditModel implements Serializable {
     @Transient
     public static final String SEQUENCE_NAME = "system_function_seq";
     @Id
-    private Long id;
+    private long id;
     private String code;
     private String name;
     private String parentCode;
 
-    public Long getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(long id) {
         this.id = id;
     }
 

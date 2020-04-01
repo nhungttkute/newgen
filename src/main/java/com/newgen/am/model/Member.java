@@ -24,7 +24,7 @@ public class Member extends AuditModel implements Serializable {
     @Transient
     public static final String SEQUENCE_NAME = "member_seq";
     @Id
-    private Long id;
+    private long id;
     @NonNull
     private String code;
     @NonNull
@@ -35,15 +35,15 @@ public class Member extends AuditModel implements Serializable {
     private List<UserRole> roles;
     private List<RoleFunction> functions;
     @Field(name = "order_limit")
-    private Integer orderLimit;
+    private int orderLimit;
     private List<Commodity> comodities;
     private List<MemberUser> users;
 
-    public Long getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(long id) {
         this.id = id;
     }
 
@@ -119,11 +119,11 @@ public class Member extends AuditModel implements Serializable {
         this.functions = functions;
     }
 
-    public Integer getOrderLimit() {
+    public int getOrderLimit() {
         return orderLimit;
     }
 
-    public void setOrderLimit(Integer orderLimit) {
+    public void setOrderLimit(int orderLimit) {
         this.orderLimit = orderLimit;
     }
 

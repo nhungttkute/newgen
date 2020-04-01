@@ -22,7 +22,7 @@ public class PendingApproval extends AuditModel implements Serializable {
     @Transient
     public static final String SEQUENCE_NAME = "pending_approval_seq";
     @Id
-    private Long id;
+    private long id;
     @Field(name = "created_event_date")
     private Date createdEventDate;
     @Field(name = "approval_date")
@@ -44,11 +44,11 @@ public class PendingApproval extends AuditModel implements Serializable {
     @Field(name = "pending_fields")
     private List<PendingField> pendingFields;
 
-    public Long getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(long id) {
         this.id = id;
     }
 

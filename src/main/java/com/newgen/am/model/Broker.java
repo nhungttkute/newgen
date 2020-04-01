@@ -21,9 +21,9 @@ public class Broker extends AuditModel implements Serializable {
     @Transient
     public static final String SEQUENCE_NAME = "broker_seq";
     @Id
-    private Long id;
+    private long id;
     @Field(name = "member_id")
-    private Long memberId;
+    private long memberId;
     @Field(name = "member_code")
     private String memberCode;
     @Field(name = "member_name")
@@ -41,22 +41,22 @@ public class Broker extends AuditModel implements Serializable {
     private BrokerUser user;
     private List<UserRole> roles;
     private List<RoleFunction> functions;
-    private Integer orderLimit;
+    private int orderLimit;
     private List<Commodity> commodities;
 
-    public Long getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(long id) {
         this.id = id;
     }
 
-    public Long getMemberId() {
+    public long getMemberId() {
         return memberId;
     }
 
-    public void setMemberId(Long memberId) {
+    public void setMemberId(long memberId) {
         this.memberId = memberId;
     }
 
@@ -164,11 +164,11 @@ public class Broker extends AuditModel implements Serializable {
         this.commodities = commodities;
     }
 
-    public Integer getOrderLimit() {
+    public int getOrderLimit() {
         return orderLimit;
     }
 
-    public void setOrderLimit(Integer orderLimit) {
+    public void setOrderLimit(int orderLimit) {
         this.orderLimit = orderLimit;
     }
 

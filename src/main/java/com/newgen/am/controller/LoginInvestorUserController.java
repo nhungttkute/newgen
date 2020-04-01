@@ -17,11 +17,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.newgen.am.dto.LoginInvestorUserDataDTO;
+import com.newgen.am.dto.LoginUserDataInputDTO;
 import com.newgen.am.dto.AMResponseObj;
 import com.newgen.am.dto.DataObj;
 import com.newgen.am.dto.ListUserDTO;
-import com.newgen.am.dto.LoginInvestorUserResponseDTO;
+import com.newgen.am.dto.LoginUserOutputDTO;
 import com.newgen.am.model.LoginInvestorUser;
 import com.newgen.am.service.LoginInvestorUserService;
 import java.util.ArrayList;
@@ -39,14 +39,14 @@ public class LoginInvestorUserController {
     private ModelMapper modelMapper;
 
     @PostMapping("/users/login")
-    public AMResponseObj login(@RequestBody LoginInvestorUserDataDTO userDto) {
+    public AMResponseObj login(@RequestBody LoginUserDataInputDTO userDto) {
         String methodName = "login";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, "REQUEST_API: /users/login");
         AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(userDto));
         AMResponseObj response = new AMResponseObj();
         try {
-            LoginInvestorUserResponseDTO loginUserDto = modelMapper.map(loginInvUserService.signin(userDto.getUsername(), userDto.getPassword(), refId), LoginInvestorUserResponseDTO.class);
+            LoginUserOutputDTO loginUserDto = modelMapper.map(loginInvUserService.signin(userDto.getUsername(), userDto.getPassword(), refId), LoginUserOutputDTO.class);
             response.setStatus(Constant.RESPONSE_OK);
             response.setData(new DataObj());
             response.getData().setUser(loginUserDto);
@@ -105,7 +105,7 @@ public class LoginInvestorUserController {
     }
 
     @PostMapping("/users/verifyPin/{userId}")
-    public AMResponseObj verifyPin(@PathVariable Long userId, @RequestBody LoginInvestorUserDataDTO user) {
+    public AMResponseObj verifyPin(@PathVariable Long userId, @RequestBody LoginUserDataInputDTO user) {
         String methodName = "verifyPin";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, "REQUEST_API: /users/verifyPin/" + userId);
@@ -128,7 +128,7 @@ public class LoginInvestorUserController {
     }
 
     @PostMapping("/users/{userId}/watchlist")
-    public AMResponseObj saveWatchList(@PathVariable Long userId, @RequestBody LoginInvestorUserDataDTO input) {
+    public AMResponseObj saveWatchList(@PathVariable Long userId, @RequestBody LoginUserDataInputDTO input) {
         String methodName = "saveWatchList";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, "REQUEST_API: " + String.format("/users/%s/watchlist", userId));
@@ -156,7 +156,7 @@ public class LoginInvestorUserController {
     }
 
     @PostMapping("/users/{userId}/layout")
-    public AMResponseObj saveLayout(@PathVariable Long userId, @RequestBody LoginInvestorUserDataDTO input) {
+    public AMResponseObj saveLayout(@PathVariable Long userId, @RequestBody LoginUserDataInputDTO input) {
         String methodName = "saveLayout";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, "REQUEST_API: " + String.format("/users/%s/layout", userId));
@@ -198,7 +198,7 @@ public class LoginInvestorUserController {
     }
 
     @PostMapping("/users/{userId}/password")
-    public AMResponseObj changePassword(@PathVariable Long userId, @RequestBody LoginInvestorUserDataDTO input) {
+    public AMResponseObj changePassword(@PathVariable Long userId, @RequestBody LoginUserDataInputDTO input) {
         String methodName = "changePassword";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, "REQUEST_API: " + String.format("/users/%s/password", userId));
@@ -231,7 +231,7 @@ public class LoginInvestorUserController {
             LoginInvestorUser user = loginInvUserService.search(userId, refId);
             if (user != null) {
                 user.setAccessToken(null);
-                LoginInvestorUserResponseDTO userDto = modelMapper.map(user, LoginInvestorUserResponseDTO.class);
+                LoginUserOutputDTO userDto = modelMapper.map(user, LoginUserOutputDTO.class);
                 response.setStatus(Constant.RESPONSE_OK);
                 response.setData(new DataObj());
                 response.getData().setUser(userDto);
@@ -251,6 +251,37 @@ public class LoginInvestorUserController {
     @GetMapping("/users")
     public AMResponseObj listUsers() {
         String methodName = "listUsers";
+        long refId = System.currentTimeMillis();
+        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: /users");
+        AMResponseObj response = new AMResponseObj();
+        try {
+            List<ListUserDTO> userDtos = new ArrayList<>();
+            List<LoginInvestorUser> users = loginInvUserService.list(refId);
+
+            if (users != null && users.size() > 0) {
+                for (LoginInvestorUser user : users) {
+                    ListUserDTO userDto = new ListUserDTO(user.getId(), user.getUsername());
+                    userDtos.add(userDto);
+                }
+                response.setStatus(Constant.RESPONSE_OK);
+                response.setData(new DataObj());
+                response.getData().setUsers(userDtos);
+            } else {
+                response.setStatus(Constant.RESPONSE_ERROR);
+                response.setErrMsg(ErrorMessage.USER_DOES_NOT_EXIST);
+            }
+        } catch (Exception ex) {
+            AMLogger.logError(className, methodName, refId, ex);
+            response.setStatus(Constant.RESPONSE_ERROR);
+            response.setErrMsg(ex.getMessage());
+        }
+        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+        return response;
+    }
+    
+    @GetMapping("/users/list")
+    public AMResponseObj listUsers2() {
+        String methodName = "listUsers2";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, "REQUEST_API: /users");
         AMResponseObj response = new AMResponseObj();

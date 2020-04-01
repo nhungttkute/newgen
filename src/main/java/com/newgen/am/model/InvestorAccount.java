@@ -14,26 +14,26 @@ import java.util.Date;
 public class InvestorAccount {
     private String code;
     private String currency;
-    private Double marginSurplusInterestRate;
-    private Double marginDeficitInterestRate;
-    private Double amountHold;
-    private Double sodBalance; // So du TKKQ dau ngay
-    private Double currentBalance; // So du TKKQ hien ta
-    private Double dayEndBalance; // So du TKKQ cuoi ngay
-    private Double changedAmount; // Nop rut trong phien
-    private Double transactionFee; // Phi giao dich
-    private Double generalFee; // Thue/phi
-    private Double otherFee; // Phi khac
-    private Double actualProfitVND; // Lo lai thuc te
-    private Double estimatedProfitVND; // Lo lai du kien
-    private Double initialRequiredMargin; // Ky quy ban dau yeu cau
-    private Double availableMargin; // Ky quy kha dung
-    private Double netMargin; // Gia tri rong ky quy
-    private Double temporaryInterest; // Lai phai thu/phai tra tam tinh
-    private Double additionalMargin; //Muc bo sung ky quy
-    private Double currentMarginRatio; //Ty le ky quy hien tai
-    private Date createdAt;
-    private Date updatedAt;
+    private double marginSurplusInterestRate;
+    private double marginDeficitInterestRate;
+    private double amountHold;
+    private double sodBalance; // So du TKKQ dau ngay
+    private double currentBalance; // So du TKKQ hien ta
+    private double dayEndBalance; // So du TKKQ cuoi ngay
+    private double changedAmount; // Nop rut trong phien
+    private double transactionFee; // Phi giao dich
+    private double generalFee; // Thue/phi
+    private double otherFee; // Phi khac
+    private double actualProfitVND; // Lo lai thuc te
+    private double estimatedProfitVND; // Lo lai du kien
+    private double initialRequiredMargin; // Ky quy ban dau yeu cau
+    private double availableMargin; // Ky quy kha dung
+    private double netMargin; // Gia tri rong ky quy
+    private double temporaryInterest; // Lai phai thu/phai tra tam tinh
+    private double additionalMargin; //Muc bo sung ky quy
+    private double currentMarginRatio; //Ty le ky quy hien tai
+    private long createdAt;
+    private long updatedAt;
 
     public String getCode() {
         return code;
@@ -51,164 +51,164 @@ public class InvestorAccount {
         this.currency = currency;
     }
 
-    public Double getMarginSurplusInterestRate() {
+    public double getMarginSurplusInterestRate() {
         return marginSurplusInterestRate;
     }
 
-    public void setMarginSurplusInterestRate(Double marginSurplusInterestRate) {
+    public void setMarginSurplusInterestRate(double marginSurplusInterestRate) {
         this.marginSurplusInterestRate = marginSurplusInterestRate;
     }
 
-    public Double getMarginDeficitInterestRate() {
+    public double getMarginDeficitInterestRate() {
         return marginDeficitInterestRate;
     }
 
-    public void setMarginDeficitInterestRate(Double marginDeficitInterestRate) {
+    public void setMarginDeficitInterestRate(double marginDeficitInterestRate) {
         this.marginDeficitInterestRate = marginDeficitInterestRate;
     }
 
-    public Double getAmountHold() {
+    public double getAmountHold() {
         return amountHold;
     }
 
-    public void setAmountHold(Double amountHold) {
+    public void setAmountHold(double amountHold) {
         this.amountHold = amountHold;
     }
 
-    public Double getSodBalance() {
+    public double getSodBalance() {
         return sodBalance;
     }
 
-    public void setSodBalance(Double sodBalance) {
+    public void setSodBalance(double sodBalance) {
         this.sodBalance = sodBalance;
     }
 
-    public Double getCurrentBalance() {
+    public double getCurrentBalance() {
         return currentBalance;
     }
 
-    public void setCurrentBalance(Double currentBalance) {
+    public void setCurrentBalance(double currentBalance) {
         this.currentBalance = currentBalance;
     }
 
-    public Double getDayEndBalance() {
+    public double getDayEndBalance() {
         return dayEndBalance;
     }
 
-    public void setDayEndBalance(Double dayEndBalance) {
+    public void setDayEndBalance(double dayEndBalance) {
         this.dayEndBalance = dayEndBalance;
     }
 
-    public Double getChangedAmount() {
+    public double getChangedAmount() {
         return changedAmount;
     }
 
-    public void setChangedAmount(Double changedAmount) {
+    public void setChangedAmount(double changedAmount) {
         this.changedAmount = changedAmount;
     }
 
-    public Double getTransactionFee() {
+    public double getTransactionFee() {
         return transactionFee;
     }
 
-    public void setTransactionFee(Double transactionFee) {
+    public void setTransactionFee(double transactionFee) {
         this.transactionFee = transactionFee;
     }
 
-    public Double getGeneralFee() {
+    public double getGeneralFee() {
         return generalFee;
     }
 
-    public void setGeneralFee(Double generalFee) {
+    public void setGeneralFee(double generalFee) {
         this.generalFee = generalFee;
     }
 
-    public Double getOtherFee() {
+    public double getOtherFee() {
         return otherFee;
     }
 
-    public void setOtherFee(Double otherFee) {
+    public void setOtherFee(double otherFee) {
         this.otherFee = otherFee;
     }
 
-    public Double getActualProfitVND() {
+    public double getActualProfitVND() {
         return actualProfitVND;
     }
 
-    public void setActualProfitVND(Double actualProfitVND) {
+    public void setActualProfitVND(double actualProfitVND) {
         this.actualProfitVND = actualProfitVND;
     }
 
-    public Double getEstimatedProfitVND() {
+    public double getEstimatedProfitVND() {
         return estimatedProfitVND;
     }
 
-    public void setEstimatedProfitVND(Double estimatedProfitVND) {
+    public void setEstimatedProfitVND(double estimatedProfitVND) {
         this.estimatedProfitVND = estimatedProfitVND;
     }
 
-    public Double getInitialRequiredMargin() {
+    public double getInitialRequiredMargin() {
         return initialRequiredMargin;
     }
 
-    public void setInitialRequiredMargin(Double initialRequiredMargin) {
+    public void setInitialRequiredMargin(double initialRequiredMargin) {
         this.initialRequiredMargin = initialRequiredMargin;
     }
 
-    public Double getAvailableMargin() {
+    public double getAvailableMargin() {
         return availableMargin;
     }
 
-    public void setAvailableMargin(Double availableMargin) {
+    public void setAvailableMargin(double availableMargin) {
         this.availableMargin = availableMargin;
     }
 
-    public Double getNetMargin() {
+    public double getNetMargin() {
         return netMargin;
     }
 
-    public void setNetMargin(Double netMargin) {
+    public void setNetMargin(double netMargin) {
         this.netMargin = netMargin;
     }
 
-    public Double getTemporaryInterest() {
+    public double getTemporaryInterest() {
         return temporaryInterest;
     }
 
-    public void setTemporaryInterest(Double temporaryInterest) {
+    public void setTemporaryInterest(double temporaryInterest) {
         this.temporaryInterest = temporaryInterest;
     }
 
-    public Double getAdditionalMargin() {
+    public double getAdditionalMargin() {
         return additionalMargin;
     }
 
-    public void setAdditionalMargin(Double additionalMargin) {
+    public void setAdditionalMargin(double additionalMargin) {
         this.additionalMargin = additionalMargin;
     }
 
-    public Double getCurrentMarginRatio() {
+    public double getCurrentMarginRatio() {
         return currentMarginRatio;
     }
 
-    public void setCurrentMarginRatio(Double currentMarginRatio) {
+    public void setCurrentMarginRatio(double currentMarginRatio) {
         this.currentMarginRatio = currentMarginRatio;
     }
 
-    public Date getCreatedAt() {
+    public long getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(Date createdAt) {
+    public void setCreatedAt(long createdAt) {
         this.createdAt = createdAt;
     }
 
-    public Date getUpdatedAt() {
+    public long getUpdatedAt() {
         return updatedAt;
     }
 
-    public void setUpdatedAt(Date updatedAt) {
+    public void setUpdatedAt(long updatedAt) {
         this.updatedAt = updatedAt;
     }
-    
+
 }

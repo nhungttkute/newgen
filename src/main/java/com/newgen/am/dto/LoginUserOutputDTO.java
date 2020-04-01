@@ -1,34 +1,36 @@
 package com.newgen.am.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.newgen.am.model.RoleFunction;
 import com.newgen.am.model.WatchList;
 import java.util.List;
 
 
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-public class LoginInvestorUserResponseDTO {
+public class LoginUserOutputDTO {
 
-    private Long id;
+    private long id;
     private String username;
     private String fullName;
     private String phoneNumber;
     private String email;
     private String accessToken;
     @JsonInclude(JsonInclude.Include.NON_DEFAULT)
-    private Long tokenExpiration;
+    private long tokenExpiration;
     private Boolean logined;
     private Boolean mustChangePassword;
-    private Long memberId;
-    private Long brokerId;
-    private Long collaboratorId;
-    private Long investorId;
-    private Long investorUserId;
+    private long memberId;
+    private long brokerId;
+    private long collaboratorId;
+    private long investorId;
+    private long investorUserId;
     private List<WatchList> watchLists;
     private String layout;
     private String language;
     private String theme;
     @JsonInclude(JsonInclude.Include.NON_DEFAULT)
-    private Integer fontSize;
+    private int fontSize;
+    private List<String> functions;
 
     public String getUsername() {
         return username;
@@ -70,11 +72,11 @@ public class LoginInvestorUserResponseDTO {
         this.accessToken = accessToken;
     }
 
-    public Long getTokenExpiration() {
+    public long getTokenExpiration() {
         return tokenExpiration;
     }
 
-    public void setTokenExpiration(Long tokenExpiration) {
+    public void setTokenExpiration(long tokenExpiration) {
         this.tokenExpiration = tokenExpiration;
     }
 
@@ -118,59 +120,59 @@ public class LoginInvestorUserResponseDTO {
         this.theme = theme;
     }
 
-    public Integer getFontSize() {
+    public int getFontSize() {
         return fontSize;
     }
 
-    public void setFontSize(Integer fontSize) {
+    public void setFontSize(int fontSize) {
         this.fontSize = fontSize;
     }
 
-    public Long getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(long id) {
         this.id = id;
     }
 
-    public Long getMemberId() {
+    public long getMemberId() {
         return memberId;
     }
 
-    public void setMemberId(Long memberId) {
+    public void setMemberId(long memberId) {
         this.memberId = memberId;
     }
 
-    public Long getBrokerId() {
+    public long getBrokerId() {
         return brokerId;
     }
 
-    public void setBrokerId(Long brokerId) {
+    public void setBrokerId(long brokerId) {
         this.brokerId = brokerId;
     }
 
-    public Long getCollaboratorId() {
+    public long getCollaboratorId() {
         return collaboratorId;
     }
 
-    public void setCollaboratorId(Long collaboratorId) {
+    public void setCollaboratorId(long collaboratorId) {
         this.collaboratorId = collaboratorId;
     }
 
-    public Long getInvestorId() {
+    public long getInvestorId() {
         return investorId;
     }
 
-    public void setInvestorId(Long investorId) {
+    public void setInvestorId(long investorId) {
         this.investorId = investorId;
     }
 
-    public Long getInvestorUserId() {
+    public long getInvestorUserId() {
         return investorUserId;
     }
 
-    public void setInvestorUserId(Long investorUserId) {
+    public void setInvestorUserId(long investorUserId) {
         this.investorUserId = investorUserId;
     }
 
@@ -180,6 +182,14 @@ public class LoginInvestorUserResponseDTO {
 
     public void setMustChangePassword(Boolean mustChangePassword) {
         this.mustChangePassword = mustChangePassword;
+    }
+
+    public List<String> getFunctions() {
+        return functions;
+    }
+
+    public void setFunctions(List<String> functions) {
+        this.functions = functions;
     }
 
 }

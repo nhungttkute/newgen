@@ -8,7 +8,6 @@ package com.newgen.am.dto;
 import com.newgen.am.model.Commodity;
 import com.newgen.am.model.InvestorAccount;
 import com.newgen.am.model.MarginRatioAlert;
-import com.newgen.am.model.RoleFunction;
 import java.util.List;
 
 /**
@@ -16,29 +15,33 @@ import java.util.List;
  * @author nhungtt
  */
 public class UserInfoDTO {
-    private Long id;
+    private long id;
     private String username;
     private String pin;
     private String status;
-    private Long tokenExpiration;
+    private long tokenExpiration;
+    private long investorUserId;
     private String memberCode;
+    private String memberName;
     private String brokerCode;
+    private String brokerName;
     private String collaboratorCode;
+    private String collaboratorName;
     private String investorCode;
-    private Long investorUserId;
+    private String investorName;
     private InvestorAccount account;
-    private List<RoleFunction> functions;
-    private Integer orderLimit;
+    private List<String> functions;
+    private int orderLimit;
     private List<Commodity> commodities;
     private MarginRatioAlert marginRatioAlert;
-    private Double marginMultiplier;
-    private Long otherFee;
+    private double marginMultiplier;
+    private long otherFee;
 
-    public Long getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(long id) {
         this.id = id;
     }
 
@@ -66,11 +69,11 @@ public class UserInfoDTO {
         this.status = status;
     }
 
-    public Long getTokenExpiration() {
+    public long getTokenExpiration() {
         return tokenExpiration;
     }
 
-    public void setTokenExpiration(Long tokenExpiration) {
+    public void setTokenExpiration(long tokenExpiration) {
         this.tokenExpiration = tokenExpiration;
     }
 
@@ -106,11 +109,11 @@ public class UserInfoDTO {
         this.investorCode = investorCode;
     }
 
-    public Long getInvestorUserId() {
+    public long getInvestorUserId() {
         return investorUserId;
     }
 
-    public void setInvestorUserId(Long investorUserId) {
+    public void setInvestorUserId(long investorUserId) {
         this.investorUserId = investorUserId;
     }
 
@@ -122,19 +125,19 @@ public class UserInfoDTO {
         this.account = account;
     }
 
-    public List<RoleFunction> getFunctions() {
+    public List<String> getFunctions() {
         return functions;
     }
 
-    public void setFunctions(List<RoleFunction> functions) {
+    public void setFunctions(List<String> functions) {
         this.functions = functions;
     }
 
-    public Integer getOrderLimit() {
+    public int getOrderLimit() {
         return orderLimit;
     }
 
-    public void setOrderLimit(Integer orderLimit) {
+    public void setOrderLimit(int orderLimit) {
         this.orderLimit = orderLimit;
     }
 
@@ -154,21 +157,52 @@ public class UserInfoDTO {
         this.marginRatioAlert = marginRatioAlert;
     }
 
-    public Double getMarginMultiplier() {
+    public double getMarginMultiplier() {
         return marginMultiplier;
     }
 
-    public void setMarginMultiplier(Double marginMultiplier) {
+    public void setMarginMultiplier(double marginMultiplier) {
         this.marginMultiplier = marginMultiplier;
     }
 
-    public Long getOtherFee() {
+    public long getOtherFee() {
         return otherFee;
     }
 
-    public void setOtherFee(Long otherFee) {
+    public void setOtherFee(long otherFee) {
         this.otherFee = otherFee;
     }
-    
+
+    public String getMemberName() {
+        return memberName;
+    }
+
+    public void setMemberName(String memberName) {
+        this.memberName = memberName;
+    }
+
+    public String getBrokerName() {
+        return brokerName;
+    }
+
+    public void setBrokerName(String brokerName) {
+        this.brokerName = brokerName;
+    }
+
+    public String getCollaboratorName() {
+        return collaboratorName;
+    }
+
+    public void setCollaboratorName(String collaboratorName) {
+        this.collaboratorName = collaboratorName;
+    }
+
+    public String getInvestorName() {
+        return investorName;
+    }
+
+    public void setInvestorName(String investorName) {
+        this.investorName = investorName;
+    }
     
 }

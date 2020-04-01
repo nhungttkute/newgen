@@ -21,7 +21,7 @@ public class Department extends AuditModel implements Serializable {
     @Transient
     public static final String SEQUENCE_NAME = "department_seq";
     @Id
-    private Long id;
+    private long id;
     @NonNull
     private String code;
     @NonNull
@@ -30,11 +30,11 @@ public class Department extends AuditModel implements Serializable {
     private String note;
     private List<DeptUser> users;
 
-    public Long getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(long id) {
         this.id = id;
     }
 

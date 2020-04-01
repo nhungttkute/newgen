@@ -22,11 +22,11 @@ public class Collaborator extends AuditModel implements Serializable {
     @Transient
     public static final String SEQUENCE_NAME = "collaborator_seq";
     @Id
-    private Long id;
+    private long id;
     @Field(name = "member_id")
-    private Long memberId;
+    private long memberId;
     @Field(name = "broker_id")
-    private Long brokerId;
+    private long brokerId;
     @Field(name = "member_code")
     private String memberCode;
     @Field(name = "member_name")
@@ -46,27 +46,27 @@ public class Collaborator extends AuditModel implements Serializable {
     private List<UserRole> roles;
     private List<RoleFunction> functions;
 
-    public Long getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(long id) {
         this.id = id;
     }
 
-    public Long getMemberId() {
+    public long getMemberId() {
         return memberId;
     }
 
-    public void setMemberId(Long memberId) {
+    public void setMemberId(long memberId) {
         this.memberId = memberId;
     }
 
-    public Long getBrokerId() {
+    public long getBrokerId() {
         return brokerId;
     }
 
-    public void setBrokerId(Long brokerId) {
+    public void setBrokerId(long brokerId) {
         this.brokerId = brokerId;
     }
 

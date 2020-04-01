@@ -7,7 +7,6 @@ package com.newgen.am.configuration;
 
 import com.newgen.am.common.ConfigLoader;
 import com.newgen.am.common.Constant;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -28,7 +27,7 @@ public class RedisConfiguration {
     @Bean
     public LettuceConnectionFactory redisConnectionFactory() {
         String redisHost = ConfigLoader.getMainConfig().getString(Constant.REDIS_HOST);
-        Integer redisPort = ConfigLoader.getMainConfig().getInt(Constant.REDIS_PORT);
+        int redisPort = ConfigLoader.getMainConfig().getInt(Constant.REDIS_PORT);
         String redisPassword = ConfigLoader.getMainConfig().getString(Constant.REDIS_PASSWORD);
         LettuceConnectionFactory lecttuceConFactory = new LettuceConnectionFactory(redisHost, redisPort);
         lecttuceConFactory.setPassword(redisPassword);

@@ -9,12 +9,9 @@ import com.google.gson.Gson;
 import com.newgen.am.common.AMLogger;
 import com.newgen.am.common.Constant;
 import com.newgen.am.common.ErrorMessage;
-import com.newgen.am.common.Utility;
 import com.newgen.am.dto.AMResponseObj;
 import com.newgen.am.dto.DataObj;
 import com.newgen.am.dto.InvestorAccountDTO;
-import com.newgen.am.dto.LoginInvestorUserResponseDTO;
-import com.newgen.am.model.LoginInvestorUser;
 import com.newgen.am.service.InvestorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -40,7 +37,7 @@ public class InvestorController {
         AMLogger.logMessage(className, methodName, refId, "INPUT:" + investorId);
         AMResponseObj response = new AMResponseObj();
         try {
-            InvestorAccountDTO investorAcc = investorService.getInvestorAccount(investorId);
+            InvestorAccountDTO investorAcc = investorService.getInvestorAccount(investorId, refId);
             if (investorAcc != null) {
                 response.setStatus(Constant.RESPONSE_OK);
                 response.setData(new DataObj());

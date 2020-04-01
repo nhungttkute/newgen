@@ -10,9 +10,17 @@ package com.newgen.am.model;
  * @author nhungtt
  */
 public class RoleFunction {
+    private long _id;
     private String code;
     private String name;
-    private String parentCode;
+
+    public long getId() {
+        return _id;
+    }
+
+    public void setId(long _id) {
+        this._id = _id;
+    }
 
     public String getCode() {
         return code;
@@ -30,12 +38,4 @@ public class RoleFunction {
         this.name = name;
     }
 
-    public String getParentCode() {
-        return parentCode;
-    }
-
-    public void setParentCode(String parentCode) {
-        this.parentCode = parentCode;
-    }
-    
 }

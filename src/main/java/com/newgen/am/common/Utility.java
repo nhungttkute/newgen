@@ -42,7 +42,20 @@ public class Utility {
         if (isNull(obj)) return 0;
         return obj;
     }
+    
+    public static int getInt(Integer obj) {
+        if (isNull(obj)) return 0;
+        return obj;
+    }
 
+    public static List<SimpleGrantedAuthority> getInvestorAuthorities() {
+        return Arrays.asList(new SimpleGrantedAuthority("INVESTOR"));
+    }
+    
+    public static List<SimpleGrantedAuthority> getAdminAuthorities() {
+        return Arrays.asList(new SimpleGrantedAuthority("ADMIN"));
+    }
+    
     public static String genRedisKey(String input) {
         String secretKey = ConfigLoader.getMainConfig().getString(Constant.REDIS_KEY_SECRET_KEY);
         String hash = DigestUtils.sha256Hex(secretKey + input);

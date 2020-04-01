@@ -18,21 +18,21 @@ import org.springframework.data.mongodb.core.mapping.Field;
 public class InvestorAccTransApproval {
     @Transient
     public static final String SEQUENCE_NAME = "inv_acc_trans_approval_seq";
-    private Long id;
+    private long id;
     @Field(name = "member_id")
-    private Long memberId;
+    private long memberId;
     @Field(name = "member_code")
     private String memberCode;
     @Field(name = "member_name")
     private String memberName;
     @Field(name = "broker_id")
-    private Long brokerId;
+    private long brokerId;
     @Field(name = "broker_code")
     private String brokerCode;
     @Field(name = "broker_name")
     private String brokerName;
     @Field(name = "investor_id")
-    private Long investorId;
+    private long investorId;
     @Field(name = "investor_code")
     private String investorCode;
     @Field(name = "investor_name")
@@ -41,7 +41,7 @@ public class InvestorAccTransApproval {
     private String transactionType;
     @Field(name = "approval_detail")
     private String approvalDetail;
-    private Double amount;
+    private double amount;
     private String currency;
     @Field(name = "creator_username")
     private String creatorUsername;
@@ -56,19 +56,19 @@ public class InvestorAccTransApproval {
     private String rejectReason;
     private String note;
 
-    public Long getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(long id) {
         this.id = id;
     }
 
-    public Long getMemberId() {
+    public long getMemberId() {
         return memberId;
     }
 
-    public void setMemberId(Long memberId) {
+    public void setMemberId(long memberId) {
         this.memberId = memberId;
     }
 
@@ -88,11 +88,11 @@ public class InvestorAccTransApproval {
         this.memberName = memberName;
     }
 
-    public Long getBrokerId() {
+    public long getBrokerId() {
         return brokerId;
     }
 
-    public void setBrokerId(Long brokerId) {
+    public void setBrokerId(long brokerId) {
         this.brokerId = brokerId;
     }
 
@@ -112,11 +112,11 @@ public class InvestorAccTransApproval {
         this.brokerName = brokerName;
     }
 
-    public Long getInvestorId() {
+    public long getInvestorId() {
         return investorId;
     }
 
-    public void setInvestorId(Long investorId) {
+    public void setInvestorId(long investorId) {
         this.investorId = investorId;
     }
 
@@ -144,11 +144,11 @@ public class InvestorAccTransApproval {
         this.transactionType = transactionType;
     }
 
-    public Double getAmount() {
+    public double getAmount() {
         return amount;
     }
 
-    public void setAmount(Double amount) {
+    public void setAmount(double amount) {
         this.amount = amount;
     }
 

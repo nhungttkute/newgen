@@ -10,6 +10,7 @@ import java.io.Serializable;
 import org.springframework.data.mongodb.core.mapping.Field;
 import com.mongodb.lang.NonNull;
 import java.util.Date;
+import java.util.List;
 import org.hibernate.validator.constraints.Length;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Transient;
@@ -25,7 +26,7 @@ public class LoginAdminUser extends AuditModel implements Serializable {
     @Transient
     public static final String SEQUENCE_NAME = "login_admin_user_seq";
     @Id
-    private Long id;
+    private long id;
     @NonNull
     @Indexed(unique = true)
     private String username;
@@ -36,44 +37,46 @@ public class LoginAdminUser extends AuditModel implements Serializable {
     private Boolean checkPin = true;
     @NonNull
     private String pin;
+    private String status;
     @Field(name = "access_token")
     private String accessToken;
     @Field(name = "token_expiration")
-    private Long tokenExpiration;
+    private long tokenExpiration;
     @Field
     private Boolean logined = false;
     @Field
     private Boolean mustChangePassword = true;
-    private Integer logonCounts;
+    private int logonCounts;
     private Date logonTime;
     @Field(name = "department_id")
-    private Long departmentId;
+    private long departmentId;
     @Field(name = "user_id")
-    private Long userId;
+    private long userId;
     @Field(name = "member_id")
-    private Long memberId;
+    private long memberId;
     @Field(name = "member_user_id")
-    private Long memberUserId;
+    private long memberUserId;
     @Field(name = "broker_id")
-    private Long brokerId;
+    private long brokerId;
     @Field(name = "broker_user_id")
-    private Long brokerUserId;
+    private long brokerUserId;
     @Field(name = "collaborator_id")
-    private Long collaboratorId;
+    private long collaboratorId;
     @Field(name = "collaborator_user_id")
-    private Long collaboratorUserId;
+    private long collaboratorUserId;
     @Field
     @Length(max = 10000)
     private String layout;
     private String language;
     private String theme;
-    private Integer fontSize;
+    private int fontSize;
+    private List<WatchList> watchlists;
     
-    public Long getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(long id) {
         this.id = id;
     }
 
@@ -117,11 +120,11 @@ public class LoginAdminUser extends AuditModel implements Serializable {
         this.accessToken = accessToken;
     }
 
-    public Long getTokenExpiration() {
+    public long getTokenExpiration() {
         return tokenExpiration;
     }
 
-    public void setTokenExpiration(Long tokenExpiration) {
+    public void setTokenExpiration(long tokenExpiration) {
         this.tokenExpiration = tokenExpiration;
     }
 
@@ -133,19 +136,19 @@ public class LoginAdminUser extends AuditModel implements Serializable {
         this.logined = logined;
     }
 
-    public Long getDepartmentId() {
+    public long getDepartmentId() {
         return departmentId;
     }
 
-    public void setDepartmentId(Long departmentId) {
+    public void setDepartmentId(long departmentId) {
         this.departmentId = departmentId;
     }
 
-    public Long getUserId() {
+    public long getUserId() {
         return userId;
     }
 
-    public void setUserId(Long userId) {
+    public void setUserId(long userId) {
         this.userId = userId;
     }
 
@@ -173,67 +176,67 @@ public class LoginAdminUser extends AuditModel implements Serializable {
         this.theme = theme;
     }
 
-    public Integer getFontSize() {
+    public int getFontSize() {
         return fontSize;
     }
 
-    public void setFontSize(Integer fontSize) {
+    public void setFontSize(int fontSize) {
         this.fontSize = fontSize;
     }
 
-    public Long getMemberId() {
+    public long getMemberId() {
         return memberId;
     }
 
-    public void setMemberId(Long memberId) {
+    public void setMemberId(long memberId) {
         this.memberId = memberId;
     }
 
-    public Long getMemberUserId() {
+    public long getMemberUserId() {
         return memberUserId;
     }
 
-    public void setMemberUserId(Long memberUserId) {
+    public void setMemberUserId(long memberUserId) {
         this.memberUserId = memberUserId;
     }
 
-    public Long getBrokerId() {
+    public long getBrokerId() {
         return brokerId;
     }
 
-    public void setBrokerId(Long brokerId) {
+    public void setBrokerId(long brokerId) {
         this.brokerId = brokerId;
     }
 
-    public Long getBrokerUserId() {
+    public long getBrokerUserId() {
         return brokerUserId;
     }
 
-    public void setBrokerUserId(Long brokerUserId) {
+    public void setBrokerUserId(long brokerUserId) {
         this.brokerUserId = brokerUserId;
     }
 
-    public Long getCollaboratorId() {
+    public long getCollaboratorId() {
         return collaboratorId;
     }
 
-    public void setCollaboratorId(Long collaboratorId) {
+    public void setCollaboratorId(long collaboratorId) {
         this.collaboratorId = collaboratorId;
     }
 
-    public Long getCollaboratorUserId() {
+    public long getCollaboratorUserId() {
         return collaboratorUserId;
     }
 
-    public void setCollaboratorUserId(Long collaboratorUserId) {
+    public void setCollaboratorUserId(long collaboratorUserId) {
         this.collaboratorUserId = collaboratorUserId;
     }
 
-    public Integer getLogonCounts() {
+    public int getLogonCounts() {
         return logonCounts;
     }
 
-    public void setLogonCounts(Integer logonCounts) {
+    public void setLogonCounts(int logonCounts) {
         this.logonCounts = logonCounts;
     }
 
@@ -251,6 +254,22 @@ public class LoginAdminUser extends AuditModel implements Serializable {
 
     public void setMustChangePassword(Boolean mustChangePassword) {
         this.mustChangePassword = mustChangePassword;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public List<WatchList> getWatchlists() {
+        return watchlists;
+    }
+
+    public void setWatchlists(List<WatchList> watchlists) {
+        this.watchlists = watchlists;
     }
 
 }

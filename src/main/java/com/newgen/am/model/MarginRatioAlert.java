@@ -10,32 +10,32 @@ package com.newgen.am.model;
  * @author nhungtt
  */
 public class MarginRatioAlert {
-    private Integer warningRatio;
-    private Integer cancelOrderRatio;
-    private Integer finalizationRatio;
+    private int warningRatio;
+    private int cancelOrderRatio;
+    private int finalizationRatio;
 
-    public Integer getWarningRatio() {
+    public int getWarningRatio() {
         return warningRatio;
     }
 
-    public void setWarningRatio(Integer warningRatio) {
+    public void setWarningRatio(int warningRatio) {
         this.warningRatio = warningRatio;
     }
 
-    public Integer getCancelOrderRatio() {
+    public int getCancelOrderRatio() {
         return cancelOrderRatio;
     }
 
-    public void setCancelOrderRatio(Integer cancelOrderRatio) {
+    public void setCancelOrderRatio(int cancelOrderRatio) {
         this.cancelOrderRatio = cancelOrderRatio;
     }
 
-    public Integer getFinalizationRatio() {
+    public int getFinalizationRatio() {
         return finalizationRatio;
     }
 
-    public void setFinalizationRatio(Integer finalizationRatio) {
+    public void setFinalizationRatio(int finalizationRatio) {
         this.finalizationRatio = finalizationRatio;
     }
-    
+
 }

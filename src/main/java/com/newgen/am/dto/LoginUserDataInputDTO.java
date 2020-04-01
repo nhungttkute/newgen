@@ -5,7 +5,7 @@ import com.newgen.am.model.WatchList;
 import java.util.List;
 
 @JsonInclude(JsonInclude.Include.NON_DEFAULT)
-public class LoginInvestorUserDataDTO {
+public class LoginUserDataInputDTO {
 
     private String username;
     private String password;
@@ -16,7 +16,7 @@ public class LoginInvestorUserDataDTO {
     private String layout;
     private String language;
     private String theme;
-    private Integer fontSize;
+    private int fontSize;
 
     public String getUsername() {
         return username;
@@ -90,11 +90,11 @@ public class LoginInvestorUserDataDTO {
         this.theme = theme;
     }
 
-    public Integer getFontSize() {
+    public int getFontSize() {
         return fontSize;
     }
 
-    public void setFontSize(Integer fontSize) {
+    public void setFontSize(int fontSize) {
         this.fontSize = fontSize;
     }
 }
