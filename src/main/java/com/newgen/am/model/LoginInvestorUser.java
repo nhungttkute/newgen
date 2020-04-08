@@ -39,9 +39,7 @@ public class LoginInvestorUser extends AuditModel implements Serializable {
     @NonNull
     private String pin;
     private String status;
-    @Field(name = "access_token")
     private String accessToken;
-    @Field(name = "token_expiration")
     private long tokenExpiration;
     @Field
     private Boolean logined = false;
@@ -50,15 +48,10 @@ public class LoginInvestorUser extends AuditModel implements Serializable {
     @Field
     private int logonCounts = 0;
     private Date logonTime;
-    @Field(name = "member_id")
     private long memberId;
-    @Field(name = "broker_id")
     private long brokerId;
-    @Field(name = "collaborator_id")
     private long collaboratorId;
-    @Field(name = "investor_id")
     private long investorId;
-    @Field(name = "investor_user_id")
     private long investorUserId;
     @Field
     @Length(max = 10000)

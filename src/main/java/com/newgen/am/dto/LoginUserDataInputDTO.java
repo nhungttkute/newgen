@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.newgen.am.model.WatchList;
 import java.util.List;
 
-@JsonInclude(JsonInclude.Include.NON_DEFAULT)
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class LoginUserDataInputDTO {
 
     private String username;
@@ -17,6 +17,8 @@ public class LoginUserDataInputDTO {
     private String language;
     private String theme;
     private int fontSize;
+    private String email;
+    private String phoneNumber;
 
     public String getUsername() {
         return username;
@@ -97,4 +99,21 @@ public class LoginUserDataInputDTO {
     public void setFontSize(int fontSize) {
         this.fontSize = fontSize;
     }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
+    
 }

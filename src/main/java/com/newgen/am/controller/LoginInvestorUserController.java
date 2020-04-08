@@ -18,10 +18,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.newgen.am.dto.LoginUserDataInputDTO;
-import com.newgen.am.dto.AMResponseObj;
+import com.newgen.am.dto.ResponseObj;
 import com.newgen.am.dto.DataObj;
 import com.newgen.am.dto.ListUserDTO;
-import com.newgen.am.dto.LoginUserOutputDTO;
+import com.newgen.am.dto.LoginInvestorUserOutputDTO;
 import com.newgen.am.model.LoginInvestorUser;
 import com.newgen.am.service.LoginInvestorUserService;
 import java.util.ArrayList;
@@ -39,14 +39,14 @@ public class LoginInvestorUserController {
     private ModelMapper modelMapper;
 
     @PostMapping("/users/login")
-    public AMResponseObj login(@RequestBody LoginUserDataInputDTO userDto) {
+    public ResponseObj login(@RequestBody LoginUserDataInputDTO userDto) {
         String methodName = "login";
         long refId = System.currentTimeMillis();
-        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: /users/login");
+        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [POST]/users/login");
         AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(userDto));
-        AMResponseObj response = new AMResponseObj();
+        ResponseObj response = new ResponseObj();
         try {
-            LoginUserOutputDTO loginUserDto = modelMapper.map(loginInvUserService.signin(userDto.getUsername(), userDto.getPassword(), refId), LoginUserOutputDTO.class);
+            LoginInvestorUserOutputDTO loginUserDto = loginInvUserService.signin(userDto.getUsername(), userDto.getPassword(), refId);
             response.setStatus(Constant.RESPONSE_OK);
             response.setData(new DataObj());
             response.getData().setUser(loginUserDto);
@@ -61,12 +61,12 @@ public class LoginInvestorUserController {
 
     @GetMapping("/users/refresh")
     @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_CLIENT')")
-    public AMResponseObj refresh(HttpServletRequest req) {
+    public ResponseObj refresh(HttpServletRequest req) {
         String methodName = "refresh";
         long refId = System.currentTimeMillis();
-        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: /users/refresh");
+        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [GET]/users/refresh");
         AMLogger.logMessage(className, methodName, refId, "INPUT:" + req.getRemoteUser());
-        AMResponseObj response = new AMResponseObj();
+        ResponseObj response = new ResponseObj();
         try {
             String accessToken = loginInvUserService.refresh(req.getRemoteUser(), refId);
             response.setStatus(Constant.RESPONSE_OK);
@@ -82,12 +82,12 @@ public class LoginInvestorUserController {
     }
 
     @PostMapping("/users/logout/{userId}")
-    public AMResponseObj logout(@PathVariable Long userId) {
+    public ResponseObj logout(@PathVariable Long userId) {
         String methodName = "logout";
         long refId = System.currentTimeMillis();
-        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: /users/logout");
+        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [POST]/users/logout");
         AMLogger.logMessage(className, methodName, refId, "INPUT:" + userId);
-        AMResponseObj response = new AMResponseObj();
+        ResponseObj response = new ResponseObj();
         try {
             if (loginInvUserService.logout(userId, refId)) {
                 response.setStatus(Constant.RESPONSE_OK);
@@ -105,12 +105,12 @@ public class LoginInvestorUserController {
     }
 
     @PostMapping("/users/verifyPin/{userId}")
-    public AMResponseObj verifyPin(@PathVariable Long userId, @RequestBody LoginUserDataInputDTO user) {
+    public ResponseObj verifyPin(@PathVariable Long userId, @RequestBody LoginUserDataInputDTO user) {
         String methodName = "verifyPin";
         long refId = System.currentTimeMillis();
-        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: /users/verifyPin/" + userId);
+        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [POST]/users/verifyPin/" + userId);
         AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(user));
-        AMResponseObj response = new AMResponseObj();
+        ResponseObj response = new ResponseObj();
         try {
             if (loginInvUserService.verifyPin(userId, user.getPin(), refId)) {
                 response.setStatus(Constant.RESPONSE_OK);
@@ -128,12 +128,12 @@ public class LoginInvestorUserController {
     }
 
     @PostMapping("/users/{userId}/watchlist")
-    public AMResponseObj saveWatchList(@PathVariable Long userId, @RequestBody LoginUserDataInputDTO input) {
+    public ResponseObj saveWatchList(@PathVariable Long userId, @RequestBody LoginUserDataInputDTO input) {
         String methodName = "saveWatchList";
         long refId = System.currentTimeMillis();
-        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: " + String.format("/users/%s/watchlist", userId));
+        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: " + String.format("[POST]/users/%s/watchlist", userId));
         AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(input));
-        AMResponseObj response = new AMResponseObj();
+        ResponseObj response = new ResponseObj();
         try {
             LoginInvestorUser user = loginInvUserService.search(userId, refId);
             if (user != null) {
@@ -156,12 +156,12 @@ public class LoginInvestorUserController {
     }
 
     @PostMapping("/users/{userId}/layout")
-    public AMResponseObj saveLayout(@PathVariable Long userId, @RequestBody LoginUserDataInputDTO input) {
+    public ResponseObj saveLayout(@PathVariable Long userId, @RequestBody LoginUserDataInputDTO input) {
         String methodName = "saveLayout";
         long refId = System.currentTimeMillis();
-        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: " + String.format("/users/%s/layout", userId));
+        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: " + String.format("[POST]/users/%s/layout", userId));
         AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(input));
-        AMResponseObj response = new AMResponseObj();
+        ResponseObj response = new ResponseObj();
         try {
             LoginInvestorUser user = loginInvUserService.search(userId, refId);
             if (user != null) {
@@ -198,12 +198,12 @@ public class LoginInvestorUserController {
     }
 
     @PostMapping("/users/{userId}/password")
-    public AMResponseObj changePassword(@PathVariable Long userId, @RequestBody LoginUserDataInputDTO input) {
+    public ResponseObj changePassword(@PathVariable Long userId, @RequestBody LoginUserDataInputDTO input) {
         String methodName = "changePassword";
         long refId = System.currentTimeMillis();
-        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: " + String.format("/users/%s/password", userId));
+        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: " + String.format("[POST]/users/%s/password", userId));
         AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(input));
-        AMResponseObj response = new AMResponseObj();
+        ResponseObj response = new ResponseObj();
         try {
             if (loginInvUserService.changePassword(userId, input.getOldPassword(), input.getNewPassword(), refId)) {
                 response.setStatus(Constant.RESPONSE_OK);
@@ -221,17 +221,17 @@ public class LoginInvestorUserController {
     }
 
     @GetMapping("/users/{userId}")
-    public AMResponseObj getUserDetail(@PathVariable Long userId) {
+    public ResponseObj getUserDetail(@PathVariable Long userId) {
         String methodName = "getUserDetail";
         long refId = System.currentTimeMillis();
-        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: " + String.format("/users/%s", userId));
+        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: " + String.format("[POST]/users/%s", userId));
         AMLogger.logMessage(className, methodName, refId, "INPUT:" + userId);
-        AMResponseObj response = new AMResponseObj();
+        ResponseObj response = new ResponseObj();
         try {
             LoginInvestorUser user = loginInvUserService.search(userId, refId);
             if (user != null) {
                 user.setAccessToken(null);
-                LoginUserOutputDTO userDto = modelMapper.map(user, LoginUserOutputDTO.class);
+                LoginInvestorUserOutputDTO userDto = modelMapper.map(user, LoginInvestorUserOutputDTO.class);
                 response.setStatus(Constant.RESPONSE_OK);
                 response.setData(new DataObj());
                 response.getData().setUser(userDto);
@@ -249,11 +249,11 @@ public class LoginInvestorUserController {
     }
 
     @GetMapping("/users")
-    public AMResponseObj listUsers() {
+    public ResponseObj listUsers() {
         String methodName = "listUsers";
         long refId = System.currentTimeMillis();
-        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: /users");
-        AMResponseObj response = new AMResponseObj();
+        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [GET]/users");
+        ResponseObj response = new ResponseObj();
         try {
             List<ListUserDTO> userDtos = new ArrayList<>();
             List<LoginInvestorUser> users = loginInvUserService.list(refId);
@@ -278,35 +278,5 @@ public class LoginInvestorUserController {
         AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
         return response;
     }
-    
-    @GetMapping("/users/list")
-    public AMResponseObj listUsers2() {
-        String methodName = "listUsers2";
-        long refId = System.currentTimeMillis();
-        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: /users");
-        AMResponseObj response = new AMResponseObj();
-        try {
-            List<ListUserDTO> userDtos = new ArrayList<>();
-            List<LoginInvestorUser> users = loginInvUserService.list(refId);
 
-            if (users != null && users.size() > 0) {
-                for (LoginInvestorUser user : users) {
-                    ListUserDTO userDto = new ListUserDTO(user.getId(), user.getUsername());
-                    userDtos.add(userDto);
-                }
-                response.setStatus(Constant.RESPONSE_OK);
-                response.setData(new DataObj());
-                response.getData().setUsers(userDtos);
-            } else {
-                response.setStatus(Constant.RESPONSE_ERROR);
-                response.setErrMsg(ErrorMessage.USER_DOES_NOT_EXIST);
-            }
-        } catch (Exception ex) {
-            AMLogger.logError(className, methodName, refId, ex);
-            response.setStatus(Constant.RESPONSE_ERROR);
-            response.setErrMsg(ex.getMessage());
-        }
-        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
-        return response;
-    }
 }

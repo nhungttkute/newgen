@@ -5,6 +5,7 @@
  */
 package com.newgen.am.security;
 
+import com.newgen.am.common.Constant;
 import com.newgen.am.common.Utility;
 import com.newgen.am.model.LoginAdminUser;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +29,7 @@ public class AdminAuthenticationProvider implements AuthenticationProvider {
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
         LoginAdminUser adminUser = userService.authenticateLoginAdminUser(String.valueOf(authentication.getPrincipal()),
                 String.valueOf(authentication.getCredentials()));
-        if (adminUser != null) {
+        if (adminUser != null && Constant.STATUS_ACTIVE.equalsIgnoreCase(adminUser.getStatus())) {
             return new AdminUsernamePasswordAuthenticationToken(
                     authentication.getPrincipal(), authentication.getCredentials(),
                     Utility.getAdminAuthorities());

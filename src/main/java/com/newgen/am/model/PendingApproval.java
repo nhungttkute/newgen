@@ -6,12 +6,10 @@
 package com.newgen.am.model;
 
 import java.io.Serializable;
-import java.util.Date;
 import java.util.List;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.mapping.Field;
 
 /**
  *
@@ -23,26 +21,17 @@ public class PendingApproval extends AuditModel implements Serializable {
     public static final String SEQUENCE_NAME = "pending_approval_seq";
     @Id
     private long id;
-    @Field(name = "created_event_date")
-    private Date createdEventDate;
-    @Field(name = "approval_date")
-    private Date approvalDate;
-    @Field(name = "created_event_user")
-    private String createdEventUser;
-    @Field(name = "approval_user")
+    private long creatorDate;
+    private String creatorUser;
+    private long approvalDate;
     private String approvalUser;
-    @Field(name = "function_code")
     private String functionCode;
-    @Field(name = "function_name")
     private String functionName;
     private String description;
     private String status;
-    @Field(name = "reject_reason")
     private String rejectReason;
-    @Field(name = "nested_obj_info")
     private NestedObjectInfo nestedObjInfo;
-    @Field(name = "pending_fields")
-    private List<PendingField> pendingFields;
+    private PendingData pendingData;
 
     public long getId() {
         return id;
@@ -52,19 +41,11 @@ public class PendingApproval extends AuditModel implements Serializable {
         this.id = id;
     }
 
-    public Date getCreatedEventDate() {
-        return createdEventDate;
-    }
-
-    public void setCreatedEventDate(Date createdEventDate) {
-        this.createdEventDate = createdEventDate;
-    }
-
-    public Date getApprovalDate() {
+    public long getApprovalDate() {
         return approvalDate;
     }
 
-    public void setApprovalDate(Date approvalDate) {
+    public void setApprovalDate(long approvalDate) {
         this.approvalDate = approvalDate;
     }
 
@@ -124,20 +105,28 @@ public class PendingApproval extends AuditModel implements Serializable {
         this.nestedObjInfo = nestedObjInfo;
     }
 
-    public List<PendingField> getPendingFields() {
-        return pendingFields;
+    public long getCreatorDate() {
+        return creatorDate;
     }
 
-    public void setPendingFields(List<PendingField> pendingFields) {
-        this.pendingFields = pendingFields;
+    public void setCreatorDate(long creatorDate) {
+        this.creatorDate = creatorDate;
     }
 
-    public String getCreatedEventUser() {
-        return createdEventUser;
+    public String getCreatorUser() {
+        return creatorUser;
     }
 
-    public void setCreatedEventUser(String createdEventUser) {
-        this.createdEventUser = createdEventUser;
+    public void setCreatorUser(String creatorUser) {
+        this.creatorUser = creatorUser;
     }
-    
+
+    public PendingData getPendingData() {
+        return pendingData;
+    }
+
+    public void setPendingData(PendingData pendingData) {
+        this.pendingData = pendingData;
+    }
+
 }

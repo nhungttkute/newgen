@@ -3,15 +3,19 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.newgen.am.model;
+package com.newgen.am.dto;
 
-import java.io.Serializable;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.newgen.am.model.RoleFunction;
+import com.newgen.am.model.UserRole;
+import java.util.List;
 
 /**
  *
  * @author nhungtt
  */
-public class BaseUser implements Serializable {
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
+public class DeptUserDTO {
     private long id;
     private String username;
     private String fullName;
@@ -19,11 +23,18 @@ public class BaseUser implements Serializable {
     private String phoneNumber;
     private String status; //pending, active, inactive
     private String note;
-    private boolean isPasswordExpiryCheck;
+    @JsonInclude(JsonInclude.Include.NON_DEFAULT)
+    private Boolean isPasswordExpiryCheck;
+    @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     private int passwordExpiryDays;
+    @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     private int expiryAlertDays;
+    @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     private long createdAt;
+    @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     private long updatedAt;
+    private List<UserRole> roles;
+    private List<RoleFunction> functions;
 
     public long getId() {
         return id;
@@ -73,11 +84,19 @@ public class BaseUser implements Serializable {
         this.status = status;
     }
 
-    public boolean getIsPasswordExpiryCheck() {
+    public String getNote() {
+        return note;
+    }
+
+    public void setNote(String note) {
+        this.note = note;
+    }
+
+    public Boolean isIsPasswordExpiryCheck() {
         return isPasswordExpiryCheck;
     }
 
-    public void setIsPasswordExpiryCheck(boolean isPasswordExpiryCheck) {
+    public void setIsPasswordExpiryCheck(Boolean isPasswordExpiryCheck) {
         this.isPasswordExpiryCheck = isPasswordExpiryCheck;
     }
 
@@ -113,12 +132,20 @@ public class BaseUser implements Serializable {
         this.updatedAt = updatedAt;
     }
 
-    public String getNote() {
-        return note;
+    public List<UserRole> getRoles() {
+        return roles;
     }
 
-    public void setNote(String note) {
-        this.note = note;
+    public void setRoles(List<UserRole> roles) {
+        this.roles = roles;
     }
 
+    public List<RoleFunction> getFunctions() {
+        return functions;
+    }
+
+    public void setFunctions(List<RoleFunction> functions) {
+        this.functions = functions;
+    }
+    
 }

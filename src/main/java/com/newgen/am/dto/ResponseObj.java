@@ -12,8 +12,8 @@ import java.io.Serializable;
  *
  * @author nhungtt
  */
-@JsonInclude(JsonInclude.Include.NON_NULL)
-public class AMResponseObj implements Serializable {
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
+public class ResponseObj implements Serializable {
     private String status;
     private String errMsg;
     private DataObj data;

@@ -2,6 +2,7 @@ package com.newgen.am.security;
 
 import com.newgen.am.common.ConfigLoader;
 import com.newgen.am.common.Constant;
+import com.newgen.am.common.Utility;
 import java.util.Base64;
 import java.util.Date;
 import java.util.List;
@@ -23,6 +24,7 @@ import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import com.newgen.am.exception.CustomException;
+import com.newgen.am.model.LoginAdminUser;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 
 @Component
@@ -62,7 +64,7 @@ public class AdminJwtTokenProvider {
 
     public Authentication getAuthentication(String token) {
         UserDetails userDetails = userService.checkAccessTokenByAdminUser(getUsername(token), token);
-        return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
+        return new UsernamePasswordAuthenticationToken(userDetails, "", Utility.getAdminAuthorities());
     }
 
     public String getUsername(String token) {

@@ -5,6 +5,7 @@
  */
 package com.newgen.am.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.newgen.am.model.Commodity;
 import com.newgen.am.model.InvestorAccount;
 import com.newgen.am.model.MarginRatioAlert;
@@ -14,6 +15,7 @@ import java.util.List;
  *
  * @author nhungtt
  */
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class UserInfoDTO {
     private long id;
     private String username;

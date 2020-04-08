@@ -1,62 +1,18 @@
 package com.newgen.am;
 
-import com.google.gson.Gson;
 import com.newgen.am.common.ConfigLoader;
 import com.newgen.am.common.Constant;
-import com.newgen.am.common.SystemFunctionCode;
-import com.newgen.am.dto.InvestorAccountDTO;
-import com.newgen.am.dto.UserFunctionOutputDTO;
-import com.newgen.am.dto.UserInfoDTO;
-import com.newgen.am.model.Broker;
-import com.newgen.am.model.BrokerUser;
-import com.newgen.am.model.Collaborator;
-import com.newgen.am.model.CollaboratorUser;
-import com.newgen.am.model.Commodity;
-import com.newgen.am.model.Company;
-import com.newgen.am.model.Contact;
-import com.newgen.am.model.Delegate;
-import com.newgen.am.model.Department;
-import com.newgen.am.model.DeptUser;
-import com.newgen.am.model.Individual;
-import com.newgen.am.model.Investor;
-import com.newgen.am.model.InvestorAccTransApproval;
-import com.newgen.am.model.InvestorAccount;
-import com.newgen.am.model.InvestorUser;
+import com.newgen.am.common.FileUtility;
+import com.newgen.am.common.Utility;
 import com.newgen.am.model.LoginAdminUser;
-import com.newgen.am.model.LoginInvestorUser;
-import com.newgen.am.model.MarginRatioAlert;
-import com.newgen.am.model.Member;
-import com.newgen.am.model.MemberRole;
-import com.newgen.am.model.MemberUser;
-import com.newgen.am.model.RedisUserInfo;
-import com.newgen.am.model.RoleFunction;
-import com.newgen.am.model.SystemFunction;
 import com.newgen.am.model.SystemRole;
 import com.newgen.am.model.UserRole;
-import com.newgen.am.repository.BrokerRepository;
-import com.newgen.am.repository.CollaboratorRepository;
-import com.newgen.am.repository.DBSequenceRepository;
-import com.newgen.am.repository.DepartmentRepository;
-import com.newgen.am.repository.InvestorAccTransApprovalRepository;
-import com.newgen.am.repository.InvestorRepository;
 import com.newgen.am.repository.LoginAdminUserRepository;
-import com.newgen.am.repository.LoginInvestorUserRepository;
-import com.newgen.am.repository.MemberRepository;
-import com.newgen.am.repository.MemberRoleRepository;
-import com.newgen.am.repository.RedisUserInfoRepository;
-import com.newgen.am.repository.SystemFunctionRepository;
 import com.newgen.am.repository.SystemRoleRepository;
 import com.newgen.am.service.DBSequenceService;
+import com.newgen.am.service.DepartmentService;
 import com.newgen.am.service.InvestorService;
-import com.newgen.am.service.InvestorUserService;
 import com.newgen.am.service.LoginAdminUserService;
-import com.newgen.am.service.LoginInvestorUserService;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import jdk.nashorn.internal.objects.NativeArray;
-import jdk.nashorn.internal.runtime.regexp.joni.ast.ConsAltNode;
-import org.bson.Document;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
@@ -64,7 +20,6 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.mongodb.config.EnableMongoAuditing;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 @EnableMongoAuditing
@@ -73,16 +28,16 @@ public class NewgenAmApplication {
 
 //    @Autowired
 //    DBSequenceRepository dbSequenceRepo;
-//    @Autowired
-//    private PasswordEncoder passwordEncoder;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
     @Autowired
     private DBSequenceService dbSeqService;
 //    @Autowired
 //    private LoginInvestorUserRepository loginInvUserRepo;
 //    @Autowired
 //    private DepartmentRepository deptRepo;
-//    @Autowired
-//    private LoginAdminUserRepository loginAdmUserRepo;
+    @Autowired
+    private LoginAdminUserRepository loginAdmUserRepo;
 //    @Autowired
 //    private MemberRepository memberRepo;
 //    @Autowired
@@ -100,6 +55,9 @@ public class NewgenAmApplication {
     
     @Autowired
     private LoginAdminUserService loginAdmUserService;
+    
+    @Autowired
+    private DepartmentService deptService;
 //    @Autowired
 //    private InvestorUserService invUserService;
 //    @Autowired
@@ -121,14 +79,15 @@ public class NewgenAmApplication {
     public ModelMapper modelMapper() {
         return new ModelMapper();
     }
-
+//
 //    @Bean
 //    public CommandLineRunner testRedis() {
-//
+//        LoginAdminUser user = new LoginAdminUser();
+//        user.setUsername("nhungtt");
+//        user.setPassword("abcxyz");
+//        user.setPin("123456");
 //        return args -> {
-//            long refId = System.currentTimeMillis();
-//            InvestorAccountDTO invAcc = investorService.getInvestorAccount(15l, refId);
-//            System.out.println("invAcc: " + new Gson().toJson(invAcc));
+//            deptService.sendCreateNewUserEmail("nhungtt0212@gmail.com", user, System.currentTimeMillis());
 //        };
 //    }
 

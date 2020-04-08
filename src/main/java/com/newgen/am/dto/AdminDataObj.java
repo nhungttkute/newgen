@@ -6,8 +6,8 @@
 package com.newgen.am.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.newgen.am.model.Commodity;
 import com.newgen.am.model.WatchList;
-import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -15,9 +15,8 @@ import java.util.List;
  * @author nhungtt
  */
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-public class DataObj implements Serializable {
-
-    private LoginInvestorUserOutputDTO user;
+public class AdminDataObj {
+    private LoginAdminUserOutputDTO user;
     private String accessToken;
     private List<WatchList> watchLists;
     private String layout;
@@ -25,14 +24,15 @@ public class DataObj implements Serializable {
     private String theme;
     @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     private int fontSize;
-    private List<ListUserDTO> users;
-    private InvestorAccountDTO investorAccount;
+    private List<DepartmentDTO> departments;
+    private DepartmentDTO department;
+    private DeptUserDTO deptUser;
 
-    public LoginInvestorUserOutputDTO getUser() {
+    public LoginAdminUserOutputDTO getUser() {
         return user;
     }
 
-    public void setUser(LoginInvestorUserOutputDTO user) {
+    public void setUser(LoginAdminUserOutputDTO user) {
         this.user = user;
     }
 
@@ -84,19 +84,28 @@ public class DataObj implements Serializable {
         this.fontSize = fontSize;
     }
 
-    public List<ListUserDTO> getUsers() {
-        return users;
+    public List<DepartmentDTO> getDepartments() {
+        return departments;
     }
 
-    public void setUsers(List<ListUserDTO> users) {
-        this.users = users;
+    public void setDepartments(List<DepartmentDTO> departments) {
+        this.departments = departments;
     }
 
-    public InvestorAccountDTO getInvestorAccount() {
-        return investorAccount;
+    public DepartmentDTO getDepartment() {
+        return department;
     }
 
-    public void setInvestorAccount(InvestorAccountDTO investorAccount) {
-        this.investorAccount = investorAccount;
+    public void setDepartment(DepartmentDTO department) {
+        this.department = department;
     }
+
+    public DeptUserDTO getDeptUser() {
+        return deptUser;
+    }
+
+    public void setDeptUser(DeptUserDTO deptUser) {
+        this.deptUser = deptUser;
+    }
+    
 }

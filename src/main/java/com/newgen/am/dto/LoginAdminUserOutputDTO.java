@@ -1,14 +1,20 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
 package com.newgen.am.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.newgen.am.model.RoleFunction;
 import com.newgen.am.model.WatchList;
 import java.util.List;
 
-
+/**
+ *
+ * @author nhungtt
+ */
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-public class LoginUserOutputDTO {
-
+public class LoginAdminUserOutputDTO {
     private long id;
     private String username;
     private String fullName;
@@ -19,6 +25,8 @@ public class LoginUserOutputDTO {
     private long tokenExpiration;
     private Boolean logined;
     private Boolean mustChangePassword;
+    private long departmentId;
+    private long userId;
     private long memberId;
     private long brokerId;
     private long collaboratorId;
@@ -32,12 +40,28 @@ public class LoginUserOutputDTO {
     private int fontSize;
     private List<String> functions;
 
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
+
     public String getUsername() {
         return username;
     }
 
     public void setUsername(String username) {
         this.username = username;
+    }
+
+    public String getFullName() {
+        return fullName;
+    }
+
+    public void setFullName(String fullName) {
+        this.fullName = fullName;
     }
 
     public String getPhoneNumber() {
@@ -54,14 +78,6 @@ public class LoginUserOutputDTO {
 
     public void setEmail(String email) {
         this.email = email;
-    }
-
-    public String getFullName() {
-        return fullName;
-    }
-
-    public void setFullName(String fullName) {
-        this.fullName = fullName;
     }
 
     public String getAccessToken() {
@@ -88,52 +104,28 @@ public class LoginUserOutputDTO {
         this.logined = logined;
     }
 
-    public List<WatchList> getWatchLists() {
-        return watchLists;
+    public Boolean getMustChangePassword() {
+        return mustChangePassword;
     }
 
-    public void setWatchLists(List<WatchList> watchLists) {
-        this.watchLists = watchLists;
+    public void setMustChangePassword(Boolean mustChangePassword) {
+        this.mustChangePassword = mustChangePassword;
     }
 
-    public String getLayout() {
-        return layout;
+    public long getDepartmentId() {
+        return departmentId;
     }
 
-    public void setLayout(String layout) {
-        this.layout = layout;
+    public void setDepartmentId(long departmentId) {
+        this.departmentId = departmentId;
     }
 
-    public String getLanguage() {
-        return language;
+    public long getUserId() {
+        return userId;
     }
 
-    public void setLanguage(String language) {
-        this.language = language;
-    }
-
-    public String getTheme() {
-        return theme;
-    }
-
-    public void setTheme(String theme) {
-        this.theme = theme;
-    }
-
-    public int getFontSize() {
-        return fontSize;
-    }
-
-    public void setFontSize(int fontSize) {
-        this.fontSize = fontSize;
-    }
-
-    public long getId() {
-        return id;
-    }
-
-    public void setId(long id) {
-        this.id = id;
+    public void setUserId(long userId) {
+        this.userId = userId;
     }
 
     public long getMemberId() {
@@ -176,12 +168,44 @@ public class LoginUserOutputDTO {
         this.investorUserId = investorUserId;
     }
 
-    public Boolean getMustChangePassword() {
-        return mustChangePassword;
+    public List<WatchList> getWatchLists() {
+        return watchLists;
     }
 
-    public void setMustChangePassword(Boolean mustChangePassword) {
-        this.mustChangePassword = mustChangePassword;
+    public void setWatchLists(List<WatchList> watchLists) {
+        this.watchLists = watchLists;
+    }
+
+    public String getLayout() {
+        return layout;
+    }
+
+    public void setLayout(String layout) {
+        this.layout = layout;
+    }
+
+    public String getLanguage() {
+        return language;
+    }
+
+    public void setLanguage(String language) {
+        this.language = language;
+    }
+
+    public String getTheme() {
+        return theme;
+    }
+
+    public void setTheme(String theme) {
+        this.theme = theme;
+    }
+
+    public int getFontSize() {
+        return fontSize;
+    }
+
+    public void setFontSize(int fontSize) {
+        this.fontSize = fontSize;
     }
 
     public List<String> getFunctions() {
@@ -191,5 +215,5 @@ public class LoginUserOutputDTO {
     public void setFunctions(List<String> functions) {
         this.functions = functions;
     }
-
+    
 }

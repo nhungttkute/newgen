@@ -23,23 +23,16 @@ public class Collaborator extends AuditModel implements Serializable {
     public static final String SEQUENCE_NAME = "collaborator_seq";
     @Id
     private long id;
-    @Field(name = "member_id")
     private long memberId;
-    @Field(name = "broker_id")
     private long brokerId;
-    @Field(name = "member_code")
     private String memberCode;
-    @Field(name = "member_name")
     private String memberName;
-    @Field(name = "broker_code")
     private String brokerCode;
-    @Field(name = "broker_name")
     private String brokerName;
     private String code;
     private String name;
     private String note;
     private String status;
-    @Field(name = "individual_info")
     private Individual individualInfo;
     private Contact contact;
     private CollaboratorUser user;

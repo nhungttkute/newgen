@@ -5,10 +5,13 @@
  */
 package com.newgen.am.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 /**
  *
  * @author nhungtt
  */
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ActivityLogDTO {
     private String orgType;
     private String orgCode;

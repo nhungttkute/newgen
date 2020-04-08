@@ -10,16 +10,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.CorsUtils;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 /**
@@ -31,22 +33,22 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 public class MultipleLoginSecurityConfig {
 
     @Autowired
-    private static InvestorJwtTokenProvider invJwtTokenProvider;
+    private InvestorJwtTokenProvider invJwtTokenProvider;
 
     @Autowired
-    private static InvestorAuthenticationProvider invAuthenticationProvider;
+    private InvestorAuthenticationProvider invAuthenticationProvider;
 
     @Autowired
-    private static AdminJwtTokenProvider admJwtTokenProvider;
+    private AdminJwtTokenProvider admJwtTokenProvider;
 
     @Autowired
-    private static AdminAuthenticationProvider admAuthenticationProvider;
+    private AdminAuthenticationProvider admAuthenticationProvider;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder(12);
     }
-    
+
     @Autowired
     public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
         auth.authenticationProvider(admAuthenticationProvider).authenticationProvider(invAuthenticationProvider);
@@ -54,7 +56,7 @@ public class MultipleLoginSecurityConfig {
 
     @Configuration
     @Order(1)
-    public static class AdminWebSecurityConfig extends WebSecurityConfigurerAdapter {
+    public class AdminWebSecurityConfig extends WebSecurityConfigurerAdapter {
 
         public AdminWebSecurityConfig() {
             super();
@@ -62,28 +64,30 @@ public class MultipleLoginSecurityConfig {
 
         @Override
         protected void configure(HttpSecurity http) throws Exception {
-            // Disable CSRF (cross site request forgery)
+            http.cors().and()
+                .sessionManagement().sessionCreationPolicy( SessionCreationPolicy.STATELESS ).and()
+                .antMatcher("/admin/**")
+                .authorizeRequests()
+                .anyRequest().authenticated().and()
+                .addFilterBefore(new AdminJwtTokenFilter(admJwtTokenProvider), UsernamePasswordAuthenticationFilter.class);
+
             http.csrf().disable();
-            // No session will be created or used by spring security
-            http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-            // Apply JWT
-            http.apply(new AdminJwtTokenFilterConfigurer(admJwtTokenProvider));
-            
-            http.antMatcher("/admin*")
-                    .authorizeRequests()
-                    .antMatchers("/admin/users/login").permitAll()
-                    .antMatchers("/admin/**").hasRole("ADMIN")
-                    .anyRequest().authenticated();
-            
-            // If a user try to access a resource without having enough permissions
-            http.exceptionHandling().accessDeniedPage("/login");
+        }
+
+        @Override
+        public void configure(WebSecurity web) throws Exception {
+            // TokenAuthenticationFilter will ignore the below paths
+            web.ignoring().antMatchers(
+                    HttpMethod.POST,
+                    "/admin/users/login"
+            );
         }
 
     }
 
     @Configuration
     @Order(2)
-    public static class InvestorWebSecurityConfig extends WebSecurityConfigurerAdapter {
+    public class InvestorWebSecurityConfig extends WebSecurityConfigurerAdapter {
 
         public InvestorWebSecurityConfig() {
             super();
@@ -91,26 +95,24 @@ public class MultipleLoginSecurityConfig {
 
         @Override
         protected void configure(HttpSecurity http) throws Exception {
-            // Disable CSRF (cross site request forgery)
+            http.cors().and()
+                .sessionManagement().sessionCreationPolicy( SessionCreationPolicy.STATELESS ).and()
+                .antMatcher("/users/**")
+                .authorizeRequests()
+                .anyRequest().authenticated().and()
+                .addFilterBefore(new InvestorJwtTokenFilter(invJwtTokenProvider), UsernamePasswordAuthenticationFilter.class);
+
             http.csrf().disable();
-           // No session will be created or used by spring security
-            http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-            // Apply JWT
-            http.apply(new InvestorJwtTokenFilterConfigurer(invJwtTokenProvider));
-            
-            // Entry points
-            http.antMatcher("/users*")
-                    .authorizeRequests()
-                    .antMatchers("/users/login").permitAll()
-                    .antMatchers("/users/**").hasRole("INVESTOR")
-                    .anyRequest().authenticated();
-
-            // If a user try to access a resource without having enough permissions
-            http.exceptionHandling().accessDeniedPage("/login");
-
-            
         }
 
+        @Override
+        public void configure(WebSecurity web) throws Exception {
+            // TokenAuthenticationFilter will ignore the below paths
+            web.ignoring().antMatchers(
+                    HttpMethod.POST,
+                    "/users/login"
+            );
+        }
     }
 
     @Bean

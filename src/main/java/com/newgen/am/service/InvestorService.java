@@ -17,6 +17,8 @@ import com.newgen.am.common.Utility;
 import com.newgen.am.dto.InvestorAccountDTO;
 import com.newgen.am.exception.CustomException;
 import com.newgen.am.model.Investor;
+import com.newgen.am.model.LoginInvestorUser;
+import com.newgen.am.repository.LoginInvestorUserRepository;
 import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -34,21 +36,26 @@ public class InvestorService {
 
     @Autowired
     private RedisTemplate redisTemplate;
+    
+    @Autowired
+    private LoginInvestorUserRepository loginInvUserRepo;
 
-    public InvestorAccountDTO getInvestorAccount(Long investorId, long refId) {
+    public InvestorAccountDTO getInvestorAccount(long refId) {
         String methodName = "getInvestorAccount";
         InvestorAccountDTO investorAccDto = new InvestorAccountDTO();
         try {
             MongoDatabase database = MongoDBConnection.getMongoDatabase();
             MongoCollection<Document> collection = database.getCollection("investors");
+            
+            LoginInvestorUser user = loginInvUserRepo.findByUsername(Utility.getUsername());
             BasicDBObject searchQuery = new BasicDBObject();
-            searchQuery.put("_id", investorId);
+            searchQuery.put("_id", user.getInvestorId());
             BasicDBObject projection = new BasicDBObject();
             projection.append("investorCode", 1);
             projection.append("investorName", 1);
             projection.append("account", 1);
             Document invDoc = collection.find(searchQuery).projection(projection).first();
-            Investor investor = new Gson().fromJson(invDoc.toJson(), Investor.class);
+            Investor investor = new Gson().fromJson(invDoc.toJson(Utility.getJsonWriterSettings()), Investor.class);
 
             if (investor != null) {
                 // get info from redis

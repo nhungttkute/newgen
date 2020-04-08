@@ -5,10 +5,13 @@
  */
 package com.newgen.am.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 /**
  *
  * @author nhungtt
  */
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class InvestorAccountDTO {
     private String investorName; // Ten TK
     private String investorCode; // So TK

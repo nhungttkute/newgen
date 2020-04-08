@@ -75,10 +75,11 @@ public class HybridUserDetailsService {
     
     public UserDetails checkAccessTokenByAdminUser(String username, String accessToken) {
         final LoginAdminUser user = loginAdmUserRepository.findByUsername(username);
-
+        
         if (user == null) {
             throw new UsernameNotFoundException("User '" + username + "' not found");
         }
+        
         if (!accessToken.equalsIgnoreCase(user.getAccessToken())) {
             throw new CustomException("AccessToken is invalid", HttpStatus.UNAUTHORIZED);
         }
@@ -93,4 +94,5 @@ public class HybridUserDetailsService {
                 .disabled(false)//
                 .build();
     }
+
 }

@@ -9,7 +9,7 @@ import com.google.gson.Gson;
 import com.newgen.am.common.AMLogger;
 import com.newgen.am.common.Constant;
 import com.newgen.am.common.ErrorMessage;
-import com.newgen.am.dto.AMResponseObj;
+import com.newgen.am.dto.ResponseObj;
 import com.newgen.am.dto.DataObj;
 import com.newgen.am.dto.InvestorAccountDTO;
 import com.newgen.am.service.InvestorService;
@@ -29,15 +29,14 @@ public class InvestorController {
     @Autowired
     InvestorService investorService;
     
-    @GetMapping("/investors/account/{investorId}")
-    public AMResponseObj getAccountSummary(@PathVariable Long investorId) {
+    @GetMapping("/users/account")
+    public ResponseObj getAccountSummary() {
         String methodName = "getAccountSummary";
         long refId = System.currentTimeMillis();
-        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: " + String.format("/investors/account/%s", investorId));
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + investorId);
-        AMResponseObj response = new AMResponseObj();
+        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: " + String.format("/investors/account"));
+        ResponseObj response = new ResponseObj();
         try {
-            InvestorAccountDTO investorAcc = investorService.getInvestorAccount(investorId, refId);
+            InvestorAccountDTO investorAcc = investorService.getInvestorAccount(refId);
             if (investorAcc != null) {
                 response.setStatus(Constant.RESPONSE_OK);
                 response.setData(new DataObj());

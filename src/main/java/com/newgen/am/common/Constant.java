@@ -40,7 +40,12 @@ public class Constant {
     public static final String APPROVAL_STATUS_REJECTED = "REJECTED";
     public static final String APPROVAL_STATUS_PENDING = "PENDING";
     
+    public static final String APPROVAL_ACTION_CREATE = "create";
+    public static final String APPROVAL_ACTION_UPDATE = "update";
+    
     public static final String SERVICE_CONNECTION_TIMEOUT = "SERVICE_CONNECTION_TIMEOUT";
     public static final String SERVICE_SOCKET_TIMEOUT = "SERVICE_SOCKET_TIMEOUT";
     public static final String SERVICE_ACTIVITY_LOG = "SERVICE_ACTIVITY_LOG";
+    public static final String SERVICE_NOTIFICATION_EMAIL = "SERVICE_NOTIFICATION_EMAIL";
+    public static final String SERVICE_NOTIFICATION_SMS = "SERVICE_NOTIFICATION_SMS";
 }

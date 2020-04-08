@@ -5,15 +5,13 @@
  */
 package com.newgen.am.repository;
 
-import com.newgen.am.model.RedisUserInfo;
-import org.springframework.data.repository.CrudRepository;
-import org.springframework.stereotype.Repository;
+import com.newgen.am.model.PendingApproval;
+import org.springframework.data.mongodb.repository.MongoRepository;
 
 /**
  *
  * @author nhungtt
  */
-@Repository
-public interface RedisUserInfoRepository extends CrudRepository<RedisUserInfo, String> {
+public interface PendingApprovalRepository extends MongoRepository<PendingApproval, Long> {
     
 }

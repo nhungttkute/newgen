@@ -5,7 +5,6 @@
  */
 package com.newgen.am.model;
 
-import java.util.Date;
 import java.util.List;
 import org.springframework.data.annotation.Transient;
 

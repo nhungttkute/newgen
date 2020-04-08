@@ -9,7 +9,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.Serializable;
 import org.springframework.data.mongodb.core.mapping.Field;
 import com.mongodb.lang.NonNull;
-import java.util.Date;
 import java.util.List;
 import org.hibernate.validator.constraints.Length;
 import org.springframework.data.annotation.Id;
@@ -36,33 +35,24 @@ public class LoginAdminUser extends AuditModel implements Serializable {
     @Field
     private Boolean checkPin = true;
     @NonNull
-    private String pin;
+    @Field
+    private String pin = "123456";
     private String status;
-    @Field(name = "access_token")
     private String accessToken;
-    @Field(name = "token_expiration")
     private long tokenExpiration;
     @Field
     private Boolean logined = false;
     @Field
     private Boolean mustChangePassword = true;
     private int logonCounts;
-    private Date logonTime;
-    @Field(name = "department_id")
+    private long logonTime;
     private long departmentId;
-    @Field(name = "user_id")
     private long userId;
-    @Field(name = "member_id")
     private long memberId;
-    @Field(name = "member_user_id")
     private long memberUserId;
-    @Field(name = "broker_id")
     private long brokerId;
-    @Field(name = "broker_user_id")
     private long brokerUserId;
-    @Field(name = "collaborator_id")
     private long collaboratorId;
-    @Field(name = "collaborator_user_id")
     private long collaboratorUserId;
     @Field
     @Length(max = 10000)
@@ -240,11 +230,11 @@ public class LoginAdminUser extends AuditModel implements Serializable {
         this.logonCounts = logonCounts;
     }
 
-    public Date getLogonTime() {
+    public long getLogonTime() {
         return logonTime;
     }
 
-    public void setLogonTime(Date logonTime) {
+    public void setLogonTime(long logonTime) {
         this.logonTime = logonTime;
     }
 

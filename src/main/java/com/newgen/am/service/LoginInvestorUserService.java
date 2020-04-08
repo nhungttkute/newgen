@@ -1,6 +1,7 @@
 package com.newgen.am.service;
 
 import com.google.gson.Gson;
+import com.mongodb.BasicDBObject;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.newgen.am.common.AMLogger;
@@ -9,6 +10,7 @@ import com.newgen.am.common.Constant;
 import com.newgen.am.common.ErrorMessage;
 import com.newgen.am.common.MongoDBConnection;
 import com.newgen.am.common.Utility;
+import com.newgen.am.dto.LoginInvestorUserOutputDTO;
 import com.newgen.am.dto.UserInfoDTO;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,10 +19,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.newgen.am.exception.CustomException;
+import com.newgen.am.model.DBSequence;
 import com.newgen.am.model.LoginInvestorUser;
 import com.newgen.am.repository.LoginInvestorUserRepository;
 import com.newgen.am.security.InvestorAuthenticationProvider;
-//import com.newgen.am.security.InvestorJwtTokenProvider;
 import com.newgen.am.security.InvestorJwtTokenProvider;
 import com.newgen.am.security.InvestorUsernamePasswordAuthenticationToken;
 import java.util.Arrays;
@@ -28,6 +30,7 @@ import java.util.Date;
 import java.util.List;
 import org.bson.Document;
 import org.bson.conversions.Bson;
+import org.modelmapper.ModelMapper;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.redis.core.RedisTemplate;
 
@@ -47,6 +50,9 @@ public class LoginInvestorUserService {
 
     @Autowired
     private RedisTemplate template;
+    
+    @Autowired
+    private ModelMapper modelMapper;
 
     private PasswordEncoder passwordEncoder;
 
@@ -55,15 +61,13 @@ public class LoginInvestorUserService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public LoginInvestorUser signin(String username, String password, long refId) throws CustomException {
+    public LoginInvestorUserOutputDTO signin(String username, String password, long refId) throws CustomException {
         String methodName = "signin";
         try {
-            // verify username/password
+            // verify username/password, status
             authenticationManager.authenticate(new InvestorUsernamePasswordAuthenticationToken(username, password));
             String accessToken = invJwtTokenProvider.createToken(username, Utility.getInvestorAuthorities());
 
-            // get reids secret key
-            String secretKey = ConfigLoader.getMainConfig().getString(Constant.REDIS_KEY_SECRET_KEY);
             //get user
             LoginInvestorUser user = loginInvUserRepository.findByUsername(username);
             //delete old redis user info
@@ -85,7 +89,7 @@ public class LoginInvestorUserService {
 
 //            //send activity log
 //            Utility.logActivity(ActivityLogConstant.ACTIVITY_ORG_TYPE_TKGD, investorCode, loginUser.getId().toString(), loginUser.getUsername(), ActivityLogConstant.ACTIVITY_TP_LOGIN, accessToken, "");
-            return loginUser;
+            return getLoginUserInfoDTO(loginUser, refId);
         } catch (Exception e) {
             AMLogger.logError(className, methodName, refId, e);
             throw new CustomException("Invalid username/password supplied", HttpStatus.UNPROCESSABLE_ENTITY);
@@ -255,7 +259,7 @@ public class LoginInvestorUserService {
             );
 
             Document result = collection.aggregate(pipeline).first();
-            userInfoDto = new Gson().fromJson(result.toJson(), UserInfoDTO.class);
+            userInfoDto = new Gson().fromJson(result.toJson(Utility.getJsonWriterSettings()), UserInfoDTO.class);
             if (userInfoDto != null) {
                 userInfoDto.setId(user.getId());
                 userInfoDto.setUsername(user.getUsername());
@@ -269,5 +273,63 @@ public class LoginInvestorUserService {
             throw new CustomException(ErrorMessage.USER_DOES_NOT_EXIST, HttpStatus.UNPROCESSABLE_ENTITY);
         }
         return userInfoDto;
+    }
+    
+    private LoginInvestorUserOutputDTO getLoginUserInfoDTO(LoginInvestorUser user, long refId) {
+        LoginInvestorUserOutputDTO loginUserInfoDto = new LoginInvestorUserOutputDTO();
+        loginUserInfoDto = modelMapper.map(user, LoginInvestorUserOutputDTO.class);
+        try {
+            MongoDatabase database = MongoDBConnection.getMongoDatabase();
+            MongoCollection<Document> collection = database.getCollection("investors");
+
+            List<? extends Bson> pipeline = Arrays.asList(
+                    new Document()
+                            .append("$match", new Document()
+                                    .append("_id", user.getInvestorId())
+                            ), 
+                    new Document()
+                            .append("$unwind", new Document()
+                                    .append("path", "$users")
+                            ), 
+                    new Document()
+                            .append("$match", new Document()
+                                    .append("users._id", user.getInvestorUserId())
+                            ), 
+                    new Document()
+                            .append("$replaceRoot", new Document()
+                                    .append("newRoot", new Document()
+                                            .append("memberCode", "$memberCode")
+                                            .append("memberName", "$memberName")
+                                            .append("brokerCode", "$brokerCode")
+                                            .append("brokerName", "$brokerName")
+                                            .append("collaboratorCode", "$collaboratorCode")
+                                            .append("collaboratorName", "$collaboratorName")
+                                            .append("investorCode", "$investorCode")
+                                            .append("investorName", "$investorName")
+                                            .append("fullName", "$users.fullName")
+                                            .append("phoneNumber", "$users.phoneNumber")
+                                            .append("email", "$users.email")
+                                    )
+                            )
+            );
+            
+            Document myDoc = collection.aggregate(pipeline).first();
+            LoginInvestorUserOutputDTO newUserInfo = new Gson().fromJson(myDoc.toJson(Utility.getJsonWriterSettings()), LoginInvestorUserOutputDTO.class);
+            loginUserInfoDto.setMemberCode(newUserInfo.getMemberCode());
+            loginUserInfoDto.setMemberName(newUserInfo.getMemberName());
+            loginUserInfoDto.setBrokerCode(newUserInfo.getBrokerCode());
+            loginUserInfoDto.setBrokerName(newUserInfo.getBrokerName());
+            loginUserInfoDto.setCollaboratorCode(newUserInfo.getCollaboratorCode());
+            loginUserInfoDto.setCollaboratorName(newUserInfo.getCollaboratorName());
+            loginUserInfoDto.setInvestorCode(newUserInfo.getInvestorCode());
+            loginUserInfoDto.setInvestorName(newUserInfo.getInvestorName());
+            loginUserInfoDto.setFullName(newUserInfo.getFullName());
+            loginUserInfoDto.setPhoneNumber(newUserInfo.getPhoneNumber());
+            loginUserInfoDto.setEmail(newUserInfo.getEmail());
+        } catch (Exception e) {
+            AMLogger.logError(className, "getLoginUserInfoDTO", refId, e);
+            throw new CustomException(ErrorMessage.USER_DOES_NOT_EXIST, HttpStatus.UNPROCESSABLE_ENTITY);
+        }
+        return loginUserInfoDto;
     }
 }

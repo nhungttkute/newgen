@@ -19,40 +19,24 @@ public class InvestorAccTransApproval {
     @Transient
     public static final String SEQUENCE_NAME = "inv_acc_trans_approval_seq";
     private long id;
-    @Field(name = "member_id")
     private long memberId;
-    @Field(name = "member_code")
     private String memberCode;
-    @Field(name = "member_name")
     private String memberName;
-    @Field(name = "broker_id")
     private long brokerId;
-    @Field(name = "broker_code")
     private String brokerCode;
-    @Field(name = "broker_name")
     private String brokerName;
-    @Field(name = "investor_id")
     private long investorId;
-    @Field(name = "investor_code")
     private String investorCode;
-    @Field(name = "investor_name")
     private String investorName;
-    @Field(name = "transaction_type")
     private String transactionType;
-    @Field(name = "approval_detail")
     private String approvalDetail;
     private double amount;
     private String currency;
-    @Field(name = "creator_username")
     private String creatorUsername;
-    @Field(name = "creator_date")
     private Date creatorDate;
-    @Field(name = "approval_user")
     private String approvalUser;
-    @Field(name = "approval_date")
     private Date approvalDate;
     private String status;
-    @Field(name = "reject_reason")
     private String rejectReason;
     private String note;
 

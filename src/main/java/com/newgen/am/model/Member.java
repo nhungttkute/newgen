@@ -12,7 +12,6 @@ import java.util.List;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.mapping.Field;
 
 /**
  *
@@ -34,7 +33,6 @@ public class Member extends AuditModel implements Serializable {
     private Contact contact;
     private List<UserRole> roles;
     private List<RoleFunction> functions;
-    @Field(name = "order_limit")
     private int orderLimit;
     private List<Commodity> comodities;
     private List<MemberUser> users;

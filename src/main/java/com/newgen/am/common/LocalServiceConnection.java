@@ -18,4 +18,12 @@ public class LocalServiceConnection extends BaseConnection {
     public String getActivityLogServiceURL() {
         return ConfigLoader.getMainConfig().getString(Constant.SERVICE_ACTIVITY_LOG);
     }
+    
+    public String getEmailNotificationServiceURL() {
+        return ConfigLoader.getMainConfig().getString(Constant.SERVICE_NOTIFICATION_EMAIL);
+    }
+    
+    public String getSMSNotificationServiceURL() {
+        return ConfigLoader.getMainConfig().getString(Constant.SERVICE_NOTIFICATION_SMS);
+    }
 }

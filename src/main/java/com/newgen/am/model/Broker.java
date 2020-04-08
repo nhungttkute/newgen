@@ -22,18 +22,14 @@ public class Broker extends AuditModel implements Serializable {
     public static final String SEQUENCE_NAME = "broker_seq";
     @Id
     private long id;
-    @Field(name = "member_id")
     private long memberId;
-    @Field(name = "member_code")
     private String memberCode;
-    @Field(name = "member_name")
     private String memberName;
     private String code;
     private String name;
     private String note;
     private String status;
     private String type;
-    @Field(name = "business_type")
     private String businessType;
     private Company company;
     private Individual individual;
