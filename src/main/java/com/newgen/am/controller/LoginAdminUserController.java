@@ -16,9 +16,9 @@ import com.newgen.am.dto.LoginAdminUserOutputDTO;
 import com.newgen.am.dto.LoginUserDataInputDTO;
 import com.newgen.am.model.LoginAdminUser;
 import com.newgen.am.service.LoginAdminUserService;
+import javax.servlet.http.HttpServletRequest;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -40,16 +40,14 @@ public class LoginAdminUserController {
     private LoginAdminUserService loginAdmUserService;
     
     @PostMapping("/admin/users/login")
-    public AdminResponseObj login(@RequestBody LoginUserDataInputDTO userDto) {
+    public AdminResponseObj login(HttpServletRequest request, @RequestBody LoginUserDataInputDTO userDto) {
         String methodName = "login";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [POST]/admin/users/login");
         AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(userDto));
         AdminResponseObj response = new AdminResponseObj();
         try {
-            LoginAdminUser loginAdmUser = loginAdmUserService.signin(userDto.getUsername(), userDto.getPassword(), refId);
-            LoginAdminUserOutputDTO loginUserDto = modelMapper.map(loginAdmUser, LoginAdminUserOutputDTO.class);
-            loginUserDto.setFunctions(loginAdmUserService.getFunctionsByUserId(loginAdmUser.getUserId()));
+            LoginAdminUserOutputDTO loginUserDto = loginAdmUserService.signin(request, userDto.getUsername(), userDto.getPassword(), refId);
             response.setStatus(Constant.RESPONSE_OK);
             response.setData(new AdminDataObj());
             response.getData().setUser(loginUserDto);
@@ -63,14 +61,14 @@ public class LoginAdminUserController {
     }
     
     @PostMapping("/admin/users/logout/{userId}")
-    public AdminResponseObj logout(@PathVariable Long userId) {
+    public AdminResponseObj logout(HttpServletRequest request, @PathVariable Long userId) {
         String methodName = "logout";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [POST]/admin/users/logout");
         AMLogger.logMessage(className, methodName, refId, "INPUT:" + userId);
         AdminResponseObj response = new AdminResponseObj();
         try {
-            if (loginAdmUserService.logout(userId, refId)) {
+            if (loginAdmUserService.logout(request, userId, refId)) {
                 response.setStatus(Constant.RESPONSE_OK);
             } else {
                 response.setStatus(Constant.RESPONSE_ERROR);
@@ -109,14 +107,14 @@ public class LoginAdminUserController {
     }
     
     @PostMapping("/admin/users/{userId}/password")
-    public AdminResponseObj changePassword(@PathVariable Long userId, @RequestBody LoginUserDataInputDTO input) {
+    public AdminResponseObj changePassword(HttpServletRequest request, @PathVariable Long userId, @RequestBody LoginUserDataInputDTO input) {
         String methodName = "changePassword";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, "REQUEST_API: " + String.format("[POST]/admin/users/%s/password", userId));
         AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(input));
         AdminResponseObj response = new AdminResponseObj();
         try {
-            if (loginAdmUserService.changePassword(userId, input.getOldPassword(), input.getNewPassword(), refId)) {
+            if (loginAdmUserService.changePassword(request, userId, input.getOldPassword(), input.getNewPassword(), refId)) {
                 response.setStatus(Constant.RESPONSE_OK);
             } else {
                 response.setStatus(Constant.RESPONSE_ERROR);

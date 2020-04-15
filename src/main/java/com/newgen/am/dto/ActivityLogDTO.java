@@ -13,36 +13,102 @@ import com.fasterxml.jackson.annotation.JsonInclude;
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ActivityLogDTO {
-    private String orgType;
-    private String orgCode;
-    private String userId;
+    private String deptCode;
+    private String deptName;
+    private String memberCode;
+    private String memberName;
+    private String brokerCode;
+    private String brokerName;
+    private String collaboratorCode;
+    private String collaboratorName;
+    private String investorCode;
+    private String investorName;
     private String username;
-    private String action;
     private String accessToken;
-    private String note;
+    private String ipAddress;
+    private String userAgent;
+    private String action;
+    private long datetime;
+    private String description;
 
-    public String getOrgType() {
-        return orgType;
+    public String getDeptCode() {
+        return deptCode;
     }
 
-    public void setOrgType(String orgType) {
-        this.orgType = orgType;
+    public void setDeptCode(String deptCode) {
+        this.deptCode = deptCode;
     }
 
-    public String getOrgCode() {
-        return orgCode;
+    public String getDeptName() {
+        return deptName;
     }
 
-    public void setOrgCode(String orgCode) {
-        this.orgCode = orgCode;
+    public void setDeptName(String deptName) {
+        this.deptName = deptName;
     }
 
-    public String getUserId() {
-        return userId;
+    public String getMemberCode() {
+        return memberCode;
     }
 
-    public void setUserId(String userId) {
-        this.userId = userId;
+    public void setMemberCode(String memberCode) {
+        this.memberCode = memberCode;
+    }
+
+    public String getMemberName() {
+        return memberName;
+    }
+
+    public void setMemberName(String memberName) {
+        this.memberName = memberName;
+    }
+
+    public String getBrokerCode() {
+        return brokerCode;
+    }
+
+    public void setBrokerCode(String brokerCode) {
+        this.brokerCode = brokerCode;
+    }
+
+    public String getBrokerName() {
+        return brokerName;
+    }
+
+    public void setBrokerName(String brokerName) {
+        this.brokerName = brokerName;
+    }
+
+    public String getCollaboratorCode() {
+        return collaboratorCode;
+    }
+
+    public void setCollaboratorCode(String collaboratorCode) {
+        this.collaboratorCode = collaboratorCode;
+    }
+
+    public String getCollaboratorName() {
+        return collaboratorName;
+    }
+
+    public void setCollaboratorName(String collaboratorName) {
+        this.collaboratorName = collaboratorName;
+    }
+
+    public String getInvestorCode() {
+        return investorCode;
+    }
+
+    public void setInvestorCode(String investorCode) {
+        this.investorCode = investorCode;
+    }
+
+    public String getInvestorName() {
+        return investorName;
+    }
+
+    public void setInvestorName(String investorName) {
+        this.investorName = investorName;
     }
 
     public String getUsername() {
@@ -53,14 +119,6 @@ public class ActivityLogDTO {
         this.username = username;
     }
 
-    public String getAction() {
-        return action;
-    }
-
-    public void setAction(String action) {
-        this.action = action;
-    }
-
     public String getAccessToken() {
         return accessToken;
     }
@@ -69,12 +127,45 @@ public class ActivityLogDTO {
         this.accessToken = accessToken;
     }
 
-    public String getNote() {
-        return note;
+    public String getIpAddress() {
+        return ipAddress;
     }
 
-    public void setNote(String note) {
-        this.note = note;
+    public void setIpAddress(String ipAddress) {
+        this.ipAddress = ipAddress;
     }
+
+    public String getUserAgent() {
+        return userAgent;
+    }
+
+    public void setUserAgent(String userAgent) {
+        this.userAgent = userAgent;
+    }
+
+    public String getAction() {
+        return action;
+    }
+
+    public void setAction(String action) {
+        this.action = action;
+    }
+
+    public long getDatetime() {
+        return datetime;
+    }
+
+    public void setDatetime(long datetime) {
+        this.datetime = datetime;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
     
 }

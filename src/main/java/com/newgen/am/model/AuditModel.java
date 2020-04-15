@@ -1,7 +1,6 @@
 package com.newgen.am.model;
 
 import java.io.Serializable;
-import java.time.Instant;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
@@ -13,13 +12,13 @@ public abstract class AuditModel implements Serializable {
     private String createdUser;
 
     @CreatedDate
-    private Instant createdDate;
+    private Long createdDate;
 
     @LastModifiedBy
     private String lastModifiedUser;
 
     @LastModifiedDate
-    private Instant lastModifiedDate;
+    private Long lastModifiedDate;
 
     public String getCreatedUser() {
         return createdUser;
@@ -29,11 +28,11 @@ public abstract class AuditModel implements Serializable {
         this.createdUser = createdUser;
     }
 
-    public Instant getCreatedDate() {
+    public Long getCreatedDate() {
         return createdDate;
     }
 
-    public void setCreatedDate(Instant createdDate) {
+    public void setCreatedDate(Long createdDate) {
         this.createdDate = createdDate;
     }
 
@@ -45,11 +44,11 @@ public abstract class AuditModel implements Serializable {
         this.lastModifiedUser = lastModifiedUser;
     }
 
-    public Instant getLastModifiedDate() {
+    public Long getLastModifiedDate() {
         return lastModifiedDate;
     }
 
-    public void setLastModifiedDate(Instant lastModifiedDate) {
+    public void setLastModifiedDate(Long lastModifiedDate) {
         this.lastModifiedDate = lastModifiedDate;
     }
 }

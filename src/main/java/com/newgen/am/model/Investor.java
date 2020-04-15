@@ -5,6 +5,7 @@
  */
 package com.newgen.am.model;
 
+import java.io.Serializable;
 import java.util.List;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -14,7 +15,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
  * @author nhungtt
  */
 @Document(collection = "investors")
-public class Investor {
+public class Investor extends AuditModel implements Serializable {
     @Transient
     public static final String SEQUENCE_NAME = "investor_seq";
     private long id;

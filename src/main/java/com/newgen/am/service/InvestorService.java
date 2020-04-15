@@ -47,7 +47,7 @@ public class InvestorService {
             MongoDatabase database = MongoDBConnection.getMongoDatabase();
             MongoCollection<Document> collection = database.getCollection("investors");
             
-            LoginInvestorUser user = loginInvUserRepo.findByUsername(Utility.getUsername());
+            LoginInvestorUser user = loginInvUserRepo.findByUsername(Utility.getCurrentUsername());
             BasicDBObject searchQuery = new BasicDBObject();
             searchQuery.put("_id", user.getInvestorId());
             BasicDBObject projection = new BasicDBObject();

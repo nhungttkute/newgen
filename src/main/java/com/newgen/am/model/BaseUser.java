@@ -5,14 +5,12 @@
  */
 package com.newgen.am.model;
 
-import java.io.Serializable;
-
 /**
  *
  * @author nhungtt
  */
-public class BaseUser implements Serializable {
-    private long id;
+public class BaseUser extends AuditModel {
+    private long _id;
     private String username;
     private String fullName;
     private String email;
@@ -22,15 +20,13 @@ public class BaseUser implements Serializable {
     private boolean isPasswordExpiryCheck;
     private int passwordExpiryDays;
     private int expiryAlertDays;
-    private long createdAt;
-    private long updatedAt;
 
     public long getId() {
-        return id;
+        return _id;
     }
 
-    public void setId(long id) {
-        this.id = id;
+    public void setId(long _id) {
+        this._id = _id;
     }
 
     public String getUsername() {
@@ -95,22 +91,6 @@ public class BaseUser implements Serializable {
 
     public void setExpiryAlertDays(int expiryAlertDays) {
         this.expiryAlertDays = expiryAlertDays;
-    }
-
-    public long getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(long createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public long getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(long updatedAt) {
-        this.updatedAt = updatedAt;
     }
 
     public String getNote() {

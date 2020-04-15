@@ -13,5 +13,5 @@ import org.springframework.data.mongodb.repository.MongoRepository;
  * @author nhungtt
  */
 public interface SystemRoleRepository extends MongoRepository<SystemRole, Long>{
-    
+    boolean existsSystemRoleByName(String name);
 }

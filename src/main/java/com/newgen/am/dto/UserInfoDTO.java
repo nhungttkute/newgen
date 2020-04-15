@@ -9,6 +9,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.newgen.am.model.Commodity;
 import com.newgen.am.model.InvestorAccount;
 import com.newgen.am.model.MarginRatioAlert;
+import com.newgen.am.model.WatchList;
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -16,21 +18,43 @@ import java.util.List;
  * @author nhungtt
  */
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-public class UserInfoDTO {
+public class UserInfoDTO implements Serializable {
     private long id;
     private String username;
-    private String pin;
     private String status;
+    private String fullName;
+    private String email;
+    private String phoneNumber;
+    private String accessToken;
     private long tokenExpiration;
-    private long investorUserId;
+    private Boolean logined;
+    private Boolean mustChangePassword;
+    private long memberId;
     private String memberCode;
     private String memberName;
+    private long memberUserId;
+    private long brokerId;
     private String brokerCode;
     private String brokerName;
+    private long brokerUserId;
+    private long collaboratorId;
     private String collaboratorCode;
     private String collaboratorName;
+    private long collaboratorUserId;
+    private long investorId;
     private String investorCode;
     private String investorName;
+    private long investorUserId;
+    private long deptId;
+    private String deptCode;
+    private String deptName;
+    private long deptUserId;
+    private List<WatchList> watchLists;
+    private String layout;
+    private String language;
+    private String theme;
+    @JsonInclude(JsonInclude.Include.NON_DEFAULT)
+    private int fontSize;
     private InvestorAccount account;
     private List<String> functions;
     private int orderLimit;
@@ -53,14 +77,6 @@ public class UserInfoDTO {
 
     public void setUsername(String username) {
         this.username = username;
-    }
-
-    public String getPin() {
-        return pin;
-    }
-
-    public void setPin(String pin) {
-        this.pin = pin;
     }
 
     public String getStatus() {
@@ -109,6 +125,38 @@ public class UserInfoDTO {
 
     public void setInvestorCode(String investorCode) {
         this.investorCode = investorCode;
+    }
+
+    public long getMemberId() {
+        return memberId;
+    }
+
+    public void setMemberId(long memberId) {
+        this.memberId = memberId;
+    }
+
+    public long getBrokerId() {
+        return brokerId;
+    }
+
+    public void setBrokerId(long brokerId) {
+        this.brokerId = brokerId;
+    }
+
+    public long getCollaboratorId() {
+        return collaboratorId;
+    }
+
+    public void setCollaboratorId(long collaboratorId) {
+        this.collaboratorId = collaboratorId;
+    }
+
+    public long getInvestorId() {
+        return investorId;
+    }
+
+    public void setInvestorId(long investorId) {
+        this.investorId = investorId;
     }
 
     public long getInvestorUserId() {
@@ -206,5 +254,149 @@ public class UserInfoDTO {
     public void setInvestorName(String investorName) {
         this.investorName = investorName;
     }
-    
+
+    public String getFullName() {
+        return fullName;
+    }
+
+    public void setFullName(String fullName) {
+        this.fullName = fullName;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
+
+    public String getAccessToken() {
+        return accessToken;
+    }
+
+    public void setAccessToken(String accessToken) {
+        this.accessToken = accessToken;
+    }
+
+    public Boolean getLogined() {
+        return logined;
+    }
+
+    public void setLogined(Boolean logined) {
+        this.logined = logined;
+    }
+
+    public Boolean getMustChangePassword() {
+        return mustChangePassword;
+    }
+
+    public void setMustChangePassword(Boolean mustChangePassword) {
+        this.mustChangePassword = mustChangePassword;
+    }
+
+    public List<WatchList> getWatchLists() {
+        return watchLists;
+    }
+
+    public void setWatchLists(List<WatchList> watchLists) {
+        this.watchLists = watchLists;
+    }
+
+    public String getLayout() {
+        return layout;
+    }
+
+    public void setLayout(String layout) {
+        this.layout = layout;
+    }
+
+    public String getLanguage() {
+        return language;
+    }
+
+    public void setLanguage(String language) {
+        this.language = language;
+    }
+
+    public String getTheme() {
+        return theme;
+    }
+
+    public void setTheme(String theme) {
+        this.theme = theme;
+    }
+
+    public int getFontSize() {
+        return fontSize;
+    }
+
+    public void setFontSize(int fontSize) {
+        this.fontSize = fontSize;
+    }
+
+    public long getMemberUserId() {
+        return memberUserId;
+    }
+
+    public void setMemberUserId(long memberUserId) {
+        this.memberUserId = memberUserId;
+    }
+
+    public long getBrokerUserId() {
+        return brokerUserId;
+    }
+
+    public void setBrokerUserId(long brokerUserId) {
+        this.brokerUserId = brokerUserId;
+    }
+
+    public long getCollaboratorUserId() {
+        return collaboratorUserId;
+    }
+
+    public void setCollaboratorUserId(long collaboratorUserId) {
+        this.collaboratorUserId = collaboratorUserId;
+    }
+
+    public long getDeptId() {
+        return deptId;
+    }
+
+    public void setDeptId(long deptId) {
+        this.deptId = deptId;
+    }
+
+    public String getDeptCode() {
+        return deptCode;
+    }
+
+    public void setDeptCode(String deptCode) {
+        this.deptCode = deptCode;
+    }
+
+    public String getDeptName() {
+        return deptName;
+    }
+
+    public void setDeptName(String deptName) {
+        this.deptName = deptName;
+    }
+
+    public long getDeptUserId() {
+        return deptUserId;
+    }
+
+    public void setDeptUserId(long deptUserId) {
+        this.deptUserId = deptUserId;
+    }
+
 }

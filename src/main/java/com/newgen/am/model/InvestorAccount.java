@@ -5,13 +5,11 @@
  */
 package com.newgen.am.model;
 
-import java.util.Date;
-
 /**
  *
  * @author nhungtt
  */
-public class InvestorAccount {
+public class InvestorAccount extends AuditModel {
     private String code;
     private String currency;
     private double marginSurplusInterestRate;

@@ -27,6 +27,7 @@ public class AdminDataObj {
     private List<DepartmentDTO> departments;
     private DepartmentDTO department;
     private DeptUserDTO deptUser;
+    private List<SystemRoleDTO> systemRoles;
 
     public LoginAdminUserOutputDTO getUser() {
         return user;
@@ -106,6 +107,14 @@ public class AdminDataObj {
 
     public void setDeptUser(DeptUserDTO deptUser) {
         this.deptUser = deptUser;
+    }
+
+    public List<SystemRoleDTO> getSystemRoles() {
+        return systemRoles;
+    }
+
+    public void setSystemRoles(List<SystemRoleDTO> systemRoles) {
+        this.systemRoles = systemRoles;
     }
     
 }

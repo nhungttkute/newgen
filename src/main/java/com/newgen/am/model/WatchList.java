@@ -5,11 +5,13 @@
  */
 package com.newgen.am.model;
 
+import java.io.Serializable;
+
 /**
  *
  * @author nhungtt
  */
-public class WatchList {
+public class WatchList implements Serializable {
     private String name;
     private String[] contracts;
 

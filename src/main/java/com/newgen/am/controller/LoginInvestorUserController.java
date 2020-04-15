@@ -39,14 +39,14 @@ public class LoginInvestorUserController {
     private ModelMapper modelMapper;
 
     @PostMapping("/users/login")
-    public ResponseObj login(@RequestBody LoginUserDataInputDTO userDto) {
+    public ResponseObj login(HttpServletRequest request, @RequestBody LoginUserDataInputDTO userDto) {
         String methodName = "login";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [POST]/users/login");
         AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(userDto));
         ResponseObj response = new ResponseObj();
         try {
-            LoginInvestorUserOutputDTO loginUserDto = loginInvUserService.signin(userDto.getUsername(), userDto.getPassword(), refId);
+            LoginInvestorUserOutputDTO loginUserDto = loginInvUserService.signin(request, userDto.getUsername(), userDto.getPassword(), refId);
             response.setStatus(Constant.RESPONSE_OK);
             response.setData(new DataObj());
             response.getData().setUser(loginUserDto);
@@ -82,14 +82,14 @@ public class LoginInvestorUserController {
     }
 
     @PostMapping("/users/logout/{userId}")
-    public ResponseObj logout(@PathVariable Long userId) {
+    public ResponseObj logout(HttpServletRequest request, @PathVariable Long userId) {
         String methodName = "logout";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [POST]/users/logout");
         AMLogger.logMessage(className, methodName, refId, "INPUT:" + userId);
         ResponseObj response = new ResponseObj();
         try {
-            if (loginInvUserService.logout(userId, refId)) {
+            if (loginInvUserService.logout(request, userId, refId)) {
                 response.setStatus(Constant.RESPONSE_OK);
             } else {
                 response.setStatus(Constant.RESPONSE_ERROR);
@@ -198,14 +198,14 @@ public class LoginInvestorUserController {
     }
 
     @PostMapping("/users/{userId}/password")
-    public ResponseObj changePassword(@PathVariable Long userId, @RequestBody LoginUserDataInputDTO input) {
+    public ResponseObj changePassword(HttpServletRequest request, @PathVariable Long userId, @RequestBody LoginUserDataInputDTO input) {
         String methodName = "changePassword";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, "REQUEST_API: " + String.format("[POST]/users/%s/password", userId));
         AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(input));
         ResponseObj response = new ResponseObj();
         try {
-            if (loginInvUserService.changePassword(userId, input.getOldPassword(), input.getNewPassword(), refId)) {
+            if (loginInvUserService.changePassword(request, userId, input.getOldPassword(), input.getNewPassword(), refId)) {
                 response.setStatus(Constant.RESPONSE_OK);
             } else {
                 response.setStatus(Constant.RESPONSE_ERROR);

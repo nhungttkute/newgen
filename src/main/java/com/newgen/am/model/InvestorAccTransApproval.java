@@ -5,17 +5,17 @@
  */
 package com.newgen.am.model;
 
+import java.io.Serializable;
 import java.util.Date;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.mapping.Field;
 
 /**
  *
  * @author nhungtt
  */
 @Document(collection = "investor_acc_trans_approval")
-public class InvestorAccTransApproval {
+public class InvestorAccTransApproval extends AuditModel implements Serializable {
     @Transient
     public static final String SEQUENCE_NAME = "inv_acc_trans_approval_seq";
     private long id;

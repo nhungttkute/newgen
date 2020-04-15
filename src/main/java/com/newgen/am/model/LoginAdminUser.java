@@ -46,8 +46,8 @@ public class LoginAdminUser extends AuditModel implements Serializable {
     private Boolean mustChangePassword = true;
     private int logonCounts;
     private long logonTime;
-    private long departmentId;
-    private long userId;
+    private long deptId;
+    private long deptUserId;
     private long memberId;
     private long memberUserId;
     private long brokerId;
@@ -126,20 +126,20 @@ public class LoginAdminUser extends AuditModel implements Serializable {
         this.logined = logined;
     }
 
-    public long getDepartmentId() {
-        return departmentId;
+    public long getDeptId() {
+        return deptId;
     }
 
-    public void setDepartmentId(long departmentId) {
-        this.departmentId = departmentId;
+    public void setDeptId(long deptId) {
+        this.deptId = deptId;
     }
 
-    public long getUserId() {
-        return userId;
+    public long getDeptUserId() {
+        return deptUserId;
     }
 
-    public void setUserId(long userId) {
-        this.userId = userId;
+    public void setDeptUserId(long deptUserId) {
+        this.deptUserId = deptUserId;
     }
 
     public String getLayout() {

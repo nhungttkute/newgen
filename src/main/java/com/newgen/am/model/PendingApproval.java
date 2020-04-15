@@ -21,6 +21,7 @@ public class PendingApproval extends AuditModel implements Serializable {
     public static final String SEQUENCE_NAME = "pending_approval_seq";
     @Id
     private long id;
+    private String apiUrl;
     private long creatorDate;
     private String creatorUser;
     private long approvalDate;
@@ -39,6 +40,14 @@ public class PendingApproval extends AuditModel implements Serializable {
 
     public void setId(long id) {
         this.id = id;
+    }
+
+    public String getApiUrl() {
+        return apiUrl;
+    }
+
+    public void setApiUrl(String apiUrl) {
+        this.apiUrl = apiUrl;
     }
 
     public long getApprovalDate() {

@@ -25,13 +25,10 @@ public class LoginAdminUserOutputDTO {
     private long tokenExpiration;
     private Boolean logined;
     private Boolean mustChangePassword;
-    private long departmentId;
-    private long userId;
-    private long memberId;
-    private long brokerId;
-    private long collaboratorId;
-    private long investorId;
-    private long investorUserId;
+    private long deptId;
+    private String deptCode;
+    private String deptName;
+    private long deptUserId;
     private List<WatchList> watchLists;
     private String layout;
     private String language;
@@ -112,60 +109,36 @@ public class LoginAdminUserOutputDTO {
         this.mustChangePassword = mustChangePassword;
     }
 
-    public long getDepartmentId() {
-        return departmentId;
+    public long getDeptId() {
+        return deptId;
     }
 
-    public void setDepartmentId(long departmentId) {
-        this.departmentId = departmentId;
+    public void setDeptId(long deptId) {
+        this.deptId = deptId;
     }
 
-    public long getUserId() {
-        return userId;
+    public String getDeptCode() {
+        return deptCode;
     }
 
-    public void setUserId(long userId) {
-        this.userId = userId;
+    public void setDeptCode(String deptCode) {
+        this.deptCode = deptCode;
     }
 
-    public long getMemberId() {
-        return memberId;
+    public String getDeptName() {
+        return deptName;
     }
 
-    public void setMemberId(long memberId) {
-        this.memberId = memberId;
+    public void setDeptName(String deptName) {
+        this.deptName = deptName;
     }
 
-    public long getBrokerId() {
-        return brokerId;
+    public long getDeptUserId() {
+        return deptUserId;
     }
 
-    public void setBrokerId(long brokerId) {
-        this.brokerId = brokerId;
-    }
-
-    public long getCollaboratorId() {
-        return collaboratorId;
-    }
-
-    public void setCollaboratorId(long collaboratorId) {
-        this.collaboratorId = collaboratorId;
-    }
-
-    public long getInvestorId() {
-        return investorId;
-    }
-
-    public void setInvestorId(long investorId) {
-        this.investorId = investorId;
-    }
-
-    public long getInvestorUserId() {
-        return investorUserId;
-    }
-
-    public void setInvestorUserId(long investorUserId) {
-        this.investorUserId = investorUserId;
+    public void setDeptUserId(long deptUserId) {
+        this.deptUserId = deptUserId;
     }
 
     public List<WatchList> getWatchLists() {

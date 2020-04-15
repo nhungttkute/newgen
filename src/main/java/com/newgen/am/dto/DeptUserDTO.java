@@ -6,6 +6,7 @@
 package com.newgen.am.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.newgen.am.model.AuditModel;
 import com.newgen.am.model.RoleFunction;
 import com.newgen.am.model.UserRole;
 import java.util.List;
@@ -15,33 +16,29 @@ import java.util.List;
  * @author nhungtt
  */
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-public class DeptUserDTO {
-    private long id;
+public class DeptUserDTO extends AuditModel {
+    @JsonInclude(JsonInclude.Include.NON_DEFAULT)
+    private long _id;
     private String username;
     private String fullName;
     private String email;
     private String phoneNumber;
     private String status; //pending, active, inactive
     private String note;
-    @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     private Boolean isPasswordExpiryCheck;
     @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     private int passwordExpiryDays;
     @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     private int expiryAlertDays;
-    @JsonInclude(JsonInclude.Include.NON_DEFAULT)
-    private long createdAt;
-    @JsonInclude(JsonInclude.Include.NON_DEFAULT)
-    private long updatedAt;
     private List<UserRole> roles;
     private List<RoleFunction> functions;
 
     public long getId() {
-        return id;
+        return _id;
     }
 
     public void setId(long id) {
-        this.id = id;
+        this._id = id;
     }
 
     public String getUsername() {
@@ -114,22 +111,6 @@ public class DeptUserDTO {
 
     public void setExpiryAlertDays(int expiryAlertDays) {
         this.expiryAlertDays = expiryAlertDays;
-    }
-
-    public long getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(long createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public long getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(long updatedAt) {
-        this.updatedAt = updatedAt;
     }
 
     public List<UserRole> getRoles() {

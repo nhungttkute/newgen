@@ -11,7 +11,7 @@ import java.io.Serializable;
  *
  * @author nhungtt
  */
-public class Commodity implements Serializable {
+public class Commodity extends AuditModel implements Serializable {
     private String code;
     private String name;
     private String partner;

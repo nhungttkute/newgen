@@ -14,4 +14,5 @@ public class ErrorMessage {
     public static final String ERROR_OCCURRED = "An error occurred.";
     public static final String NO_RESULT_FOUND = "No result found.";
     public static final String DOCUMENT_ALREADY_EXISTS = "The document already exists.";
+    public static final String INVALID_INPUT_DATA = "Invalid input data.";
 }

@@ -4,25 +4,31 @@ import com.newgen.am.common.ConfigLoader;
 import com.newgen.am.common.Constant;
 import com.newgen.am.common.FileUtility;
 import com.newgen.am.common.Utility;
+import com.newgen.am.model.AuditorAwareImpl;
+import com.newgen.am.model.Department;
 import com.newgen.am.model.LoginAdminUser;
 import com.newgen.am.model.SystemRole;
 import com.newgen.am.model.UserRole;
+import com.newgen.am.repository.DepartmentRepository;
 import com.newgen.am.repository.LoginAdminUserRepository;
 import com.newgen.am.repository.SystemRoleRepository;
 import com.newgen.am.service.DBSequenceService;
 import com.newgen.am.service.DepartmentService;
 import com.newgen.am.service.InvestorService;
 import com.newgen.am.service.LoginAdminUserService;
+import com.newgen.am.service.RedisMessagePublisher;
+import com.newgen.am.service.RedisMessageSubscriber;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.data.domain.AuditorAware;
 import org.springframework.data.mongodb.config.EnableMongoAuditing;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-@EnableMongoAuditing
+@EnableMongoAuditing(auditorAwareRef = "auditorAware")
 @SpringBootApplication
 public class NewgenAmApplication {
 
@@ -34,8 +40,8 @@ public class NewgenAmApplication {
     private DBSequenceService dbSeqService;
 //    @Autowired
 //    private LoginInvestorUserRepository loginInvUserRepo;
-//    @Autowired
-//    private DepartmentRepository deptRepo;
+    @Autowired
+    private DepartmentRepository deptRepo;
     @Autowired
     private LoginAdminUserRepository loginAdmUserRepo;
 //    @Autowired
@@ -70,6 +76,8 @@ public class NewgenAmApplication {
     private InvestorService investorService;
 //    @Autowired
 //    private InvestorAccTransApprovalRepository accTransApprovalRepo;
+    @Autowired
+    private RedisMessagePublisher redisMessagePublisher;
 
     public static void main(String[] args) {
         SpringApplication.run(NewgenAmApplication.class, args);
@@ -79,15 +87,18 @@ public class NewgenAmApplication {
     public ModelMapper modelMapper() {
         return new ModelMapper();
     }
-//
+    
+    @Bean
+    public AuditorAware<String> auditorAware() {
+        return new AuditorAwareImpl();
+    }
+
 //    @Bean
 //    public CommandLineRunner testRedis() {
-//        LoginAdminUser user = new LoginAdminUser();
-//        user.setUsername("nhungtt");
-//        user.setPassword("abcxyz");
-//        user.setPin("123456");
+//        
 //        return args -> {
-//            deptService.sendCreateNewUserEmail("nhungtt0212@gmail.com", user, System.currentTimeMillis());
+//            String hello = "Hello abcd";
+//            redisMessagePublisher.publish(hello);
 //        };
 //    }
 

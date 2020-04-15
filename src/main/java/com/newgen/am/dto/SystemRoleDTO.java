@@ -3,24 +3,31 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.newgen.am.model;
+package com.newgen.am.dto;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.newgen.am.model.RoleFunction;
+import java.util.List;
 
 /**
  *
  * @author nhungtt
  */
-public class UserRole {
-    private long _id;
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
+public class SystemRoleDTO {
+    @JsonInclude(JsonInclude.Include.NON_DEFAULT)
+    private long id;
     private String name;
     private String description;
     private String status;
+    private List<RoleFunction> functions;
 
     public long getId() {
-        return _id;
+        return id;
     }
 
-    public void setId(long _id) {
-        this._id = _id;
+    public void setId(long id) {
+        this.id = id;
     }
 
     public String getName() {
@@ -46,4 +53,13 @@ public class UserRole {
     public void setStatus(String status) {
         this.status = status;
     }
+
+    public List<RoleFunction> getFunctions() {
+        return functions;
+    }
+
+    public void setFunctions(List<RoleFunction> functions) {
+        this.functions = functions;
+    }
+    
 }

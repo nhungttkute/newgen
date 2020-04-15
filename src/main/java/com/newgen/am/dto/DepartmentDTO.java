@@ -14,6 +14,7 @@ import java.util.List;
  */
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class DepartmentDTO {
+    @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     private long id;
     private String code;
     private String name;

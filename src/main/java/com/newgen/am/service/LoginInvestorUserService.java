@@ -1,12 +1,9 @@
 package com.newgen.am.service;
 
 import com.google.gson.Gson;
-import com.mongodb.BasicDBObject;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.newgen.am.common.AMLogger;
-import com.newgen.am.common.ConfigLoader;
-import com.newgen.am.common.Constant;
 import com.newgen.am.common.ErrorMessage;
 import com.newgen.am.common.MongoDBConnection;
 import com.newgen.am.common.Utility;
@@ -19,7 +16,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.newgen.am.exception.CustomException;
-import com.newgen.am.model.DBSequence;
 import com.newgen.am.model.LoginInvestorUser;
 import com.newgen.am.repository.LoginInvestorUserRepository;
 import com.newgen.am.security.InvestorAuthenticationProvider;
@@ -28,6 +24,7 @@ import com.newgen.am.security.InvestorUsernamePasswordAuthenticationToken;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import javax.servlet.http.HttpServletRequest;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.modelmapper.ModelMapper;
@@ -50,9 +47,12 @@ public class LoginInvestorUserService {
 
     @Autowired
     private RedisTemplate template;
-    
+
     @Autowired
     private ModelMapper modelMapper;
+
+    @Autowired
+    private ActivityLogService activityLogService;
 
     private PasswordEncoder passwordEncoder;
 
@@ -61,7 +61,7 @@ public class LoginInvestorUserService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public LoginInvestorUserOutputDTO signin(String username, String password, long refId) throws CustomException {
+    public LoginInvestorUserOutputDTO signin(HttpServletRequest request, String username, String password, long refId) throws CustomException {
         String methodName = "signin";
         try {
             // verify username/password, status
@@ -71,7 +71,7 @@ public class LoginInvestorUserService {
             //get user
             LoginInvestorUser user = loginInvUserRepository.findByUsername(username);
             //delete old redis user info
-            deleteOldRedisUserInfo(user, refId);
+            deleteOldRedisUserInfo(user.getAccessToken(), refId);
 
             //set new access token for user
             user.setAccessToken(accessToken);
@@ -81,33 +81,38 @@ public class LoginInvestorUserService {
             user.setLogonTime(new Date());
             LoginInvestorUser loginUser = loginInvUserRepository.save(user);
 
+            //get investor user info
+            UserInfoDTO userInfo = getInvestorUserInfoDTO(user, refId);
             //put user info to redis
-            String investorCode = setRedisUserInfo(loginUser, refId);
+            Utility.setRedisUserInfo(template, loginUser.getAccessToken(), userInfo, refId);
 
-            //get user info from redis
-            getRedisUserInfo(loginUser, refId);
-
-//            //send activity log
-//            Utility.logActivity(ActivityLogConstant.ACTIVITY_ORG_TYPE_TKGD, investorCode, loginUser.getId().toString(), loginUser.getUsername(), ActivityLogConstant.ACTIVITY_TP_LOGIN, accessToken, "");
-            return getLoginUserInfoDTO(loginUser, refId);
+            //send activity log
+            activityLogService.sendActivityLog(userInfo, request, ActivityLogService.ACTIVITY_TP_LOGIN, ActivityLogService.ACTIVITY_LOGIN_DESC, userInfo.getUsername(), 0);
+            LoginInvestorUserOutputDTO loginUserInfoDto = modelMapper.map(userInfo, LoginInvestorUserOutputDTO.class);
+            return loginUserInfoDto;
         } catch (Exception e) {
             AMLogger.logError(className, methodName, refId, e);
             throw new CustomException("Invalid username/password supplied", HttpStatus.UNPROCESSABLE_ENTITY);
         }
     }
 
-    public boolean logout(long userId, long refId) throws CustomException {
+    public boolean logout(HttpServletRequest request, long userId, long refId) throws CustomException {
         String methodName = "logout";
         try {
             //get user
             LoginInvestorUser user = loginInvUserRepository.findById(userId).get();
+            // get redis user info
+            UserInfoDTO userInfo = Utility.getRedisUserInfo(template, user.getAccessToken(), refId);
             // delete old redis user info
-            deleteOldRedisUserInfo(user, refId);
+            deleteOldRedisUserInfo(user.getAccessToken(), refId);
 
             //delete access token
             user.setAccessToken(null);
             user.setLogined(false);
             loginInvUserRepository.save(user);
+
+            //send activity log
+            activityLogService.sendActivityLog(userInfo, request, ActivityLogService.ACTIVITY_TP_LOGOUT, ActivityLogService.ACTIVITY_LOGOUT_DESC, userInfo.getUsername(), 0);
             return true;
         } catch (Exception e) {
             AMLogger.logError(className, methodName, refId, e);
@@ -160,7 +165,7 @@ public class LoginInvestorUserService {
         String methodName = "verifyPin";
         try {
             LoginInvestorUser user = loginInvUserRepository.findById(userId).get();
-            if (user.getPin().equalsIgnoreCase(pin)) {
+            if (user != null && passwordEncoder.matches(pin, user.getPin())) {
                 return true;
             }
         } catch (Exception e) {
@@ -170,7 +175,7 @@ public class LoginInvestorUserService {
         return false;
     }
 
-    public boolean changePassword(long userId, String oldPassword, String newPassword, long refId) {
+    public boolean changePassword(HttpServletRequest request, long userId, String oldPassword, String newPassword, long refId) {
         String methodName = "changePassword";
         try {
             LoginInvestorUser user = loginInvUserRepository.findById(userId).get();
@@ -182,6 +187,11 @@ public class LoginInvestorUserService {
 
                 LoginInvestorUser newUser = loginInvUserRepository.save(user);
                 if (newUser != null) {
+                    // get redis user info
+                    UserInfoDTO userInfo = Utility.getRedisUserInfo(template, user.getAccessToken(), refId);
+                    //send activity log
+                    activityLogService.sendActivityLog(userInfo, request, ActivityLogService.ACTIVITY_CHANGE_PASSWORD, ActivityLogService.ACTIVITY_CHANGE_PASSWORD_DESC, userInfo.getUsername(), 0);
+
                     return true;
                 }
             }
@@ -192,29 +202,13 @@ public class LoginInvestorUserService {
         return false;
     }
 
-    private void deleteOldRedisUserInfo(LoginInvestorUser user, long refId) {
-        String key = Utility.genRedisKey(user.getAccessToken());
+    private void deleteOldRedisUserInfo(String accessToken, long refId) {
+        String key = Utility.genRedisKey(accessToken);
         AMLogger.logMessage(className, "deleteOldRedisUserInfo", refId, "REDIS_DELETE: key=" + key);
         template.delete(key);
     }
 
-    private String setRedisUserInfo(LoginInvestorUser user, long refId) {
-        UserInfoDTO userInfo = getUserInfoDTO(user, refId);
-        String investorCode = userInfo.getInvestorCode();
-        String key = Utility.genRedisKey(user.getAccessToken());
-        String value = new Gson().toJson(userInfo);
-        AMLogger.logMessage(className, "setRedisUserInfo", refId, "REDIS_SET: key=" + key + ", value=" + value);
-        template.opsForValue().set(key, value);
-        return investorCode;
-    }
-
-    private void getRedisUserInfo(LoginInvestorUser user, long refId) {
-        String key = Utility.genRedisKey(user.getAccessToken());
-        String value = (String) template.opsForValue().get(key);
-        AMLogger.logMessage(className, "getRedisUserInfo", refId, "REDIS_GET: key=" + key + ", value=" + value);
-    }
-
-    private UserInfoDTO getUserInfoDTO(LoginInvestorUser user, long refId) {
+    private UserInfoDTO getInvestorUserInfoDTO(LoginInvestorUser user, long refId) {
         UserInfoDTO userInfoDto = new UserInfoDTO();
         try {
             MongoDatabase database = MongoDBConnection.getMongoDatabase();
@@ -223,7 +217,15 @@ public class LoginInvestorUserService {
             List<? extends Bson> pipeline = Arrays.asList(
                     new Document()
                     .append("$match", new Document()
-                            .append("_id", 15.0)
+                            .append("users.username", user.getUsername())
+                    ),
+                    new Document()
+                    .append("$unwind", new Document()
+                            .append("path", "$users")
+                    ),
+                    new Document()
+                    .append("$match", new Document()
+                            .append("users.username", user.getUsername())
                     ),
                     new Document()
                     .append("$lookup", new Document()
@@ -234,14 +236,22 @@ public class LoginInvestorUserService {
                     ),
                     new Document()
                     .append("$project", new Document()
+                            .append("investorId", "$_id")
+                            .append("investorUserId", "$users._id")
+                            .append("fullName", "$users.fullName")
+                            .append("email", "$users.email")
+                            .append("phoneNumber", "$users.phoneNumber")
+                            .append("memberId", 1.0)
+                            .append("brokerId", 1.0)
+                            .append("collaboratorId", 1.0)
                             .append("memberCode", 1.0)
                             .append("memberName", 1.0)
                             .append("brokerCode", 1.0)
                             .append("brokerName", 1.0)
-                            .append("investorCode", 1.0)
-                            .append("investorName", 1.0)
                             .append("collaboratorCode", 1.0)
                             .append("collaboratorName", 1.0)
+                            .append("investorCode", 1.0)
+                            .append("investorName", 1.0)
                             .append("account", 1.0)
                             .append("orderLimit", 1.0)
                             .append("commodities", 1.0)
@@ -259,14 +269,22 @@ public class LoginInvestorUserService {
             );
 
             Document result = collection.aggregate(pipeline).first();
+            System.out.println("Document: " + result.toJson(Utility.getJsonWriterSettings()));
             userInfoDto = new Gson().fromJson(result.toJson(Utility.getJsonWriterSettings()), UserInfoDTO.class);
+            System.out.println("userInfoDto: " + new Gson().toJson(userInfoDto));
             if (userInfoDto != null) {
                 userInfoDto.setId(user.getId());
                 userInfoDto.setUsername(user.getUsername());
-                userInfoDto.setPin(user.getPin());
                 userInfoDto.setStatus(user.getStatus());
+                userInfoDto.setAccessToken(user.getAccessToken());
                 userInfoDto.setTokenExpiration(user.getTokenExpiration());
-                userInfoDto.setInvestorUserId(user.getInvestorUserId());
+                userInfoDto.setLogined(user.getLogined());
+                userInfoDto.setMustChangePassword(user.getMustChangePassword());
+                userInfoDto.setWatchLists(user.getWatchlists());
+                userInfoDto.setLayout(user.getLayout());
+                userInfoDto.setTheme(user.getTheme());
+                userInfoDto.setLanguage(user.getLanguage());
+                userInfoDto.setFontSize(user.getFontSize());
             }
         } catch (Exception e) {
             AMLogger.logError(className, "getUserInfoDTO", refId, e);
@@ -274,62 +292,8 @@ public class LoginInvestorUserService {
         }
         return userInfoDto;
     }
-    
-    private LoginInvestorUserOutputDTO getLoginUserInfoDTO(LoginInvestorUser user, long refId) {
-        LoginInvestorUserOutputDTO loginUserInfoDto = new LoginInvestorUserOutputDTO();
-        loginUserInfoDto = modelMapper.map(user, LoginInvestorUserOutputDTO.class);
-        try {
-            MongoDatabase database = MongoDBConnection.getMongoDatabase();
-            MongoCollection<Document> collection = database.getCollection("investors");
 
-            List<? extends Bson> pipeline = Arrays.asList(
-                    new Document()
-                            .append("$match", new Document()
-                                    .append("_id", user.getInvestorId())
-                            ), 
-                    new Document()
-                            .append("$unwind", new Document()
-                                    .append("path", "$users")
-                            ), 
-                    new Document()
-                            .append("$match", new Document()
-                                    .append("users._id", user.getInvestorUserId())
-                            ), 
-                    new Document()
-                            .append("$replaceRoot", new Document()
-                                    .append("newRoot", new Document()
-                                            .append("memberCode", "$memberCode")
-                                            .append("memberName", "$memberName")
-                                            .append("brokerCode", "$brokerCode")
-                                            .append("brokerName", "$brokerName")
-                                            .append("collaboratorCode", "$collaboratorCode")
-                                            .append("collaboratorName", "$collaboratorName")
-                                            .append("investorCode", "$investorCode")
-                                            .append("investorName", "$investorName")
-                                            .append("fullName", "$users.fullName")
-                                            .append("phoneNumber", "$users.phoneNumber")
-                                            .append("email", "$users.email")
-                                    )
-                            )
-            );
-            
-            Document myDoc = collection.aggregate(pipeline).first();
-            LoginInvestorUserOutputDTO newUserInfo = new Gson().fromJson(myDoc.toJson(Utility.getJsonWriterSettings()), LoginInvestorUserOutputDTO.class);
-            loginUserInfoDto.setMemberCode(newUserInfo.getMemberCode());
-            loginUserInfoDto.setMemberName(newUserInfo.getMemberName());
-            loginUserInfoDto.setBrokerCode(newUserInfo.getBrokerCode());
-            loginUserInfoDto.setBrokerName(newUserInfo.getBrokerName());
-            loginUserInfoDto.setCollaboratorCode(newUserInfo.getCollaboratorCode());
-            loginUserInfoDto.setCollaboratorName(newUserInfo.getCollaboratorName());
-            loginUserInfoDto.setInvestorCode(newUserInfo.getInvestorCode());
-            loginUserInfoDto.setInvestorName(newUserInfo.getInvestorName());
-            loginUserInfoDto.setFullName(newUserInfo.getFullName());
-            loginUserInfoDto.setPhoneNumber(newUserInfo.getPhoneNumber());
-            loginUserInfoDto.setEmail(newUserInfo.getEmail());
-        } catch (Exception e) {
-            AMLogger.logError(className, "getLoginUserInfoDTO", refId, e);
-            throw new CustomException(ErrorMessage.USER_DOES_NOT_EXIST, HttpStatus.UNPROCESSABLE_ENTITY);
-        }
-        return loginUserInfoDto;
+    private void copyLoginUserProperties(UserInfoDTO userInfoDto, LoginInvestorUser user) {
+
     }
 }

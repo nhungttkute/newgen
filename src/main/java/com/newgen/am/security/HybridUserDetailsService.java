@@ -52,7 +52,7 @@ public class HybridUserDetailsService {
             throw new UsernameNotFoundException("User '" + username + "' not found");
         }
         if (!accessToken.equalsIgnoreCase(user.getAccessToken())) {
-            throw new CustomException("AccessToken is invalid", HttpStatus.UNAUTHORIZED);
+            throw new CustomException("AccessToken is invalid", HttpStatus.FORBIDDEN);
         }
 
         return org.springframework.security.core.userdetails.User//
@@ -81,7 +81,7 @@ public class HybridUserDetailsService {
         }
         
         if (!accessToken.equalsIgnoreCase(user.getAccessToken())) {
-            throw new CustomException("AccessToken is invalid", HttpStatus.UNAUTHORIZED);
+            throw new CustomException("AccessToken is invalid", HttpStatus.FORBIDDEN);
         }
 
         return org.springframework.security.core.userdetails.User//

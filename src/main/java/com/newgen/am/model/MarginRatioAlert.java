@@ -9,7 +9,7 @@ package com.newgen.am.model;
  *
  * @author nhungtt
  */
-public class MarginRatioAlert {
+public class MarginRatioAlert extends AuditModel {
     private int warningRatio;
     private int cancelOrderRatio;
     private int finalizationRatio;

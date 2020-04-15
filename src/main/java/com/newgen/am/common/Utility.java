@@ -6,14 +6,22 @@
 package com.newgen.am.common;
 
 import com.google.gson.Gson;
-import com.newgen.am.dto.ActivityLogDTO;
+import com.newgen.am.dto.UserInfoDTO;
+import com.newgen.am.exception.CustomException;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
+import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang.RandomStringUtils;
+import org.apache.commons.lang.SerializationUtils;
 import org.bson.json.JsonWriterSettings;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -24,10 +32,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
  * @author nhungtt
  */
 public class Utility {
-
-    public static List<SimpleGrantedAuthority> getAuthority() {
-        return Arrays.asList(new SimpleGrantedAuthority("ROLE_CLIENT"));
-    }
+    private static String className = "Utility";
 
     public static String lpadWith0(long id) {
         return String.format("%010d", id);
@@ -71,34 +76,26 @@ public class Utility {
         return Arrays.asList(new SimpleGrantedAuthority("ADMIN"));
     }
 
-    public static String getUsername() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (!(authentication instanceof AnonymousAuthenticationToken)) {
-            String currentUserName = authentication.getName();
-            return currentUserName;
+    public static String getCurrentUsername() {
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (!(authentication instanceof AnonymousAuthenticationToken)) {
+                String currentUserName = authentication.getName();
+                return currentUserName;
+            } else {
+                return "anonymous";
+            }
+        } catch (Exception e) {
+            return null;
         }
-        return null;
     }
-    
+
     public static String genRedisKey(String input) {
         String secretKey = ConfigLoader.getMainConfig().getString(Constant.REDIS_KEY_SECRET_KEY);
         String hash = DigestUtils.sha256Hex(secretKey + input);
         return hash;
     }
 
-    public static void logActivity(String orgType, String orgCode, String userId, String username, String action, String accessToken, String note) throws Exception {
-        LocalServiceConnection serviceCon = new LocalServiceConnection();
-        ActivityLogDTO activityLog = new ActivityLogDTO();
-        activityLog.setOrgType(orgType);
-        activityLog.setOrgCode(orgCode);
-        activityLog.setUserId(userId);
-        activityLog.setUsername(username);
-        activityLog.setAction(action);
-        activityLog.setAccessToken(accessToken);
-        activityLog.setNote(note);
-        serviceCon.sendPostRequest(serviceCon.getActivityLogServiceURL(), new Gson().toJson(activityLog));
-    }
-    
     public static String generateRandomPassword() {
         String upperCaseLetters = RandomStringUtils.random(2, 65, 90, true, true);
         String lowerCaseLetters = RandomStringUtils.random(2, 97, 122, true, true);
@@ -106,16 +103,81 @@ public class Utility {
         String specialChar = RandomStringUtils.random(2, 33, 47, false, false);
         String totalChars = RandomStringUtils.randomAlphanumeric(2);
         String combinedChars = upperCaseLetters.concat(lowerCaseLetters)
-          .concat(numbers)
-          .concat(specialChar)
-          .concat(totalChars);
+                .concat(numbers)
+                .concat(specialChar)
+                .concat(totalChars);
         List<Character> pwdChars = combinedChars.chars()
-          .mapToObj(c -> (char) c)
-          .collect(Collectors.toList());
+                .mapToObj(c -> (char) c)
+                .collect(Collectors.toList());
         Collections.shuffle(pwdChars);
         String password = pwdChars.stream()
-          .collect(StringBuilder::new, StringBuilder::append, StringBuilder::append)
-          .toString();
+                .collect(StringBuilder::new, StringBuilder::append, StringBuilder::append)
+                .toString();
         return password;
+    }
+
+    public static String generateRandomPin() {
+        return "123456";
+    }
+
+    public static String getAccessToken(HttpServletRequest request) {
+        String bearerToken = request.getHeader("Authorization");
+        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
+            return bearerToken.substring(7);
+        } else return null;
+    }
+    
+    public static String getClientIp(HttpServletRequest request) {
+
+        String remoteAddr = "";
+
+        if (request != null) {
+            remoteAddr = request.getHeader("X-FORWARDED-FOR");
+            if (remoteAddr == null || "".equals(remoteAddr)) {
+                remoteAddr = request.getRemoteAddr();
+            }
+        }
+
+        return remoteAddr;
+    }
+
+    public static Map<String, String> getHeadersInfo(HttpServletRequest request) {
+
+        Map<String, String> map = new HashMap<String, String>();
+
+        Enumeration headerNames = request.getHeaderNames();
+        while (headerNames.hasMoreElements()) {
+            String key = (String) headerNames.nextElement();
+            String value = request.getHeader(key);
+            map.put(key, value);
+        }
+
+        return map;
+    }
+    
+    public static void setRedisUserInfo(RedisTemplate template, String accessToken, UserInfoDTO userInfo, long refId) {
+        UserInfoDTO redisUserInfo = (UserInfoDTO) SerializationUtils.clone(userInfo);
+        redisUserInfo.setWatchLists(null);
+        redisUserInfo.setLayout(null);
+        redisUserInfo.setTheme(null);
+        redisUserInfo.setLanguage(null);
+        redisUserInfo.setFontSize(0);
+        String key = Utility.genRedisKey(accessToken);
+        String value = new Gson().toJson(redisUserInfo);
+        AMLogger.logMessage(className, "setRedisUserInfo", refId, "REDIS_SET: key=" + key + ", value=" + value);
+        template.opsForValue().set(key, value);
+    }
+    
+    public static UserInfoDTO getRedisUserInfo(RedisTemplate template, String accessToken, long refId) {
+        String methodName = "getRedisUserInfo";
+        try {
+            String key = genRedisKey(accessToken);
+            String value = (String) template.opsForValue().get(key);
+            AMLogger.logMessage(className, methodName, refId, "REDIS_GET: key=" + key + ", value=" + value);
+            return new Gson().fromJson(value, UserInfoDTO.class);
+        } catch (Exception e) {
+            AMLogger.logError(className, methodName, refId, e);
+            throw new CustomException("Cannot get user info from redis", HttpStatus.UNPROCESSABLE_ENTITY);
+        }
     }
 }
