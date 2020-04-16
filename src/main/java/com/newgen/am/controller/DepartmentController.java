@@ -42,14 +42,14 @@ public class DepartmentController {
     private DepartmentService deptService;
     
     @GetMapping("/admin/departments")
-    public AdminResponseObj listDeparments() {
+    public AdminResponseObj listDeparments(HttpServletRequest request) {
         String methodName = "listDeparments";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [GET]/admin/departments");
         AdminResponseObj response = new AdminResponseObj();
         try {
             List<DepartmentDTO> deptDtos = new ArrayList<>();
-            List<Department> depts = deptService.list(refId);
+            List<Department> depts = deptService.list(request, refId);
 
             if (depts != null && depts.size() > 0) {
                 for (Department dept : depts) {

@@ -8,18 +8,10 @@ package com.newgen.am.service;
 import com.google.gson.Gson;
 import com.mongodb.BasicDBObject;
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Updates;
-import com.newgen.am.common.AMLogger;
-import com.newgen.am.common.ApprovalConstant;
-import com.newgen.am.common.ConfigLoader;
-import com.newgen.am.common.Constant;
-import com.newgen.am.common.ErrorMessage;
-import com.newgen.am.common.FileUtility;
-import com.newgen.am.common.LocalServiceConnection;
-import com.newgen.am.common.MongoDBConnection;
-import com.newgen.am.common.SystemFunctionCode;
-import com.newgen.am.common.Utility;
+import com.newgen.am.common.*;
 import com.newgen.am.dto.DepartmentDTO;
 import com.newgen.am.dto.DeptUserDTO;
 import com.newgen.am.dto.EmailDTO;
@@ -31,9 +23,13 @@ import com.newgen.am.model.LoginAdminUser;
 import com.newgen.am.model.NestedObjectInfo;
 import com.newgen.am.model.PendingApproval;
 import com.newgen.am.model.PendingData;
+import com.newgen.am.mongodb.pojo.UserFunctionResult;
 import com.newgen.am.repository.DepartmentRepository;
 import com.newgen.am.repository.LoginAdminUserRepository;
 import com.newgen.am.repository.PendingApprovalRepository;
+
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import org.bson.Document;
@@ -77,14 +73,47 @@ public class DepartmentService {
     @Autowired
     PasswordEncoder passwordEncoder;
     
-    public List<Department> list(long refId) {
+    public List<Department> list(HttpServletRequest request, long refId) {
         String methodName = "list";
+        List<Department> deptList = new ArrayList<>();
         try {
-            return deptRepository.findAll();
+            int skip = 0;
+            int limit = 20;
+            Document defaultSort = new Document();
+            defaultSort.append("lastModifiedDate", -1);
+            Document query = null;
+            if (Utility.isNotNull(request.getQueryString())) {
+                String reqParams = Utility.decode(request.getQueryString());
+                skip = RequestParamsParser.getOffset(reqParams);
+                limit = RequestParamsParser.getLimit(reqParams);
+
+                //build sort
+                Document sort = RequestParamsParser.buildSortDocument(reqParams);
+                if (sort != null) {
+                    defaultSort = sort;
+                }
+
+                // build query
+                query = RequestParamsParser.buildQueryDocument(reqParams);
+                if (query == null) {
+                    query = new Document();
+                }
+            }
+
+            MongoDatabase database = MongoDBConnection.getMongoDatabase();
+            MongoCollection<Document> collection = database.getCollection("departments");
+            MongoCursor<Document> cur = collection.find(query).sort(defaultSort).skip(skip).limit(limit).iterator();
+
+            while (cur.hasNext()) {
+                Document doc = cur.next();
+                Department dept = new Gson().fromJson(doc.toJson(Utility.getJsonWriterSettings()), Department.class);
+                if (dept != null) deptList.add(dept);
+            }
         } catch (Exception e) {
             AMLogger.logError(className, methodName, refId, e);
             throw new CustomException("Cannot list departments", HttpStatus.UNPROCESSABLE_ENTITY);
         }
+        return deptList;
     }
 
     public boolean createDepartment(HttpServletRequest request, DepartmentDTO deptDto, long refId) {

@@ -48,4 +48,9 @@ public class Constant {
     public static final String SERVICE_ACTIVITY_LOG = "SERVICE_ACTIVITY_LOG";
     public static final String SERVICE_NOTIFICATION_EMAIL = "SERVICE_NOTIFICATION_EMAIL";
     public static final String SERVICE_NOTIFICATION_SMS = "SERVICE_NOTIFICATION_SMS";
+
+    public static final String OPT_CONTAINS = "$contains";
+    public static final String OPT_EQUALS = "$eq";
+    public static final String OPT_IN = "$in";
+    public static final String OPT_NOT_IN = "$nin";
 }

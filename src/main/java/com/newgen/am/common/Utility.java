@@ -8,6 +8,10 @@ package com.newgen.am.common;
 import com.google.gson.Gson;
 import com.newgen.am.dto.UserInfoDTO;
 import com.newgen.am.exception.CustomException;
+
+import java.net.URLDecoder;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -153,6 +157,14 @@ public class Utility {
         }
 
         return map;
+    }
+
+    public static String encodeValue(String value) throws Exception {
+        return URLEncoder.encode(value, StandardCharsets.UTF_8.toString());
+    }
+
+    public static String decode(String value) throws Exception {
+        return URLDecoder.decode(value, StandardCharsets.UTF_8.toString());
     }
     
     public static void setRedisUserInfo(RedisTemplate template, String accessToken, UserInfoDTO userInfo, long refId) {
