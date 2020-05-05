@@ -10,25 +10,25 @@ package com.newgen.am.dto;
  * @author nhungtt
  */
 public class ListUserDTO {
-    private long id;
+    private String id;
     private String username;
 
     public ListUserDTO() {}
     
-    public ListUserDTO (long id, String username) {
+    public ListUserDTO (String id, String username) {
         this.id = id;
         this.username = username;
     }
     
-    public long getId() {
-        return id;
-    }
+    public String getId() {
+		return id;
+	}
 
-    public void setId(long id) {
-        this.id = id;
-    }
+	public void setId(String id) {
+		this.id = id;
+	}
 
-    public String getUsername() {
+	public String getUsername() {
         return username;
     }
 

@@ -8,7 +8,7 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class LoginInvestorUserOutputDTO {
 
-    private long id;
+    private String id;
     private String username;
     private String fullName;
     private String phoneNumber;
@@ -18,19 +18,19 @@ public class LoginInvestorUserOutputDTO {
     private long tokenExpiration;
     private Boolean logined;
     private Boolean mustChangePassword;
-    private long memberId;
+    private String memberId;
     private String memberCode;
     private String memberName;
-    private long brokerId;
+    private String brokerId;
     private String brokerCode;
     private String brokerName;
-    private long collaboratorId;
+    private String collaboratorId;
     private String collaboratorCode;
     private String collaboratorName;
-    private long investorId;
+    private String investorId;
     private String investorCode;
     private String investorName;
-    private long investorUserId;
+    private String investorUserId;
     private List<WatchList> watchLists;
     private String layout;
     private String language;
@@ -135,45 +135,6 @@ public class LoginInvestorUserOutputDTO {
         this.fontSize = fontSize;
     }
 
-    public long getId() {
-        return id;
-    }
-
-    public void setId(long id) {
-        this.id = id;
-    }
-
-    public long getMemberId() {
-        return memberId;
-    }
-
-    public void setMemberId(long memberId) {
-        this.memberId = memberId;
-    }
-
-    public long getBrokerId() {
-        return brokerId;
-    }
-
-    public void setBrokerId(long brokerId) {
-        this.brokerId = brokerId;
-    }
-
-    public long getCollaboratorId() {
-        return collaboratorId;
-    }
-
-    public void setCollaboratorId(long collaboratorId) {
-        this.collaboratorId = collaboratorId;
-    }
-
-    public long getInvestorId() {
-        return investorId;
-    }
-
-    public void setInvestorId(long investorId) {
-        this.investorId = investorId;
-    }
 
     public String getInvestorCode() {
         return investorCode;
@@ -189,14 +150,6 @@ public class LoginInvestorUserOutputDTO {
 
     public void setInvestorName(String investorName) {
         this.investorName = investorName;
-    }
-
-    public long getInvestorUserId() {
-        return investorUserId;
-    }
-
-    public void setInvestorUserId(long investorUserId) {
-        this.investorUserId = investorUserId;
     }
 
     public Boolean getMustChangePassword() {
@@ -262,5 +215,53 @@ public class LoginInvestorUserOutputDTO {
     public void setCollaboratorName(String collaboratorName) {
         this.collaboratorName = collaboratorName;
     }
+
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
+
+	public String getMemberId() {
+		return memberId;
+	}
+
+	public void setMemberId(String memberId) {
+		this.memberId = memberId;
+	}
+
+	public String getBrokerId() {
+		return brokerId;
+	}
+
+	public void setBrokerId(String brokerId) {
+		this.brokerId = brokerId;
+	}
+
+	public String getCollaboratorId() {
+		return collaboratorId;
+	}
+
+	public void setCollaboratorId(String collaboratorId) {
+		this.collaboratorId = collaboratorId;
+	}
+
+	public String getInvestorId() {
+		return investorId;
+	}
+
+	public void setInvestorId(String investorId) {
+		this.investorId = investorId;
+	}
+
+	public String getInvestorUserId() {
+		return investorUserId;
+	}
+
+	public void setInvestorUserId(String investorUserId) {
+		this.investorUserId = investorUserId;
+	}
 
 }

@@ -12,25 +12,33 @@ import java.util.List;
  * @author nhungtt
  */
 public class UserFunctionResult {
-    private long deptId;
+    private String deptId;
     private String deptCode;
     private String deptName;
-    private long deptUserId;
+    private String deptUserId;
     private String fullName;
     private String email;
     private String phoneNumber;
     private List<String> userFunctions;
     private List<String> roleFunctions;
 
-    public long getDeptId() {
-        return deptId;
-    }
+    public String getDeptId() {
+		return deptId;
+	}
 
-    public void setDeptId(long deptId) {
-        this.deptId = deptId;
-    }
+	public void setDeptId(String deptId) {
+		this.deptId = deptId;
+	}
 
-    public String getDeptCode() {
+	public String getDeptUserId() {
+		return deptUserId;
+	}
+
+	public void setDeptUserId(String deptUserId) {
+		this.deptUserId = deptUserId;
+	}
+
+	public String getDeptCode() {
         return deptCode;
     }
 
@@ -44,14 +52,6 @@ public class UserFunctionResult {
 
     public void setDeptName(String deptName) {
         this.deptName = deptName;
-    }
-
-    public long getDeptUserId() {
-        return deptUserId;
-    }
-
-    public void setDeptUserId(long deptUserId) {
-        this.deptUserId = deptUserId;
     }
 
     public String getFullName() {

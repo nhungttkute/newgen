@@ -18,14 +18,14 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class InvestorAccTransApproval extends AuditModel implements Serializable {
     @Transient
     public static final String SEQUENCE_NAME = "inv_acc_trans_approval_seq";
-    private long id;
-    private long memberId;
+    private String id;
+    private String memberId;
     private String memberCode;
     private String memberName;
-    private long brokerId;
+    private String brokerId;
     private String brokerCode;
     private String brokerName;
-    private long investorId;
+    private String investorId;
     private String investorCode;
     private String investorName;
     private String transactionType;
@@ -40,23 +40,39 @@ public class InvestorAccTransApproval extends AuditModel implements Serializable
     private String rejectReason;
     private String note;
 
-    public long getId() {
-        return id;
-    }
+    public String getId() {
+		return id;
+	}
 
-    public void setId(long id) {
-        this.id = id;
-    }
+	public void setId(String id) {
+		this.id = id;
+	}
 
-    public long getMemberId() {
-        return memberId;
-    }
+	public String getMemberId() {
+		return memberId;
+	}
 
-    public void setMemberId(long memberId) {
-        this.memberId = memberId;
-    }
+	public void setMemberId(String memberId) {
+		this.memberId = memberId;
+	}
 
-    public String getMemberCode() {
+	public String getBrokerId() {
+		return brokerId;
+	}
+
+	public void setBrokerId(String brokerId) {
+		this.brokerId = brokerId;
+	}
+
+	public String getInvestorId() {
+		return investorId;
+	}
+
+	public void setInvestorId(String investorId) {
+		this.investorId = investorId;
+	}
+
+	public String getMemberCode() {
         return memberCode;
     }
 
@@ -70,14 +86,6 @@ public class InvestorAccTransApproval extends AuditModel implements Serializable
 
     public void setMemberName(String memberName) {
         this.memberName = memberName;
-    }
-
-    public long getBrokerId() {
-        return brokerId;
-    }
-
-    public void setBrokerId(long brokerId) {
-        this.brokerId = brokerId;
     }
 
     public String getBrokerCode() {
@@ -94,14 +102,6 @@ public class InvestorAccTransApproval extends AuditModel implements Serializable
 
     public void setBrokerName(String brokerName) {
         this.brokerName = brokerName;
-    }
-
-    public long getInvestorId() {
-        return investorId;
-    }
-
-    public void setInvestorId(long investorId) {
-        this.investorId = investorId;
     }
 
     public String getInvestorCode() {

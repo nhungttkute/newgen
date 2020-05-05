@@ -24,4 +24,24 @@ public class ApprovalConstant {
     public static final String SYSTEM_ROLE_CREATE = "SystemRoleService.createSystemRole";
     public static final String SYSTEM_ROLE_UPDATE = "SystemRoleService.updateSystemRole";
     public static final String SYSTEM_ROLE_FUNCTIONS_CREATE = "SystemRoleService.createSystemRoleFunctions";
+    
+    public static final String MEMBER_CREATE = "MemberService.createMember";
+    public static final String MEMBER_UPDATE = "";
+    public static final String MEMBER_FUNCTIONS_CREATE = "";
+    public static final String MEMBER_MASTER_USER_CREATE = "";
+    public static final String MEMBER_USER_CREATE = "";
+    public static final String MEMBER_USER_UPDATE = "";
+    public static final String MEMBER_USER_ROLES_CREATE = "";
+    public static final String MEMBER_USER_FUNCTIONS_CREATE = "";
+    public static final String MEMBER_DEFAULT_SETTING_CREATE = "";
+    public static final String MEMBER_COMMODITIES_SETTING_CREATE = "";
+    public static final String MEMBER_RISK_MANAGEMENT_CREATE = "";
+    public static final String MEMBER_MARGIN_MULTIPLIER_BULK_CREATE = "";
+    public static final String MEMBER_MARGIN_RATIO_BULK_CREATE = "";
+    public static final String MEMBER_GENERAL_FEE_BULK_CREATE = "";
+    public static final String MEMBER_OTHER_FEE_BULK_CREATE = "";
+    public static final String MEMBER_COMMODITY_FEE_BULK_CREATE = "";
+    public static final String MEMBER_ROLE_CREATE = "";
+    public static final String MEMBER_ROLE_UPDATE = "";
+    public static final String MEMBER_ROLE_FUNCTIONS_CREATE = "";
 }

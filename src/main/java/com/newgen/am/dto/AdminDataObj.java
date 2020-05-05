@@ -7,6 +7,7 @@ package com.newgen.am.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.newgen.am.model.Commodity;
+import com.newgen.am.model.SystemFunction;
 import com.newgen.am.model.WatchList;
 import java.util.List;
 
@@ -24,10 +25,18 @@ public class AdminDataObj {
     private String theme;
     @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     private int fontSize;
+    
+    // response for department
     private List<DepartmentDTO> departments;
+    private List<DeptUserDTO> deptUsers;
     private DepartmentDTO department;
     private DeptUserDTO deptUser;
     private List<SystemRoleDTO> systemRoles;
+    private List<SystemFunctionDTO> systemFunctions;
+    
+    // response for member
+    private List<MemberDTO> members;
+    private MemberDTO member;
 
     public LoginAdminUserOutputDTO getUser() {
         return user;
@@ -116,5 +125,37 @@ public class AdminDataObj {
     public void setSystemRoles(List<SystemRoleDTO> systemRoles) {
         this.systemRoles = systemRoles;
     }
+
+    public List<DeptUserDTO> getDeptUsers() {
+        return deptUsers;
+    }
+
+    public void setDeptUsers(List<DeptUserDTO> deptUsers) {
+        this.deptUsers = deptUsers;
+    }
+
+	public List<SystemFunctionDTO> getSystemFunctions() {
+		return systemFunctions;
+	}
+
+	public void setSystemFunctions(List<SystemFunctionDTO> systemFunctions) {
+		this.systemFunctions = systemFunctions;
+	}
+
+	public List<MemberDTO> getMembers() {
+		return members;
+	}
+
+	public void setMembers(List<MemberDTO> members) {
+		this.members = members;
+	}
+
+	public MemberDTO getMember() {
+		return member;
+	}
+
+	public void setMember(MemberDTO member) {
+		this.member = member;
+	}
     
 }

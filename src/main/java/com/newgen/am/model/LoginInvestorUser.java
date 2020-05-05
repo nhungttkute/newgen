@@ -27,7 +27,7 @@ public class LoginInvestorUser extends AuditModel implements Serializable {
     @Transient
     public static final String SEQUENCE_NAME = "login_investor_user_seq";
     @Id
-    private long id;
+    private String id;
     @Indexed(unique = true)
     @NonNull
     private String username;
@@ -48,11 +48,11 @@ public class LoginInvestorUser extends AuditModel implements Serializable {
     @Field
     private int logonCounts = 0;
     private Date logonTime;
-    private long memberId;
-    private long brokerId;
-    private long collaboratorId;
-    private long investorId;
-    private long investorUserId;
+    private String memberId;
+    private String brokerId;
+    private String collaboratorId;
+    private String investorId;
+    private String investorUserId;
     @Field
     @Length(max = 10000)
     private String layout;
@@ -61,15 +61,55 @@ public class LoginInvestorUser extends AuditModel implements Serializable {
     private int fontSize;
     private List<WatchList> watchlists;
 
-    public long getId() {
-        return id;
-    }
+    public String getId() {
+		return id;
+	}
 
-    public void setId(long id) {
-        this.id = id;
-    }
+	public void setId(String id) {
+		this.id = id;
+	}
 
-    public String getUsername() {
+	public String getMemberId() {
+		return memberId;
+	}
+
+	public void setMemberId(String memberId) {
+		this.memberId = memberId;
+	}
+
+	public String getBrokerId() {
+		return brokerId;
+	}
+
+	public void setBrokerId(String brokerId) {
+		this.brokerId = brokerId;
+	}
+
+	public String getCollaboratorId() {
+		return collaboratorId;
+	}
+
+	public void setCollaboratorId(String collaboratorId) {
+		this.collaboratorId = collaboratorId;
+	}
+
+	public String getInvestorId() {
+		return investorId;
+	}
+
+	public void setInvestorId(String investorId) {
+		this.investorId = investorId;
+	}
+
+	public String getInvestorUserId() {
+		return investorUserId;
+	}
+
+	public void setInvestorUserId(String investorUserId) {
+		this.investorUserId = investorUserId;
+	}
+
+	public String getUsername() {
         return username;
     }
 
@@ -131,46 +171,6 @@ public class LoginInvestorUser extends AuditModel implements Serializable {
 
     public void setLogined(Boolean logined) {
         this.logined = logined;
-    }
-
-    public long getMemberId() {
-        return memberId;
-    }
-
-    public void setMemberId(long memberId) {
-        this.memberId = memberId;
-    }
-
-    public long getBrokerId() {
-        return brokerId;
-    }
-
-    public void setBrokerId(long brokerId) {
-        this.brokerId = brokerId;
-    }
-
-    public long getCollaboratorId() {
-        return collaboratorId;
-    }
-
-    public void setCollaboratorId(long collaboratorId) {
-        this.collaboratorId = collaboratorId;
-    }
-
-    public long getInvestorId() {
-        return investorId;
-    }
-
-    public void setInvestorId(long investorId) {
-        this.investorId = investorId;
-    }
-
-    public long getInvestorUserId() {
-        return investorUserId;
-    }
-
-    public void setInvestorUserId(long investorUserId) {
-        this.investorUserId = investorUserId;
     }
 
     public List<WatchList> getWatchlists() {

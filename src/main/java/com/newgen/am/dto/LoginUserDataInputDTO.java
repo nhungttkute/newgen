@@ -4,9 +4,11 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.newgen.am.model.WatchList;
 import java.util.List;
 
+import javax.validation.constraints.NotEmpty;
+
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class LoginUserDataInputDTO {
-
+	@NotEmpty(message = "Required.")
     private String username;
     private String password;
     private String oldPassword;
@@ -17,6 +19,7 @@ public class LoginUserDataInputDTO {
     private String language;
     private String theme;
     private int fontSize;
+    @NotEmpty(message = "Required.")
     private String email;
     private String phoneNumber;
 

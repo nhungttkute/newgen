@@ -11,9 +11,15 @@ import com.newgen.am.model.LoginAdminUser;
 import com.newgen.am.model.LoginInvestorUser;
 import com.newgen.am.repository.LoginAdminUserRepository;
 import com.newgen.am.repository.LoginInvestorUserRepository;
+import com.newgen.am.service.LoginAdminUserService;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -30,6 +36,9 @@ public class HybridUserDetailsService {
     
     @Autowired
     private LoginAdminUserRepository loginAdmUserRepository;
+    
+    @Autowired
+    private LoginAdminUserService loginAdmUserService;
     
     private PasswordEncoder passwordEncoder;
 
@@ -52,7 +61,7 @@ public class HybridUserDetailsService {
             throw new UsernameNotFoundException("User '" + username + "' not found");
         }
         if (!accessToken.equalsIgnoreCase(user.getAccessToken())) {
-            throw new CustomException("AccessToken is invalid", HttpStatus.FORBIDDEN);
+            throw new CustomException("Invalid accessToken.", HttpStatus.UNAUTHORIZED);
         }
 
         return org.springframework.security.core.userdetails.User//
@@ -81,13 +90,16 @@ public class HybridUserDetailsService {
         }
         
         if (!accessToken.equalsIgnoreCase(user.getAccessToken())) {
-            throw new CustomException("AccessToken is invalid", HttpStatus.FORBIDDEN);
+            throw new CustomException("Invalid accessToken.", HttpStatus.UNAUTHORIZED);
         }
-
+        
+        List<String> admUserFunctions = loginAdmUserService.getFunctionsByUsername(user.getUsername());
+        List<SimpleGrantedAuthority> admUserRoles = admUserFunctions.stream().map(s -> new SimpleGrantedAuthority(s)).collect(Collectors.toList());
+        
         return org.springframework.security.core.userdetails.User//
                 .withUsername(username)//
                 .password(user.getPassword())//
-                .authorities(Utility.getAdminAuthorities())//
+                .authorities(admUserRoles)//
                 .accountExpired(false)//
                 .accountLocked(false)//
                 .credentialsExpired(false)//

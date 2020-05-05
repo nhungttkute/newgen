@@ -22,8 +22,7 @@ public class SystemFunction extends AuditModel implements Serializable {
     private long id;
     private String code;
     private String name;
-    private String parentCode;
-
+    
     public long getId() {
         return id;
     }
@@ -46,14 +45,5 @@ public class SystemFunction extends AuditModel implements Serializable {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public String getParentCode() {
-        return parentCode;
-    }
-
-    public void setParentCode(String parentCode) {
-        this.parentCode = parentCode;
-    }
-    
+    }    
 }

@@ -13,7 +13,6 @@ public class Contact {
     private String fullName;
     private String phoneNumber;
     private String email;
-    private String note;
 
     public String getFullName() {
         return fullName;
@@ -38,13 +37,4 @@ public class Contact {
     public void setEmail(String email) {
         this.email = email;
     }
-
-    public String getNote() {
-        return note;
-    }
-
-    public void setNote(String note) {
-        this.note = note;
-    }
-    
 }

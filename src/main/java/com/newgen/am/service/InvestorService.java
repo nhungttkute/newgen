@@ -14,13 +14,16 @@ import com.newgen.am.common.AMLogger;
 import com.newgen.am.common.ErrorMessage;
 import com.newgen.am.common.MongoDBConnection;
 import com.newgen.am.common.Utility;
+import com.newgen.am.dto.BasePagination;
 import com.newgen.am.dto.InvestorAccountDTO;
 import com.newgen.am.exception.CustomException;
 import com.newgen.am.model.Investor;
 import com.newgen.am.model.LoginInvestorUser;
 import com.newgen.am.repository.LoginInvestorUserRepository;
 import org.bson.Document;
+import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -38,6 +41,9 @@ public class InvestorService {
     private RedisTemplate redisTemplate;
     
     @Autowired
+    private MongoTemplate mongoTemplate;
+    
+    @Autowired
     private LoginInvestorUserRepository loginInvUserRepo;
 
     public InvestorAccountDTO getInvestorAccount(long refId) {
@@ -49,13 +55,13 @@ public class InvestorService {
             
             LoginInvestorUser user = loginInvUserRepo.findByUsername(Utility.getCurrentUsername());
             BasicDBObject searchQuery = new BasicDBObject();
-            searchQuery.put("_id", user.getInvestorId());
+            searchQuery.put("_id", new ObjectId(user.getInvestorId()));
             BasicDBObject projection = new BasicDBObject();
             projection.append("investorCode", 1);
             projection.append("investorName", 1);
             projection.append("account", 1);
             Document invDoc = collection.find(searchQuery).projection(projection).first();
-            Investor investor = new Gson().fromJson(invDoc.toJson(Utility.getJsonWriterSettings()), Investor.class);
+            Investor investor = mongoTemplate.getConverter().read(Investor.class, invDoc);
 
             if (investor != null) {
                 // get info from redis
@@ -81,7 +87,7 @@ public class InvestorService {
             }
         } catch (Exception e) {
             AMLogger.logError(className, methodName, refId, e);
-            throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.UNPROCESSABLE_ENTITY);
+            throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
         return investorAccDto;

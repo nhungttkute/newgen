@@ -33,23 +33,19 @@ public class InvestorController {
     public ResponseObj getAccountSummary() {
         String methodName = "getAccountSummary";
         long refId = System.currentTimeMillis();
-        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: " + String.format("/investors/account"));
+        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: /users/account");
+        
         ResponseObj response = new ResponseObj();
-        try {
-            InvestorAccountDTO investorAcc = investorService.getInvestorAccount(refId);
-            if (investorAcc != null) {
-                response.setStatus(Constant.RESPONSE_OK);
-                response.setData(new DataObj());
-                response.getData().setInvestorAccount(investorAcc);
-            } else {
-                response.setStatus(Constant.RESPONSE_ERROR);
-                response.setErrMsg(ErrorMessage.ERROR_OCCURRED);
-            }
-        } catch (Exception ex) {
-            AMLogger.logError(className, methodName, refId, ex);
+        InvestorAccountDTO investorAcc = investorService.getInvestorAccount(refId);
+        if (investorAcc != null) {
+            response.setStatus(Constant.RESPONSE_OK);
+            response.setData(new DataObj());
+            response.getData().setInvestorAccount(investorAcc);
+        } else {
             response.setStatus(Constant.RESPONSE_ERROR);
-            response.setErrMsg(ex.getMessage());
+            response.setErrMsg(ErrorMessage.RESULT_NOT_FOUND);
         }
+        
         AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
         return response;
     }

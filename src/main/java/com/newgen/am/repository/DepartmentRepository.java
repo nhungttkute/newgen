@@ -12,6 +12,6 @@ import org.springframework.data.mongodb.repository.MongoRepository;
  *
  * @author nhungtt
  */
-public interface DepartmentRepository extends MongoRepository<Department, Long>{
+public interface DepartmentRepository extends MongoRepository<Department, String>{
     boolean existsDepartmentByCode(String code);
 }

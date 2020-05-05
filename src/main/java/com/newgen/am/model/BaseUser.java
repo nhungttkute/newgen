@@ -10,7 +10,7 @@ package com.newgen.am.model;
  * @author nhungtt
  */
 public class BaseUser extends AuditModel {
-    private long _id;
+    private String _id;
     private String username;
     private String fullName;
     private String email;
@@ -21,15 +21,15 @@ public class BaseUser extends AuditModel {
     private int passwordExpiryDays;
     private int expiryAlertDays;
 
-    public long getId() {
-        return _id;
-    }
+    public String get_id() {
+		return _id;
+	}
 
-    public void setId(long _id) {
-        this._id = _id;
-    }
+	public void set_id(String _id) {
+		this._id = _id;
+	}
 
-    public String getUsername() {
+	public String getUsername() {
         return username;
     }
 

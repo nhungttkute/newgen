@@ -20,7 +20,7 @@ public class PendingApproval extends AuditModel implements Serializable {
     @Transient
     public static final String SEQUENCE_NAME = "pending_approval_seq";
     @Id
-    private long id;
+    private String id;
     private String apiUrl;
     private long creatorDate;
     private String creatorUser;
@@ -34,15 +34,15 @@ public class PendingApproval extends AuditModel implements Serializable {
     private NestedObjectInfo nestedObjInfo;
     private PendingData pendingData;
 
-    public long getId() {
-        return id;
-    }
+    public String getId() {
+		return id;
+	}
 
-    public void setId(long id) {
-        this.id = id;
-    }
+	public void setId(String id) {
+		this.id = id;
+	}
 
-    public String getApiUrl() {
+	public String getApiUrl() {
         return apiUrl;
     }
 

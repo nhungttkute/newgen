@@ -5,32 +5,42 @@
  */
 package com.newgen.am.dto;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import java.util.List;
+
+import javax.validation.constraints.NotEmpty;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.newgen.am.validation.FormatGroup;
+import com.newgen.am.validation.ValidCode;
 
 /**
  *
  * @author nhungtt
  */
-@JsonInclude(JsonInclude.Include.NON_EMPTY)
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class DepartmentDTO {
     @JsonInclude(JsonInclude.Include.NON_DEFAULT)
-    private long id;
+    private String _id;
+    @NotEmpty(message = "Required.")
+    @ValidCode(groups = FormatGroup.class)
     private String code;
+    @NotEmpty(message = "Required.")
     private String name;
+    @NotEmpty(message = "Required.")
     private String status;
+    private String createdDate;
     private String note;
     private List<DeptUserDTO> users;
 
-    public long getId() {
-        return id;
-    }
+	public String get_id() {
+		return _id;
+	}
 
-    public void setId(long id) {
-        this.id = id;
-    }
+	public void set_id(String _id) {
+		this._id = _id;
+	}
 
-    public String getCode() {
+	public String getCode() {
         return code;
     }
 
@@ -69,5 +79,13 @@ public class DepartmentDTO {
     public void setUsers(List<DeptUserDTO> users) {
         this.users = users;
     }
-    
+
+	public String getCreatedDate() {
+		return createdDate;
+	}
+
+	public void setCreatedDate(String createdDate) {
+		this.createdDate = createdDate;
+	}
+
 }

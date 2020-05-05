@@ -25,20 +25,10 @@ public class ApprovalController {
         String methodName = "processPendingApproval";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [POST]/admin/pendingApprovals/" + approvalId);
+        
         AdminResponseObj response = new AdminResponseObj();
-        try {
-            boolean result = true;
-            if (result) {
-                response.setStatus(Constant.RESPONSE_OK);
-            } else {
-                response.setStatus(Constant.RESPONSE_ERROR);
-                response.setErrMsg(ErrorMessage.ERROR_OCCURRED);
-            }
-        } catch (Exception ex) {
-            AMLogger.logError(className, methodName, refId, ex);
-            response.setStatus(Constant.RESPONSE_ERROR);
-            response.setErrMsg(ex.getMessage());
-        }
+        response.setStatus(Constant.RESPONSE_OK);
+        
         AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
         return response;
     }
@@ -48,20 +38,10 @@ public class ApprovalController {
         String methodName = "processAccountTransApproval";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [POST]/admin/accountTransApprovals/" + approvalId);
+        
         AdminResponseObj response = new AdminResponseObj();
-        try {
-            boolean result = true;
-            if (result) {
-                response.setStatus(Constant.RESPONSE_OK);
-            } else {
-                response.setStatus(Constant.RESPONSE_ERROR);
-                response.setErrMsg(ErrorMessage.ERROR_OCCURRED);
-            }
-        } catch (Exception ex) {
-            AMLogger.logError(className, methodName, refId, ex);
-            response.setStatus(Constant.RESPONSE_ERROR);
-            response.setErrMsg(ex.getMessage());
-        }
+        response.setStatus(Constant.RESPONSE_OK);
+        
         AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
         return response;
     }
@@ -71,20 +51,10 @@ public class ApprovalController {
         String methodName = "processAccountActivationApproval";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [POST]/admin/accActivationApprovals/" + approvalId);
+        
         AdminResponseObj response = new AdminResponseObj();
-        try {
-            boolean result = true;
-            if (result) {
-                response.setStatus(Constant.RESPONSE_OK);
-            } else {
-                response.setStatus(Constant.RESPONSE_ERROR);
-                response.setErrMsg(ErrorMessage.ERROR_OCCURRED);
-            }
-        } catch (Exception ex) {
-            AMLogger.logError(className, methodName, refId, ex);
-            response.setStatus(Constant.RESPONSE_ERROR);
-            response.setErrMsg(ex.getMessage());
-        }
+        response.setStatus(Constant.RESPONSE_OK);
+        
         AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
         return response;
     }

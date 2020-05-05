@@ -9,28 +9,34 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.newgen.am.model.RoleFunction;
 import java.util.List;
 
+import javax.validation.constraints.NotEmpty;
+
 /**
  *
  * @author nhungtt
  */
-@JsonInclude(JsonInclude.Include.NON_EMPTY)
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class SystemRoleDTO {
     @JsonInclude(JsonInclude.Include.NON_DEFAULT)
-    private long id;
+    private String _id;
+    @NotEmpty(message = "Required.")
     private String name;
+    @NotEmpty(message = "Required.")
     private String description;
+    @NotEmpty(message = "Required.")
     private String status;
+    private String createdDate;
     private List<RoleFunction> functions;
 
-    public long getId() {
-        return id;
-    }
+	public String get_id() {
+		return _id;
+	}
 
-    public void setId(long id) {
-        this.id = id;
-    }
+	public void set_id(String _id) {
+		this._id = _id;
+	}
 
-    public String getName() {
+	public String getName() {
         return name;
     }
 
@@ -54,7 +60,15 @@ public class SystemRoleDTO {
         this.status = status;
     }
 
-    public List<RoleFunction> getFunctions() {
+    public String getCreatedDate() {
+		return createdDate;
+	}
+
+	public void setCreatedDate(String createdDate) {
+		this.createdDate = createdDate;
+	}
+
+	public List<RoleFunction> getFunctions() {
         return functions;
     }
 

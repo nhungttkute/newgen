@@ -12,6 +12,6 @@ import org.springframework.data.mongodb.repository.MongoRepository;
  *
  * @author nhungtt
  */
-public interface InvestorAccTransApprovalRepository extends MongoRepository<InvestorAccTransApproval, Long> {
+public interface InvestorAccTransApprovalRepository extends MongoRepository<InvestorAccTransApproval, String> {
     
 }

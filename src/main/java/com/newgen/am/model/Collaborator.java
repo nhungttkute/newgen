@@ -20,9 +20,9 @@ public class Collaborator extends AuditModel implements Serializable {
     @Transient
     public static final String SEQUENCE_NAME = "collaborator_seq";
     @Id
-    private long id;
-    private long memberId;
-    private long brokerId;
+    private String id;
+    private String memberId;
+    private String brokerId;
     private String memberCode;
     private String memberName;
     private String brokerCode;
@@ -37,31 +37,31 @@ public class Collaborator extends AuditModel implements Serializable {
     private List<UserRole> roles;
     private List<RoleFunction> functions;
 
-    public long getId() {
-        return id;
-    }
+    public String getId() {
+		return id;
+	}
 
-    public void setId(long id) {
-        this.id = id;
-    }
+	public void setId(String id) {
+		this.id = id;
+	}
 
-    public long getMemberId() {
-        return memberId;
-    }
+	public String getMemberId() {
+		return memberId;
+	}
 
-    public void setMemberId(long memberId) {
-        this.memberId = memberId;
-    }
+	public void setMemberId(String memberId) {
+		this.memberId = memberId;
+	}
 
-    public long getBrokerId() {
-        return brokerId;
-    }
+	public String getBrokerId() {
+		return brokerId;
+	}
 
-    public void setBrokerId(long brokerId) {
-        this.brokerId = brokerId;
-    }
+	public void setBrokerId(String brokerId) {
+		this.brokerId = brokerId;
+	}
 
-    public String getCode() {
+	public String getCode() {
         return code;
     }
 

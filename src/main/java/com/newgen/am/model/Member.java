@@ -20,30 +20,27 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Document(collection = "members")
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Member extends AuditModel implements Serializable {
-    @Transient
-    public static final String SEQUENCE_NAME = "member_seq";
-    @Id
-    private long id;
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	@Id
+    private String id;
     @NonNull
     private String code;
     @NonNull
     private String name;
     private String note;
+    private String status;
     private Company company;
     private Contact contact;
     private List<UserRole> roles;
     private List<RoleFunction> functions;
     private int orderLimit;
+    private int defaultPositionLimit;
+    private long defaultCommodityFee;
     private List<Commodity> comodities;
     private List<MemberUser> users;
-
-    public long getId() {
-        return id;
-    }
-
-    public void setId(long id) {
-        this.id = id;
-    }
 
     public String getCode() {
         return code;
@@ -69,7 +66,15 @@ public class Member extends AuditModel implements Serializable {
         this.note = note;
     }
 
-    public Company getCompany() {
+    public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
+	}
+
+	public Company getCompany() {
         return company;
     }
 
@@ -124,5 +129,21 @@ public class Member extends AuditModel implements Serializable {
     public void setOrderLimit(int orderLimit) {
         this.orderLimit = orderLimit;
     }
+
+	public int getDefaultPositionLimit() {
+		return defaultPositionLimit;
+	}
+
+	public void setDefaultPositionLimit(int defaultPositionLimit) {
+		this.defaultPositionLimit = defaultPositionLimit;
+	}
+
+	public long getDefaultCommodityFee() {
+		return defaultCommodityFee;
+	}
+
+	public void setDefaultCommodityFee(long defaultCommodityFee) {
+		this.defaultCommodityFee = defaultCommodityFee;
+	}
 
 }

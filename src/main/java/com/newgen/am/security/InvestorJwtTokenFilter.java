@@ -7,6 +7,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
@@ -29,6 +30,8 @@ public class InvestorJwtTokenFilter extends OncePerRequestFilter {
       if (token != null && invJwtTokenProvider.validateToken(token)) {
         Authentication auth = invJwtTokenProvider.getAuthentication(token);
         SecurityContextHolder.getContext().setAuthentication(auth);
+      } else {
+      	throw new CustomException("Invalid accessToken.", HttpStatus.UNAUTHORIZED);
       }
     } catch (CustomException ex) {
       //this is very important, since it guarantees the user is not authenticated at all

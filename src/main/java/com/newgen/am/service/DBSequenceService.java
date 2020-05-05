@@ -51,7 +51,7 @@ public class DBSequenceService {
             collection.updateOne(query, updateObj);
         } catch (Exception e) {
             AMLogger.logError(className, methodName, refId, e);
-            throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.UNPROCESSABLE_ENTITY);
+            throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
         }
         return sequenceValue;
     }

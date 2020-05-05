@@ -25,7 +25,7 @@ public class LoginAdminUser extends AuditModel implements Serializable {
     @Transient
     public static final String SEQUENCE_NAME = "login_admin_user_seq";
     @Id
-    private long id;
+    private String id;
     @NonNull
     @Indexed(unique = true)
     private String username;
@@ -36,7 +36,7 @@ public class LoginAdminUser extends AuditModel implements Serializable {
     private Boolean checkPin = true;
     @NonNull
     @Field
-    private String pin = "123456";
+    private String pin;
     private String status;
     private String accessToken;
     private long tokenExpiration;
@@ -46,14 +46,14 @@ public class LoginAdminUser extends AuditModel implements Serializable {
     private Boolean mustChangePassword = true;
     private int logonCounts;
     private long logonTime;
-    private long deptId;
-    private long deptUserId;
-    private long memberId;
-    private long memberUserId;
-    private long brokerId;
-    private long brokerUserId;
-    private long collaboratorId;
-    private long collaboratorUserId;
+    private String deptId;
+    private String deptUserId;
+    private String memberId;
+    private String memberUserId;
+    private String brokerId;
+    private String brokerUserId;
+    private String collaboratorId;
+    private String collaboratorUserId;
     @Field
     @Length(max = 10000)
     private String layout;
@@ -61,16 +61,16 @@ public class LoginAdminUser extends AuditModel implements Serializable {
     private String theme;
     private int fontSize;
     private List<WatchList> watchlists;
-    
-    public long getId() {
-        return id;
-    }
 
-    public void setId(long id) {
-        this.id = id;
-    }
+    public String getId() {
+		return id;
+	}
 
-    public String getUsername() {
+	public void setId(String id) {
+		this.id = id;
+	}
+
+	public String getUsername() {
         return username;
     }
 
@@ -126,23 +126,23 @@ public class LoginAdminUser extends AuditModel implements Serializable {
         this.logined = logined;
     }
 
-    public long getDeptId() {
-        return deptId;
-    }
+    public String getDeptId() {
+		return deptId;
+	}
 
-    public void setDeptId(long deptId) {
-        this.deptId = deptId;
-    }
+	public void setDeptId(String deptId) {
+		this.deptId = deptId;
+	}
 
-    public long getDeptUserId() {
-        return deptUserId;
-    }
+	public String getDeptUserId() {
+		return deptUserId;
+	}
 
-    public void setDeptUserId(long deptUserId) {
-        this.deptUserId = deptUserId;
-    }
+	public void setDeptUserId(String deptUserId) {
+		this.deptUserId = deptUserId;
+	}
 
-    public String getLayout() {
+	public String getLayout() {
         return layout;
     }
 
@@ -174,55 +174,55 @@ public class LoginAdminUser extends AuditModel implements Serializable {
         this.fontSize = fontSize;
     }
 
-    public long getMemberId() {
+    public String getMemberId() {
         return memberId;
     }
 
-    public void setMemberId(long memberId) {
+    public void setMemberId(String memberId) {
         this.memberId = memberId;
     }
 
-    public long getMemberUserId() {
-        return memberUserId;
-    }
+    public String getMemberUserId() {
+		return memberUserId;
+	}
 
-    public void setMemberUserId(long memberUserId) {
-        this.memberUserId = memberUserId;
-    }
+	public void setMemberUserId(String memberUserId) {
+		this.memberUserId = memberUserId;
+	}
 
-    public long getBrokerId() {
-        return brokerId;
-    }
+	public String getBrokerId() {
+		return brokerId;
+	}
 
-    public void setBrokerId(long brokerId) {
-        this.brokerId = brokerId;
-    }
+	public void setBrokerId(String brokerId) {
+		this.brokerId = brokerId;
+	}
 
-    public long getBrokerUserId() {
-        return brokerUserId;
-    }
+	public String getBrokerUserId() {
+		return brokerUserId;
+	}
 
-    public void setBrokerUserId(long brokerUserId) {
-        this.brokerUserId = brokerUserId;
-    }
+	public void setBrokerUserId(String brokerUserId) {
+		this.brokerUserId = brokerUserId;
+	}
 
-    public long getCollaboratorId() {
-        return collaboratorId;
-    }
+	public String getCollaboratorId() {
+		return collaboratorId;
+	}
 
-    public void setCollaboratorId(long collaboratorId) {
-        this.collaboratorId = collaboratorId;
-    }
+	public void setCollaboratorId(String collaboratorId) {
+		this.collaboratorId = collaboratorId;
+	}
 
-    public long getCollaboratorUserId() {
-        return collaboratorUserId;
-    }
+	public String getCollaboratorUserId() {
+		return collaboratorUserId;
+	}
 
-    public void setCollaboratorUserId(long collaboratorUserId) {
-        this.collaboratorUserId = collaboratorUserId;
-    }
+	public void setCollaboratorUserId(String collaboratorUserId) {
+		this.collaboratorUserId = collaboratorUserId;
+	}
 
-    public int getLogonCounts() {
+	public int getLogonCounts() {
         return logonCounts;
     }
 

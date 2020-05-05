@@ -12,6 +12,6 @@ import org.springframework.data.mongodb.repository.MongoRepository;
  *
  * @author nhungtt
  */
-public interface PendingApprovalRepository extends MongoRepository<PendingApproval, Long> {
+public interface PendingApprovalRepository extends MongoRepository<PendingApproval, String> {
     
 }

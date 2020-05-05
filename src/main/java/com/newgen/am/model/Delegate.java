@@ -5,30 +5,58 @@
  */
 package com.newgen.am.model;
 
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.Size;
+
+import org.springframework.validation.annotation.Validated;
+
+import com.newgen.am.validation.FormatGroup;
+import com.newgen.am.validation.LengthGroup;
+import com.newgen.am.validation.ValidDate;
+import com.newgen.am.validation.ValidNumber;
+import com.newgen.am.validation.ValidPhoneNumber;
+import com.newgen.am.validation.ValidationSequence;
+
 /**
  *
  * @author nhungtt
  */
 public class Delegate {
-    private int id;
+	@NotEmpty(message = "Required.")
+	@Size(min = 1, max = 100, message = "Invalid format.", groups = LengthGroup.class)
     private String fullName;
+	@NotEmpty(message = "Required.")
+	@ValidDate(groups = FormatGroup.class)
     private String birthDay;
+	@NotEmpty(message = "Required.")
+	@ValidNumber(groups = FormatGroup.class)
+	@Size(min = 1, max = 20, groups = LengthGroup.class)
     private String identityCard;
+	@NotEmpty(message = "Required.")
+	@ValidDate(groups = FormatGroup.class)
     private String idCreatedDate;
+	@NotEmpty(message = "Required.")
+	@Size(min = 1, max = 100, message = "Invalid format.", groups = LengthGroup.class)
     private String idCreatedLocation;
+	@NotEmpty(message = "Required.")
+	@Email(message = "Invalid format.", groups = FormatGroup.class)
     private String email;
+	@NotEmpty(message = "Required.")
+    @ValidPhoneNumber(groups = FormatGroup.class)
     private String phoneNumber;
+	@NotEmpty(message = "Required.")
+	@Size(min = 1, max = 300, message = "Invalid format.", groups = LengthGroup.class)
     private String address;
-    private String scannedIdCard; //image data
+	@NotEmpty(message = "Required.")
+	@Size(min = 1, max = 134000, message = "Invalid format.", groups = LengthGroup.class)
+    private String scannedFrontIdCard; //image data
+	@NotEmpty(message = "Required.")
+	@Size(min = 1, max = 134000, message = "Invalid format.", groups = LengthGroup.class)
+    private String scannedEndIdCard; //image data
+	@NotEmpty(message = "Required.")
+	@Size(min = 1, max = 134000, message = "Invalid format.", groups = LengthGroup.class)
     private String scannedSignature; //image data
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
 
     public String getFullName() {
         return fullName;
@@ -94,15 +122,23 @@ public class Delegate {
         this.address = address;
     }
 
-    public String getScannedIdCard() {
-        return scannedIdCard;
-    }
+    public String getScannedFrontIdCard() {
+		return scannedFrontIdCard;
+	}
 
-    public void setScannedIdCard(String scannedIdCard) {
-        this.scannedIdCard = scannedIdCard;
-    }
+	public void setScannedFrontIdCard(String scannedFrontIdCard) {
+		this.scannedFrontIdCard = scannedFrontIdCard;
+	}
 
-    public String getScannedSignature() {
+	public String getScannedEndIdCard() {
+		return scannedEndIdCard;
+	}
+
+	public void setScannedEndIdCard(String scannedEndIdCard) {
+		this.scannedEndIdCard = scannedEndIdCard;
+	}
+
+	public String getScannedSignature() {
         return scannedSignature;
     }
 

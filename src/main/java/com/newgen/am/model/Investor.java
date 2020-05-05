@@ -18,10 +18,10 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class Investor extends AuditModel implements Serializable {
     @Transient
     public static final String SEQUENCE_NAME = "investor_seq";
-    private long id;
-    private long memberId;
-    private long brokerId;
-    private long collaboratorId;
+    private String id;
+    private String memberId;
+    private String brokerId;
+    private String collaboratorId;
     private String memberCode;
     private String memberName;
     private String brokerCode;
@@ -45,39 +45,39 @@ public class Investor extends AuditModel implements Serializable {
     private double marginMultiplier;
     private long otherFee;
 
-    public long getId() {
-        return id;
-    }
+    public String getId() {
+		return id;
+	}
 
-    public void setId(long id) {
-        this.id = id;
-    }
+	public void setId(String id) {
+		this.id = id;
+	}
 
-    public long getMemberId() {
-        return memberId;
-    }
+	public String getMemberId() {
+		return memberId;
+	}
 
-    public void setMemberId(long memberId) {
-        this.memberId = memberId;
-    }
+	public void setMemberId(String memberId) {
+		this.memberId = memberId;
+	}
 
-    public long getBrokerId() {
-        return brokerId;
-    }
+	public String getBrokerId() {
+		return brokerId;
+	}
 
-    public void setBrokerId(long brokerId) {
-        this.brokerId = brokerId;
-    }
+	public void setBrokerId(String brokerId) {
+		this.brokerId = brokerId;
+	}
 
-    public long getCollaboratorId() {
-        return collaboratorId;
-    }
+	public String getCollaboratorId() {
+		return collaboratorId;
+	}
 
-    public void setCollaboratorId(long collaboratorId) {
-        this.collaboratorId = collaboratorId;
-    }
+	public void setCollaboratorId(String collaboratorId) {
+		this.collaboratorId = collaboratorId;
+	}
 
-    public String getInvestorCode() {
+	public String getInvestorCode() {
         return investorCode;
     }
 

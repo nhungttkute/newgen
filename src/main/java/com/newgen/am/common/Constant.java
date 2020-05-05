@@ -12,6 +12,9 @@ package com.newgen.am.common;
 public class Constant {
 //    public static final String CONFIG_DIR = "/opt/account-management/settings/properties/";
     public static final String CONFIG_DIR = "C:/u01/apps/AM/settings/properties/";
+    
+    public static final String DATE_TIME_PATTERN = "dd/MM/yyyy HH:mm:ss";
+    
     public static final String RESPONSE_OK = "ok";
     public static final String RESPONSE_ERROR = "error";
     
@@ -53,4 +56,20 @@ public class Constant {
     public static final String OPT_EQUALS = "$eq";
     public static final String OPT_IN = "$in";
     public static final String OPT_NOT_IN = "$nin";
+    public static final String SORT_DETAUL_FIELD = "lastModifiedDate";
+    public static final int PAGINATION_DEFAULT_LIMIT = 20;
+    public static final int PAGINATION_DEFAULT_OFFSET = 0;
+    
+    public static final String CSV_DEPARTMENTS = "departments.csv";
+    public static final String CSV_DEPARTMENT_USERS = "department_users.csv";
+    public static final String CSV_SYSTEM_ROLES = "system_roles.csv";
+    public static final String CSV_MEMBERS = "members.csv";
+    public static final String CSV_MEMBER_USERS = "member_users.csv";
+    public static final String CSV_MEMBER_ROLES = "member_roles.csv";
+    
+    public static final String POSITION_LIMITED = "LIMITED";
+    public static final String POSITION_INHERITED = "INHERITED";
+    
+    public static final String MEMBER_DEFAULT_ROLE = "TVKD";
+    public static final String MEMBER_MASTER_USER_PREFIX = "TVKD_";
 }

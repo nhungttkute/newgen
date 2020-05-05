@@ -12,6 +12,6 @@ import org.springframework.data.mongodb.repository.MongoRepository;
  *
  * @author nhungtt
  */
-public interface CollaboratorRepository extends MongoRepository<Collaborator, Long> {
+public interface CollaboratorRepository extends MongoRepository<Collaborator, String> {
     
 }

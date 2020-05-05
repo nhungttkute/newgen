@@ -15,7 +15,7 @@ import java.util.List;
  */
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class LoginAdminUserOutputDTO {
-    private long id;
+    private String id;
     private String username;
     private String fullName;
     private String phoneNumber;
@@ -25,10 +25,10 @@ public class LoginAdminUserOutputDTO {
     private long tokenExpiration;
     private Boolean logined;
     private Boolean mustChangePassword;
-    private long deptId;
+    private String deptId;
     private String deptCode;
     private String deptName;
-    private long deptUserId;
+    private String deptUserId;
     private List<WatchList> watchLists;
     private String layout;
     private String language;
@@ -36,14 +36,6 @@ public class LoginAdminUserOutputDTO {
     @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     private int fontSize;
     private List<String> functions;
-
-    public long getId() {
-        return id;
-    }
-
-    public void setId(long id) {
-        this.id = id;
-    }
 
     public String getUsername() {
         return username;
@@ -109,14 +101,6 @@ public class LoginAdminUserOutputDTO {
         this.mustChangePassword = mustChangePassword;
     }
 
-    public long getDeptId() {
-        return deptId;
-    }
-
-    public void setDeptId(long deptId) {
-        this.deptId = deptId;
-    }
-
     public String getDeptCode() {
         return deptCode;
     }
@@ -131,14 +115,6 @@ public class LoginAdminUserOutputDTO {
 
     public void setDeptName(String deptName) {
         this.deptName = deptName;
-    }
-
-    public long getDeptUserId() {
-        return deptUserId;
-    }
-
-    public void setDeptUserId(long deptUserId) {
-        this.deptUserId = deptUserId;
     }
 
     public List<WatchList> getWatchLists() {
@@ -188,5 +164,29 @@ public class LoginAdminUserOutputDTO {
     public void setFunctions(List<String> functions) {
         this.functions = functions;
     }
+
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
+
+	public String getDeptId() {
+		return deptId;
+	}
+
+	public void setDeptId(String deptId) {
+		this.deptId = deptId;
+	}
+
+	public String getDeptUserId() {
+		return deptUserId;
+	}
+
+	public void setDeptUserId(String deptUserId) {
+		this.deptUserId = deptUserId;
+	}
     
 }

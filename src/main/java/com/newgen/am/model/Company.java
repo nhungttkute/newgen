@@ -5,28 +5,47 @@
  */
 package com.newgen.am.model;
 
+import javax.validation.Valid;
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
+
+import org.springframework.format.annotation.NumberFormat;
+import org.springframework.validation.annotation.Validated;
+
+import com.newgen.am.validation.FormatGroup;
+import com.newgen.am.validation.LengthGroup;
+import com.newgen.am.validation.ValidNumber;
+import com.newgen.am.validation.ValidPhoneNumber;
+import com.newgen.am.validation.ValidationSequence;
+
 /**
  *
  * @author nhungtt
  */
 public class Company {
-    private int id;
+	@NotEmpty(message = "Required.")
+	@Size(min = 1, max = 200, message = "Invalid format.", groups = LengthGroup.class)
     private String name;
-    private String registrationNumber;
+	@NotEmpty(message = "Required.")
+	@ValidNumber(groups = FormatGroup.class)
+	@Size(min = 1, max = 20, message = "Invalid format.", groups = LengthGroup.class)
     private String taxCode;
+	@NotEmpty(message = "Required.")
+	@Size(min = 1, max = 300, message = "Invalid format.", groups = LengthGroup.class)
     private String address;
+	@NotEmpty(message = "Required.")
+	@ValidPhoneNumber(groups = FormatGroup.class)
     private String phoneNumber;
+	@ValidPhoneNumber(groups = FormatGroup.class)
     private String fax;
+    @NotEmpty(message = "Required.")
+    @Email(message = "Invalid format.", groups = FormatGroup.class)
     private String email;
+    @NotNull(message = "Required.")
+    @Valid
     private Delegate delegate;
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
 
     public String getName() {
         return name;
@@ -35,15 +54,6 @@ public class Company {
     public void setName(String name) {
         this.name = name;
     }
-
-    public String getRegistrationNumber() {
-        return registrationNumber;
-    }
-
-    public void setRegistrationNumber(String registrationNumber) {
-        this.registrationNumber = registrationNumber;
-    }
-
     public String getTaxCode() {
         return taxCode;
     }

@@ -12,7 +12,7 @@ import org.springframework.data.mongodb.repository.MongoRepository;
  *
  * @author nhungtt
  */
-public interface LoginAdminUserRepository extends MongoRepository<LoginAdminUser, Long>{
+public interface LoginAdminUserRepository extends MongoRepository<LoginAdminUser, String>{
     LoginAdminUser findByUsername(String username);
     boolean existsLoginAdminUserByUsername(String username);
 }

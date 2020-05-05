@@ -5,43 +5,68 @@
  */
 package com.newgen.am.dto;
 
+import java.util.List;
+
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.Size;
+
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.newgen.am.model.AuditModel;
 import com.newgen.am.model.RoleFunction;
 import com.newgen.am.model.UserRole;
-import java.util.List;
+import com.newgen.am.validation.FormatGroup;
+import com.newgen.am.validation.LengthGroup;
+import com.newgen.am.validation.ValidPhoneNumber;
+import com.newgen.am.validation.ValidUsername;
 
 /**
  *
  * @author nhungtt
  */
-@JsonInclude(JsonInclude.Include.NON_EMPTY)
-public class DeptUserDTO extends AuditModel {
+/**
+ * @author E7470
+ *
+ */
+@JsonInclude(JsonInclude.Include.NON_DEFAULT)
+public class DeptUserDTO {
     @JsonInclude(JsonInclude.Include.NON_DEFAULT)
-    private long _id;
+    private String _id;
+    @NotEmpty(message = "Required.")
+    @ValidUsername(groups = FormatGroup.class)
     private String username;
+    @NotEmpty(message = "Required.")
+    @Size(min = 1, max = 100, message = "Invalid format.", groups = LengthGroup.class)
     private String fullName;
+    @NotEmpty(message = "Required.")
+    @Email(message = "Invalid format.", groups = FormatGroup.class)
     private String email;
+    @NotEmpty(message = "Required.")
+    @ValidPhoneNumber(groups = FormatGroup.class)
     private String phoneNumber;
+    @NotEmpty(message = "Required.")
+    @Size(min = 1, max = 20, message = "Invalid format.", groups = LengthGroup.class)
     private String status; //pending, active, inactive
     private String note;
+    @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     private Boolean isPasswordExpiryCheck;
     @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     private int passwordExpiryDays;
     @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     private int expiryAlertDays;
+    private String createdDate;
     private List<UserRole> roles;
     private List<RoleFunction> functions;
 
-    public long getId() {
-        return _id;
-    }
+	public String get_id() {
+		return _id;
+	}
 
-    public void setId(long id) {
-        this._id = id;
-    }
+	public void set_id(String _id) {
+		this._id = _id;
+	}
 
-    public String getUsername() {
+	public String getUsername() {
         return username;
     }
 
@@ -89,23 +114,23 @@ public class DeptUserDTO extends AuditModel {
         this.note = note;
     }
 
-    public Boolean isIsPasswordExpiryCheck() {
-        return isPasswordExpiryCheck;
-    }
+    public Boolean getIsPasswordExpiryCheck() {
+		return isPasswordExpiryCheck;
+	}
 
-    public void setIsPasswordExpiryCheck(Boolean isPasswordExpiryCheck) {
-        this.isPasswordExpiryCheck = isPasswordExpiryCheck;
-    }
+	public void setIsPasswordExpiryCheck(Boolean isPasswordExpiryCheck) {
+		this.isPasswordExpiryCheck = isPasswordExpiryCheck;
+	}
 
-    public int getPasswordExpiryDays() {
-        return passwordExpiryDays;
-    }
+	public int getPasswordExpiryDays() {
+		return passwordExpiryDays;
+	}
 
-    public void setPasswordExpiryDays(int passwordExpiryDays) {
-        this.passwordExpiryDays = passwordExpiryDays;
-    }
+	public void setPasswordExpiryDays(int passwordExpiryDays) {
+		this.passwordExpiryDays = passwordExpiryDays;
+	}
 
-    public int getExpiryAlertDays() {
+	public int getExpiryAlertDays() {
         return expiryAlertDays;
     }
 
@@ -113,7 +138,15 @@ public class DeptUserDTO extends AuditModel {
         this.expiryAlertDays = expiryAlertDays;
     }
 
-    public List<UserRole> getRoles() {
+	public String getCreatedDate() {
+		return createdDate;
+	}
+
+	public void setCreatedDate(String createdDate) {
+		this.createdDate = createdDate;
+	}
+
+	public List<UserRole> getRoles() {
         return roles;
     }
 

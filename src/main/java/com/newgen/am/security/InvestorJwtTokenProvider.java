@@ -46,7 +46,6 @@ public class InvestorJwtTokenProvider {
     public String createToken(String username, List<SimpleGrantedAuthority> roles) {
 
         Claims claims = Jwts.claims().setSubject(username);
-//    claims.put("auth", roles.stream().map(s -> new SimpleGrantedAuthority(s.getAuthority())).filter(Objects::nonNull).collect(Collectors.toList()));
         claims.put("auth", roles.stream().filter(Objects::nonNull).collect(Collectors.toList()));
 
         Date now = new Date();
@@ -86,7 +85,7 @@ public class InvestorJwtTokenProvider {
             Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token);
             return true;
         } catch (JwtException | IllegalArgumentException e) {
-            throw new CustomException("Expired or invalid JWT token", HttpStatus.FORBIDDEN);
+        	throw new CustomException("Invalid accessToken.", HttpStatus.UNAUTHORIZED);
         }
     }
 

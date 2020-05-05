@@ -8,14 +8,33 @@ package com.newgen.am.controller;
 import com.google.gson.Gson;
 import com.newgen.am.common.AMLogger;
 import com.newgen.am.common.Constant;
+import com.newgen.am.common.CustomMappingStrategy;
 import com.newgen.am.common.ErrorMessage;
+import com.newgen.am.common.Utility;
 import com.newgen.am.dto.AdminDataObj;
 import com.newgen.am.dto.AdminResponseObj;
+import com.newgen.am.dto.BasePagination;
+import com.newgen.am.dto.DepartmentCSV;
+import com.newgen.am.dto.SystemRoleCSV;
 import com.newgen.am.dto.SystemRoleDTO;
+import com.newgen.am.dto.UpdateSystemRoleDTO;
+import com.newgen.am.exception.CustomException;
 import com.newgen.am.service.SystemRoleService;
+import com.opencsv.CSVWriter;
+import com.opencsv.bean.StatefulBeanToCsv;
+import com.opencsv.bean.StatefulBeanToCsvBuilder;
+
+import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -35,98 +54,115 @@ public class SystemRoleController {
     SystemRoleService sysRoleService;
     
     @GetMapping("/admin/systemRoles")
-    public AdminResponseObj listSystemRoles() {
+    @PreAuthorize("hasAuthority('adminUserManagement.roleManagement.functionList.view')")
+    public AdminResponseObj listSystemRoles(HttpServletRequest request) {
         String methodName = "listSystemRoles";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [GET]/admin/systemRoles");
+        
         AdminResponseObj response = new AdminResponseObj();
         try {
-            List<SystemRoleDTO> sysRoleDtos = sysRoleService.list(refId);
-            if (sysRoleDtos != null && sysRoleDtos.size() > 0) {
+        	BasePagination<SystemRoleDTO> pagination = sysRoleService.list(request, refId);
+            if (pagination != null && pagination.getData().size() > 0) {
                 response.setStatus(Constant.RESPONSE_OK);
                 response.setData(new AdminDataObj());
-                response.getData().setSystemRoles(sysRoleDtos);
+                response.getData().setSystemRoles(pagination.getData());
+                response.setPagination(Utility.getPagination(request, pagination.getCount()));
+                response.setFilterList(Arrays.asList(Constant.STATUS_ACTIVE, Constant.STATUS_INACTIVE));
             } else {
                 response.setStatus(Constant.RESPONSE_ERROR);
-                response.setErrMsg(ErrorMessage.NO_RESULT_FOUND);
+                response.setErrMsg(ErrorMessage.RESULT_NOT_FOUND);
             }
-        } catch (Exception ex) {
-            AMLogger.logError(className, methodName, refId, ex);
-            response.setStatus(Constant.RESPONSE_ERROR);
-            response.setErrMsg(ex.getMessage());
+        } catch (Exception e) {
+        	AMLogger.logError(className, methodName, refId, e);
+			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
         }
+        
         AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
         return response;
     }
     
+    @GetMapping("/admin/systemRoles/csv")
+    @PreAuthorize("hasAuthority('adminUserManagement.roleManagement.functionList.view')")
+    public void downloadSystemRolesCsv(HttpServletRequest request, HttpServletResponse response) {
+        String methodName = "downloadSystemRolesCsv";
+        long refId = System.currentTimeMillis();
+        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [GET]/admin/systemRoles/csv");
+        
+        try {
+        	//set file name and content type
+            String filename = Constant.CSV_SYSTEM_ROLES;
+
+            response.setContentType("text/csv");
+            response.setHeader(HttpHeaders.CONTENT_DISPOSITION,
+                    "attachment; filename=\"" + filename + "\"");
+
+            //create a csv writer
+            CustomMappingStrategy<SystemRoleCSV> mappingStrategy = new CustomMappingStrategy<SystemRoleCSV>();
+            mappingStrategy.setType(SystemRoleCSV.class);
+            
+            StatefulBeanToCsv<SystemRoleCSV> writer = new StatefulBeanToCsvBuilder<SystemRoleCSV>(response.getWriter())
+            		.withMappingStrategy(mappingStrategy)
+                    .withQuotechar(CSVWriter.NO_QUOTE_CHARACTER)
+                    .withSeparator(CSVWriter.DEFAULT_SEPARATOR)
+                    .withOrderedResults(false)
+                    .build();
+
+            //write all users to csv file
+            writer.write(sysRoleService.listCsv(request, refId));
+        } catch (Exception e) {
+        	AMLogger.logError(className, methodName, refId, e);
+			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+    
     @PostMapping("/admin/systemRoles")
-    public AdminResponseObj createSystemRole(HttpServletRequest request, @RequestBody SystemRoleDTO sysRoleDto) {
+    @PreAuthorize("hasAuthority('adminUserManagement.roleManagement.roleInfo.create')")
+    public AdminResponseObj createSystemRole(HttpServletRequest request, @Valid @RequestBody SystemRoleDTO sysRoleDto) {
         String methodName = "createSystemRole";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [POST]/admin/systemRoles");
         AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(sysRoleDto));
+        
+        sysRoleService.createSystemRole(request, sysRoleDto, refId);
+        
         AdminResponseObj response = new AdminResponseObj();
-        try {
-            boolean result = sysRoleService.createSystemRole(request, sysRoleDto, refId);
-            if (result) {
-                response.setStatus(Constant.RESPONSE_OK);
-            } else {
-                response.setStatus(Constant.RESPONSE_ERROR);
-                response.setErrMsg(ErrorMessage.ERROR_OCCURRED);
-            }
-        } catch (Exception ex) {
-            AMLogger.logError(className, methodName, refId, ex);
-            response.setStatus(Constant.RESPONSE_ERROR);
-            response.setErrMsg(ex.getMessage());
-        }
+        response.setStatus(Constant.RESPONSE_OK);
+        
         AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
         return response;
     }
     
     @PutMapping("/admin/systemRoles/{sysRoleId}")
-    public AdminResponseObj updateSystemRole(HttpServletRequest request, @PathVariable Long sysRoleId, @RequestBody SystemRoleDTO sysRoleDto) {
+    @PreAuthorize("hasAuthority('adminUserManagement.roleManagement.roleInfo.update')")
+    public AdminResponseObj updateSystemRole(HttpServletRequest request, @PathVariable String sysRoleId, @Valid @RequestBody UpdateSystemRoleDTO sysRoleDto) {
         String methodName = "updateSystemRole";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [PUT]/admin/systemRoles/" + sysRoleId);
         AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(sysRoleDto));
+        
+        sysRoleService.updateSystemRole(request, sysRoleId, sysRoleDto, refId);
+        
         AdminResponseObj response = new AdminResponseObj();
-        try {
-            boolean result = sysRoleService.updateSystemRole(request, sysRoleId, sysRoleDto, refId);
-            if (result) {
-                response.setStatus(Constant.RESPONSE_OK);
-            } else {
-                response.setStatus(Constant.RESPONSE_ERROR);
-                response.setErrMsg(ErrorMessage.ERROR_OCCURRED);
-            }
-        } catch (Exception ex) {
-            AMLogger.logError(className, methodName, refId, ex);
-            response.setStatus(Constant.RESPONSE_ERROR);
-            response.setErrMsg(ex.getMessage());
-        }
+        response.setStatus(Constant.RESPONSE_OK);
+        
         AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
         return response;
     }
     
     @PostMapping("/admin/systemRoles/{sysRoleId}/functions")
-    public AdminResponseObj createSystemRoleFunctions(HttpServletRequest request, @PathVariable Long sysRoleId, @RequestBody SystemRoleDTO sysRoleDto) {
+    @PreAuthorize("hasAuthority('adminUserManagement.roleManagement.roleFunctionsAssign.create')")
+    public AdminResponseObj createSystemRoleFunctions(HttpServletRequest request, @PathVariable String sysRoleId, @RequestBody SystemRoleDTO sysRoleDto) {
         String methodName = "createSystemRoleFunctions";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, "REQUEST_API: " + String.format("[POST]/admin/systemRoles/%s/functions", sysRoleId));
         AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(sysRoleDto));
+        
+        sysRoleService.createSystemRoleFunctions(request, sysRoleId, sysRoleDto, refId);
+        
         AdminResponseObj response = new AdminResponseObj();
-        try {
-            boolean result = sysRoleService.createSystemRoleFunctions(request, sysRoleId, sysRoleDto, refId);
-            if (result) {
-                response.setStatus(Constant.RESPONSE_OK);
-            } else {
-                response.setStatus(Constant.RESPONSE_ERROR);
-                response.setErrMsg(ErrorMessage.ERROR_OCCURRED);
-            }
-        } catch (Exception ex) {
-            AMLogger.logError(className, methodName, refId, ex);
-            response.setStatus(Constant.RESPONSE_ERROR);
-            response.setErrMsg(ex.getMessage());
-        }
+        response.setStatus(Constant.RESPONSE_OK);
+        
         AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
         return response;
     }

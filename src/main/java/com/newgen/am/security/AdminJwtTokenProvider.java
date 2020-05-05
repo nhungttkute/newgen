@@ -48,7 +48,6 @@ public class AdminJwtTokenProvider {
     public String createToken(String username, List<SimpleGrantedAuthority> roles) {
 
         Claims claims = Jwts.claims().setSubject(username);
-//    claims.put("auth", roles.stream().map(s -> new SimpleGrantedAuthority(s.getAuthority())).filter(Objects::nonNull).collect(Collectors.toList()));
         claims.put("auth", roles.stream().filter(Objects::nonNull).collect(Collectors.toList()));
 
         Date now = new Date();
@@ -64,7 +63,7 @@ public class AdminJwtTokenProvider {
 
     public Authentication getAuthentication(String token) {
         UserDetails userDetails = userService.checkAccessTokenByAdminUser(getUsername(token), token);
-        return new UsernamePasswordAuthenticationToken(userDetails, "", Utility.getAdminAuthorities());
+        return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
     }
 
     public String getUsername(String token) {
@@ -88,7 +87,7 @@ public class AdminJwtTokenProvider {
             Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token);
             return true;
         } catch (JwtException | IllegalArgumentException e) {
-            throw new CustomException("Expired or invalid JWT token", HttpStatus.FORBIDDEN);
+            throw new CustomException("Invalid accessToken.", HttpStatus.UNAUTHORIZED);
         }
     }
 

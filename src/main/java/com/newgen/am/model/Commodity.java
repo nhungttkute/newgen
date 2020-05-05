@@ -17,6 +17,7 @@ public class Commodity extends AuditModel implements Serializable {
     private String partner;
     private String partnerAccount;
     private long orderProcessFee;
+    private String positionLimitType;
     private int positionLimit;
 
     public String getCode() {
@@ -68,7 +69,15 @@ public class Commodity extends AuditModel implements Serializable {
     }
 
     
-    @Override
+    public String getPositionLimitType() {
+		return positionLimitType;
+	}
+
+	public void setPositionLimitType(String positionLimitType) {
+		this.positionLimitType = positionLimitType;
+	}
+
+	@Override
     public String toString() {
         return "Commodity{" +
                 "code='" + code + "'" +

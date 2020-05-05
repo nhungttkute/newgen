@@ -21,8 +21,8 @@ public class Broker extends AuditModel implements Serializable {
     @Transient
     public static final String SEQUENCE_NAME = "broker_seq";
     @Id
-    private long id;
-    private long memberId;
+    private String id;
+    private String memberId;
     private String memberCode;
     private String memberName;
     private String code;
@@ -40,23 +40,23 @@ public class Broker extends AuditModel implements Serializable {
     private int orderLimit;
     private List<Commodity> commodities;
 
-    public long getId() {
-        return id;
-    }
+    public String getId() {
+		return id;
+	}
 
-    public void setId(long id) {
-        this.id = id;
-    }
+	public void setId(String id) {
+		this.id = id;
+	}
 
-    public long getMemberId() {
-        return memberId;
-    }
+	public String getMemberId() {
+		return memberId;
+	}
 
-    public void setMemberId(long memberId) {
-        this.memberId = memberId;
-    }
+	public void setMemberId(String memberId) {
+		this.memberId = memberId;
+	}
 
-    public String getCode() {
+	public String getCode() {
         return code;
     }
 

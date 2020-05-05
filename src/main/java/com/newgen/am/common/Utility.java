@@ -6,6 +6,7 @@
 package com.newgen.am.common;
 
 import com.google.gson.Gson;
+import com.newgen.am.dto.Pagination;
 import com.newgen.am.dto.UserInfoDTO;
 import com.newgen.am.exception.CustomException;
 
@@ -66,7 +67,7 @@ public class Utility {
 
     public static JsonWriterSettings getJsonWriterSettings() {
         JsonWriterSettings settings = JsonWriterSettings.builder()
-                .int64Converter((value, writer) -> writer.writeNumber(value.toString()))
+                .int64Converter((value, writer) -> writer.writeNumber(String.valueOf(value)))
                 .booleanConverter((value, writer) -> writer.writeBoolean(value.booleanValue()))
                 .build();
         return settings;
@@ -131,18 +132,19 @@ public class Utility {
         } else return null;
     }
     
-    public static String getClientIp(HttpServletRequest request) {
+    public static Pagination getPagination(HttpServletRequest request, int count) throws Exception {
 
-        String remoteAddr = "";
+        Pagination pagination = new Pagination();
 
-        if (request != null) {
-            remoteAddr = request.getHeader("X-FORWARDED-FOR");
-            if (remoteAddr == null || "".equals(remoteAddr)) {
-                remoteAddr = request.getRemoteAddr();
-            }
+        int limit = Constant.PAGINATION_DEFAULT_LIMIT;
+        if (Utility.isNotNull(request) && Utility.isNotNull(request.getQueryString())) {
+        	String queryParams = decode(request.getQueryString());
+        	limit = RequestParamsParser.getLimit(queryParams);
         }
-
-        return remoteAddr;
+        int totalPages = (count%limit > 0) ? (count/limit + 1) : count/limit;
+        pagination.setTotalRows(count);
+        pagination.setTotalPages(totalPages);
+        return pagination;
     }
 
     public static Map<String, String> getHeadersInfo(HttpServletRequest request) {
@@ -157,6 +159,20 @@ public class Utility {
         }
 
         return map;
+    }
+    
+    public static String getClientIp(HttpServletRequest request) {
+
+        String remoteAddr = "";
+
+        if (request != null) {
+            remoteAddr = request.getHeader("X-FORWARDED-FOR");
+            if (remoteAddr == null || "".equals(remoteAddr)) {
+                remoteAddr = request.getRemoteAddr();
+            }
+        }
+
+        return remoteAddr;
     }
 
     public static String encodeValue(String value) throws Exception {
@@ -192,4 +208,9 @@ public class Utility {
             throw new CustomException("Cannot get user info from redis", HttpStatus.UNPROCESSABLE_ENTITY);
         }
     }
+    
+    public static double roundAvoid(double value, int places) {
+		double scale = Math.pow(10, places);
+		return Math.round(value * scale) / scale;
+	}
 }

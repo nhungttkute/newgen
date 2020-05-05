@@ -7,6 +7,7 @@ package com.newgen.am.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import java.io.Serializable;
+import java.util.List;
 
 /**
  *
@@ -14,9 +15,15 @@ import java.io.Serializable;
  */
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class AdminResponseObj implements Serializable {
-    private String status;
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	private String status;
     private String errMsg;
     private AdminDataObj data;
+    private Pagination pagination;
+    private List<String> filterList;
 
     public String getStatus() {
         return status;
@@ -41,4 +48,21 @@ public class AdminResponseObj implements Serializable {
     public void setData(AdminDataObj data) {
         this.data = data;
     }
+
+	public Pagination getPagination() {
+		return pagination;
+	}
+
+	public void setPagination(Pagination pagination) {
+		this.pagination = pagination;
+	}
+
+	public List<String> getFilterList() {
+		return filterList;
+	}
+
+	public void setFilterList(List<String> filterList) {
+		this.filterList = filterList;
+	}
+    
 }
