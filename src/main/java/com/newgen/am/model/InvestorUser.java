@@ -12,9 +12,8 @@ import org.springframework.data.annotation.Transient;
  * @author nhungtt
  */
 public class InvestorUser extends BaseUser {
-    @Transient
-    public static final String SEQUENCE_NAME = "investor_user_seq";
-    private String title;
+	private static final long serialVersionUID = 1L;
+	private String title;
     private String department;
 
     public String getTitle() {

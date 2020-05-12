@@ -53,7 +53,7 @@ public class Delegate {
     private String scannedFrontIdCard; //image data
 	@NotEmpty(message = "Required.")
 	@Size(min = 1, max = 134000, message = "Invalid format.", groups = LengthGroup.class)
-    private String scannedEndIdCard; //image data
+    private String scannedBackIdCard; //image data
 	@NotEmpty(message = "Required.")
 	@Size(min = 1, max = 134000, message = "Invalid format.", groups = LengthGroup.class)
     private String scannedSignature; //image data
@@ -130,12 +130,12 @@ public class Delegate {
 		this.scannedFrontIdCard = scannedFrontIdCard;
 	}
 
-	public String getScannedEndIdCard() {
-		return scannedEndIdCard;
+	public String getScannedBackIdCard() {
+		return scannedBackIdCard;
 	}
 
-	public void setScannedEndIdCard(String scannedEndIdCard) {
-		this.scannedEndIdCard = scannedEndIdCard;
+	public void setScannedBackIdCard(String scannedBackIdCard) {
+		this.scannedBackIdCard = scannedBackIdCard;
 	}
 
 	public String getScannedSignature() {

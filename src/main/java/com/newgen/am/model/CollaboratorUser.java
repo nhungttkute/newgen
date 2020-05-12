@@ -12,6 +12,4 @@ import org.springframework.data.annotation.Transient;
  * @author nhungtt
  */
 public class CollaboratorUser extends BaseUser {
-    @Transient
-    public static final String SEQUENCE_NAME = "collaborator_user_seq";
 }

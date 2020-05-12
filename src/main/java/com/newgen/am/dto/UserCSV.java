@@ -13,7 +13,7 @@ import com.opencsv.bean.CsvBindByPosition;
  *
  * @author nhungtt
  */
-public class DeptUserCSV {
+public class UserCSV {
 	/**
 	 * 
 	 */

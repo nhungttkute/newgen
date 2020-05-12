@@ -72,10 +72,10 @@ public class BaseUser extends AuditModel {
     public boolean getIsPasswordExpiryCheck() {
         return isPasswordExpiryCheck;
     }
-
-    public void setIsPasswordExpiryCheck(boolean isPasswordExpiryCheck) {
-        this.isPasswordExpiryCheck = isPasswordExpiryCheck;
-    }
+    
+    public void setPasswordExpiryCheck(boolean isPasswordExpiryCheck) {
+		this.isPasswordExpiryCheck = isPasswordExpiryCheck;
+	}
 
     public int getPasswordExpiryDays() {
         return passwordExpiryDays;

@@ -15,21 +15,10 @@ import com.newgen.am.validation.ValidUpdateStringField;
  */
 public class UpdateDepartmentDTO {
     @ValidUpdateStringField
-    @ValidCode(groups = FormatGroup.class)
-    private String code;
-    @ValidUpdateStringField
     private String name;
     @ValidUpdateStringField
     private String status;
     private String note;
-
-	public String getCode() {
-        return code;
-    }
-
-    public void setCode(String code) {
-        this.code = code;
-    }
 
     public String getName() {
         return name;

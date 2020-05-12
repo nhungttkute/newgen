@@ -1,7 +1,9 @@
 package com.newgen.am.dto;
 
+import javax.validation.Valid;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
 import com.newgen.am.model.Delegate;
@@ -30,6 +32,7 @@ public class UpdateCompanyDTO {
 	@ValidUpdateStringField
     @Email(message = "Invalid format.", groups = FormatGroup.class)
     private String email;
+    @Valid
     private UpdateDelegateDTO delegate;
 	public String getName() {
 		return name;

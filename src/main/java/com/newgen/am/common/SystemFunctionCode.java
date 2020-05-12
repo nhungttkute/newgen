@@ -65,20 +65,31 @@ public class SystemFunctionCode {
     public static final String MEMBER_COMMODITIES_FEE_BULK_CREATE_NAME = "Thiết lập phí hàng hóa đồng loạt cho MG/TKGD theo TVKD";
     public static final String APPROVAL_MEMBER_USER_CREATE_CODE = "approval.clientManagement.memberManagement.memberUserManagement.memberUserInfo.create";
     public static final String MEMBER_USER_CREATE_NAME = "Tạo thông tin người dùng đăng nhập của TVKD";
+    public static final String MEMBER_USER_CREATE_DESC = "Tạo thông tin người dùng đăng nhập %s của TVKD %s";
     public static final String APPROVAL_MEMBER_USER_UPDATE_CODE = "approval.clientManagement.memberManagement.memberUserManagement.memberUserInfo.update";
     public static final String MEMBER_USER_UPDATE_NAME = "Cập nhật thông tin người dùng đăng nhập của TVKD";
+    public static final String MEMBER_USER_UPDATE_DESC = "Cập nhật thông tin người dùng đăng nhập %s của TVKD %s";
     public static final String APPROVAL_MEMBER_USER_ROLES_ASSIGN_CREATE_CODE = "approval.clientManagement.memberManagement.memberUserManagement.memberUserRoleAssign.create";
     public static final String MEMBER_USER_ROLES_ASSIGN_CREATE_NAME = "Gán nhóm quyền cho người dùng của TKVD";
+    public static final String MEMBER_USER_ROLES_ASSIGN_CREATE_DESC = "Gán nhóm quyền cho người dùng %s của TKVD %s";
     public static final String APPROVAL_MEMBER_USER_FUNCTIONS_ASSIGN_CREATE_CODE = "approval.clientManagement.memberManagement.memberUserManagement.memberUserFunctionsAssign.create";
     public static final String MEMBER_USER_FUNCTIONS_ASSIGN_CREATE_NAME = "Gán quyền riêng cho người dùng của TVKD";
+    public static final String MEMBER_USER_FUNCTIONS_ASSIGN_CREATE_DESC = "Gán quyền riêng cho người dùng %s của TVKD %s";
     public static final String APPROVAL_MEMBER_ROLE_CREATE_CODE = "approval.clientManagement.memberManagement.memberRoleManagement.memberRole.create";
     public static final String MEMBER_ROLE_CREATE_NAME = "Tạo thông tin nhóm quyền của TVKD";
+    public static final String MEMBER_ROLE_CREATE_DESC = "Tạo thông tin nhóm quyền %s của TVKD %s";
     public static final String APPROVAL_MEMBER_ROLE_UPDATE_CODE = "approval.clientManagement.memberManagement.memberRoleManagement.memberRole.update";
     public static final String MEMBER_ROLE_UPDATE_NAME = "Cập nhật thông tin nhóm quyền của TVKD";
+    public static final String MEMBER_ROLE_UPDATE_DESC = "Cập nhật thông tin nhóm quyền %s của TVKD %s";
     public static final String APPROVAL_MEMBER_ROLE_FUNCTIONS_ASSIGN_CREATE_CODE = "approval.clientManagement.memberManagement.memberRoleManagement.memberRoleFunctionsAssign.create";
     public static final String MEMBER_ROLE_FUNCTIONS_ASSIGN_CREATE_NAME = "Gán quyền cho nhóm quyền của TVKD";
+    public static final String MEMBER_ROLE_FUNCTIONS_ASSIGN_CREATE_DESC = "Gán quyền cho nhóm quyền %s của TVKD %s";
     
     public static String getApprovalDescription(String name, String value) {
         return (name + " " + value);
+    }
+    
+    public static String getApprovalDescription2(String name, String value1, String value2) {
+        return String.format(name, value1, value2);
     }
 }

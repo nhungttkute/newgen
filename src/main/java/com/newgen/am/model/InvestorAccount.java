@@ -10,7 +10,8 @@ package com.newgen.am.model;
  * @author nhungtt
  */
 public class InvestorAccount extends AuditModel {
-    private String code;
+	private static final long serialVersionUID = 1L;
+	private String code;
     private String currency;
     private double marginSurplusInterestRate;
     private double marginDeficitInterestRate;

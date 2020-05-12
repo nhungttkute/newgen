@@ -235,7 +235,7 @@ public class LoginInvestorUserService {
 					new Document().append("$lookup",
 							new Document().append("from", "system_roles").append("localField", "role.name")
 									.append("foreignField", "name").append("as", "roleObj")),
-					new Document().append("$project", new Document().append("investorId", new Document().append("$toString", "$_id"))
+					new Document().append("$project", new Document().append("_id", 0.0).append("investorId", new Document().append("$toString", "$_id"))
 							.append("investorUserId", new Document().append("$toString", "$users._id")).append("fullName", "$users.fullName")
 							.append("email", "$users.email").append("phoneNumber", "$users.phoneNumber")
 							.append("memberId", 1.0).append("brokerId", 1.0).append("collaboratorId", 1.0)
@@ -249,6 +249,7 @@ public class LoginInvestorUserService {
 			Document result = collection.aggregate(pipeline).first();
 			userInfoDto = mongoTemplate.getConverter().read(UserInfoDTO.class, result);
 			if (userInfoDto != null) {
+				userInfoDto.setId(user.getId());
 				userInfoDto.setUsername(user.getUsername());
 				userInfoDto.setStatus(user.getStatus());
 				userInfoDto.setAccessToken(user.getAccessToken());

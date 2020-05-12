@@ -68,14 +68,14 @@ public class ActivityLogService {
     public static final String ACTIVITY_CREATE_MEMBER_MASTER_USER_DESC = "Tạo đăng nhập tổng TVKD %s";
     public static final String ACTIVITY_CREATE_MEMBER_LIMIT = "Thiết lập hạn mức TKVD";
     public static final String ACTIVITY_CREATE_MEMBER_LIMIT_DESC = "Thiết lập hạn mức TKVD %s - mã phê duyệt %s";
-    public static final String ACTIVITY_CREATE_MEMBER_COMMODITIES_ASSIGN = "Gán hàng hóa cho TKVD";
-    public static final String ACTIVITY_CREATE_MEMBER_COMMODITIES_ASSIGN_DESC = "Gán hàng hóa cho TKVD %s - mã phê duyệt %s";
+    public static final String ACTIVITY_CREATE_MEMBER_COMMODITIES_ASSIGN = "Gán hàng hóa, phí HH, hạn mức HH cho TKVD";
+    public static final String ACTIVITY_CREATE_MEMBER_COMMODITIES_ASSIGN_DESC = "Gán hàng hóa, phí HH, hạn mức HH cho TKVD %s - mã phê duyệt %s";
     public static final String ACTIVITY_CREATE_MEMBER_COMMODITIES_FEE = "Thiết lập phí hàng hóa cho TKVD";
     public static final String ACTIVITY_CREATE_MEMBER_COMMODITIES_FEE_DESC = "Thiết lập phí hàng hóa cho TKVD %s - mã phê duyệt %s";
     public static final String ACTIVITY_CREATE_MEMBER_RISK_ORDER_LOCK = "Thiết lập chức năng khoá giao dịch cho TVKD";
     public static final String ACTIVITY_CREATE_MEMBER_RISK_ORDER_LOCK_DESC = "Thiết lập chức năng khoá giao dịch cho TVKD %s - mã phê duyệt %s";
-    public static final String ACTIVITY_CREATE_MEMBER_RISK_NEW_ORDER_LOCK = "Thiết lập chức năng chặn giao dịch một chiều cho TVKD";
-    public static final String ACTIVITY_CREATE_MEMBER_RISK_NEW_ORDER_LOCK_DESC = "Thiết lập chức năng chặn giao dịch một chiều cho TVKD %s - mã phê duyệt %s";
+    public static final String ACTIVITY_CREATE_MEMBER_RISK_NEW_POSITION_ORDER_LOCK = "Thiết lập chức năng chặn giao dịch một chiều cho TVKD";
+    public static final String ACTIVITY_CREATE_MEMBER_RISK_NEW_POSITION_ORDER_LOCK_DESC = "Thiết lập chức năng chặn giao dịch một chiều cho TVKD %s - mã phê duyệt %s";
     public static final String ACTIVITY_CREATE_MEMBER_RISK_MARGIN_WITHDRAWAL = "Thiết lập chức năng khoá nộp/rút của TVKD";
     public static final String ACTIVITY_CREATE_MEMBER_RISK_MARGIN_WITHDRAWAL_DESC = "Thiết lập chức năng khoá nộp/rút của TVKD %s - mã phê duyệt %s";
     public static final String ACTIVITY_CREATE_MEMBER_MARGIN_MULTIPLIER_BULK = "Thiết lập hệ số ký quỹ đồng loạt cho TKGD theo TVKD";
@@ -89,19 +89,19 @@ public class ActivityLogService {
     public static final String ACTIVITY_CREATE_MEMBER_COMMODITIES_FEE_BULK = "Thiết lập phí hàng hóa đồng loạt cho MG/TKGD theo TVKD";
     public static final String ACTIVITY_CREATE_MEMBER_COMMODITIES_FEE_BULK_DESC = "Thiết lập phí hàng hóa đồng loạt cho MG/TKGD theo TVKD %s - mã phê duyệt %s";
     public static final String ACTIVITY_CREATE_MEMBER_USER = "Tạo thông tin người dùng đăng nhập của TVKD";
-    public static final String ACTIVITY_CREATE_MEMBER_USER_DESC = "Tạo thông tin người dùng đăng nhập của TVKD %s - mã phê duyệt %s";
+    public static final String ACTIVITY_CREATE_MEMBER_USER_DESC = "Tạo thông tin người dùng đăng nhập %s của TVKD %s - mã phê duyệt %s";
     public static final String ACTIVITY_UPDATE_MEMBER_USER = "Cập nhật thông tin người dùng đăng nhập của TVKD";
-    public static final String ACTIVITY_UPDATE_MEMBER_USER_DESC = "Cập nhật thông tin người dùng đăng nhập của TVKD %s - mã phê duyệt %s";
+    public static final String ACTIVITY_UPDATE_MEMBER_USER_DESC = "Cập nhật thông tin người dùng đăng nhập %s của TVKD %s - mã phê duyệt %s";
     public static final String ACTIVITY_CREATE_MEMBER_USER_ROLES = "Gán nhóm quyền cho người dùng của TKVD";
-    public static final String ACTIVITY_CREATE_MEMBER_USER_ROLES_DESC = "Gán nhóm quyền cho người dùng của TKVD %s - mã phê duyệt %s";
+    public static final String ACTIVITY_CREATE_MEMBER_USER_ROLES_DESC = "Gán nhóm quyền cho người dùng %s của TKVD %s - mã phê duyệt %s";
     public static final String ACTIVITY_CREATE_MEMBER_USER_FUNCTIONS = "Gán quyền riêng cho người dùng của TVKD";
-    public static final String ACTIVITY_CREATE_MEMBER_USER_FUNCTIONS_DESC = "Gán quyền riêng cho người dùng của TVKD %s - mã phê duyệt %s";
+    public static final String ACTIVITY_CREATE_MEMBER_USER_FUNCTIONS_DESC = "Gán quyền riêng cho người dùng %s của TVKD %s - mã phê duyệt %s";
     public static final String ACTIVITY_CREATE_MEMBER_ROLE = "Tạo thông tin nhóm quyền của TVKD";
-    public static final String ACTIVITY_CREATE_MEMBER_ROLE_DESC = "Tạo thông tin nhóm quyền của TVKD %s - mã phê duyệt %s";
+    public static final String ACTIVITY_CREATE_MEMBER_ROLE_DESC = "Tạo thông tin nhóm quyền %s của TVKD %s - mã phê duyệt %s";
     public static final String ACTIVITY_UPDATE_MEMBER_ROLE = "Cập nhật thông tin nhóm quyền của TVKD";
-    public static final String ACTIVITY_UPDATE_MEMBER_ROLE_DESC = "Cập nhật thông tin nhóm quyền của TVKD %s - mã phê duyệt %s";
+    public static final String ACTIVITY_UPDATE_MEMBER_ROLE_DESC = "Cập nhật thông tin nhóm quyền %s của TVKD %s - mã phê duyệt %s";
     public static final String ACTIVITY_CREATE_MEMBER_ROLE_FUNCTIONS = "Gán quyền cho nhóm quyền của TVKD";
-    public static final String ACTIVITY_CREATE_MEMBER_ROLE_FUNCTIONS_DESC = "Gán quyền cho nhóm quyền của TVKD %s - mã phê duyệt %s";
+    public static final String ACTIVITY_CREATE_MEMBER_ROLE_FUNCTIONS_DESC = "Gán quyền cho nhóm quyền %s của TVKD %s - mã phê duyệt %s";
     
     @Autowired
     private RedisMessagePublisher redisMessagePublisher;
@@ -119,6 +119,16 @@ public class ActivityLogService {
         activityLog.setUserAgent(Utility.getHeadersInfo(request).get("User-Agent"));
         activityLog.setAction(action);
         activityLog.setDescription(String.format(desc, objectStr, approvalId));
+        activityLog.setDatetime(System.currentTimeMillis());
+        redisMessagePublisher.publish(new Gson().toJson(activityLog));
+    }
+    
+    public void sendActivityLog2(UserInfoDTO userInfo, HttpServletRequest request, String action, String desc, String objectStr, String orgCode, String approvalId) {
+        ActivityLogDTO activityLog = modelMapper.map(userInfo, ActivityLogDTO.class);
+        activityLog.setIpAddress(Utility.getClientIp(request));
+        activityLog.setUserAgent(Utility.getHeadersInfo(request).get("User-Agent"));
+        activityLog.setAction(action);
+        activityLog.setDescription(String.format(desc, objectStr, orgCode, approvalId));
         activityLog.setDatetime(System.currentTimeMillis());
         redisMessagePublisher.publish(new Gson().toJson(activityLog));
     }

@@ -5,23 +5,19 @@
  */
 package com.newgen.am.model;
 
+import javax.validation.constraints.NotEmpty;
+
 /**
  *
  * @author nhungtt
  */
 public class UserRole {
-    private long _id;
+	@NotEmpty(message = "Required.")
     private String name;
+	@NotEmpty(message = "Required.")
     private String description;
+	@NotEmpty(message = "Required.")
     private String status;
-
-    public long getId() {
-        return _id;
-    }
-
-    public void setId(long _id) {
-        this._id = _id;
-    }
 
     public String getName() {
         return name;

@@ -5,13 +5,14 @@
  */
 package com.newgen.am.model;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.mongodb.lang.NonNull;
 import java.io.Serializable;
 import java.util.List;
+
 import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.Document;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.mongodb.lang.NonNull;
 
 /**
  *
@@ -20,9 +21,6 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Document(collection = "members")
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Member extends AuditModel implements Serializable {
-    /**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
 	@Id
     private String id;
@@ -34,15 +32,28 @@ public class Member extends AuditModel implements Serializable {
     private String status;
     private Company company;
     private Contact contact;
-    private List<UserRole> roles;
+    private UserRole role;
     private List<RoleFunction> functions;
     private int orderLimit;
     private int defaultPositionLimit;
     private long defaultCommodityFee;
-    private List<Commodity> comodities;
+    private double marginMultiplier;
+    private long generalFee;
+    private long otherFee;
+    private MarginRatioAlert marginRatioAlert;
+    private RiskParameters riskParameters;
+    private List<Commodity> commodities;
     private List<MemberUser> users;
 
-    public String getCode() {
+    public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
+
+	public String getCode() {
         return code;
     }
 
@@ -98,23 +109,23 @@ public class Member extends AuditModel implements Serializable {
         this.users = users;
     }
 
-    public List<Commodity> getComodities() {
-        return comodities;
-    }
+    public List<Commodity> getCommodities() {
+		return commodities;
+	}
 
-    public void setComodities(List<Commodity> comodities) {
-        this.comodities = comodities;
-    }
+	public void setCommodities(List<Commodity> commodities) {
+		this.commodities = commodities;
+	}
 
-    public List<UserRole> getRoles() {
-        return roles;
-    }
+    public UserRole getRole() {
+		return role;
+	}
 
-    public void setRoles(List<UserRole> roles) {
-        this.roles = roles;
-    }
+	public void setRole(UserRole role) {
+		this.role = role;
+	}
 
-    public List<RoleFunction> getFunctions() {
+	public List<RoleFunction> getFunctions() {
         return functions;
     }
 
@@ -146,4 +157,43 @@ public class Member extends AuditModel implements Serializable {
 		this.defaultCommodityFee = defaultCommodityFee;
 	}
 
+	public RiskParameters getRiskParameters() {
+		return riskParameters;
+	}
+
+	public void setRiskParameters(RiskParameters riskParameters) {
+		this.riskParameters = riskParameters;
+	}
+
+	public double getMarginMultiplier() {
+		return marginMultiplier;
+	}
+
+	public void setMarginMultiplier(double marginMultiplier) {
+		this.marginMultiplier = marginMultiplier;
+	}
+
+	public long getGeneralFee() {
+		return generalFee;
+	}
+
+	public void setGeneralFee(long generalFee) {
+		this.generalFee = generalFee;
+	}
+
+	public long getOtherFee() {
+		return otherFee;
+	}
+
+	public void setOtherFee(long otherFee) {
+		this.otherFee = otherFee;
+	}
+
+	public MarginRatioAlert getMarginRatioAlert() {
+		return marginRatioAlert;
+	}
+
+	public void setMarginRatioAlert(MarginRatioAlert marginRatioAlert) {
+		this.marginRatioAlert = marginRatioAlert;
+	}
 }

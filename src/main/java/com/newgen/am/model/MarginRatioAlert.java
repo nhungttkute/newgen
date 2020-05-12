@@ -5,13 +5,21 @@
  */
 package com.newgen.am.model;
 
+import java.io.Serializable;
+
+import javax.validation.constraints.Positive;
+
 /**
  *
  * @author nhungtt
  */
-public class MarginRatioAlert extends AuditModel {
+public class MarginRatioAlert implements Serializable {
+	private static final long serialVersionUID = 1L;
+	@Positive(message = "Invalid format.")
     private int warningRatio;
+	@Positive(message = "Invalid format.")
     private int cancelOrderRatio;
+	@Positive(message = "Invalid format.")
     private int finalizationRatio;
 
     public int getWarningRatio() {

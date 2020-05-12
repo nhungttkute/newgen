@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.print.Doc;
 import javax.servlet.http.HttpServletRequest;
 
 import org.bson.Document;
@@ -42,11 +43,13 @@ import com.newgen.am.common.Utility;
 import com.newgen.am.dto.BasePagination;
 import com.newgen.am.dto.DepartmentCSV;
 import com.newgen.am.dto.DepartmentDTO;
-import com.newgen.am.dto.DeptUserCSV;
-import com.newgen.am.dto.DeptUserDTO;
+import com.newgen.am.dto.UserCSV;
+import com.newgen.am.dto.UserDTO;
+import com.newgen.am.dto.UserFunctionsDTO;
+import com.newgen.am.dto.UserRolesDTO;
 import com.newgen.am.dto.EmailDTO;
 import com.newgen.am.dto.UpdateDepartmentDTO;
-import com.newgen.am.dto.UpdateDeptUserDTO;
+import com.newgen.am.dto.UpdateUserDTO;
 import com.newgen.am.dto.UserInfoDTO;
 import com.newgen.am.exception.CustomException;
 import com.newgen.am.model.Department;
@@ -55,6 +58,8 @@ import com.newgen.am.model.LoginAdminUser;
 import com.newgen.am.model.NestedObjectInfo;
 import com.newgen.am.model.PendingApproval;
 import com.newgen.am.model.PendingData;
+import com.newgen.am.model.RoleFunction;
+import com.newgen.am.model.UserRole;
 import com.newgen.am.repository.DepartmentRepository;
 import com.newgen.am.repository.LoginAdminUserRepository;
 import com.newgen.am.repository.PendingApprovalRepository;
@@ -235,9 +240,9 @@ public class DepartmentService {
 		return approvalId;
 	}
 
-	public List<DeptUserCSV> listDeptUsersCsv(HttpServletRequest request, String deptId, long refId) {
+	public List<UserCSV> listDeptUsersCsv(HttpServletRequest request, String deptId, long refId) {
 		String methodName = "listDeptUsers";
-		List<DeptUserCSV> deptUserList = new ArrayList<>();
+		List<UserCSV> deptUserList = new ArrayList<>();
 		try {
 			Document query1 = new Document();
 			query1.append("_id", new ObjectId(deptId));
@@ -267,9 +272,9 @@ public class DepartmentService {
 			try (MongoCursor<Document> cur = collection.aggregate(pipeline).iterator()) {
 
 				while (cur.hasNext()) {
-					DeptUserCSV deptUserDTO = mongoTemplate.getConverter().read(DeptUserCSV.class, cur.next());
-					if (deptUserDTO != null)
-						deptUserList.add(deptUserDTO);
+					UserCSV userCSV = mongoTemplate.getConverter().read(UserCSV.class, cur.next());
+					if (userCSV != null)
+						deptUserList.add(userCSV);
 				}
 			}
 
@@ -280,9 +285,9 @@ public class DepartmentService {
 		return deptUserList;
 	}
 
-	public BasePagination<DeptUserDTO> listDeptUsers(HttpServletRequest request, String deptId, long refId) {
+	public BasePagination<UserDTO> listDeptUsers(HttpServletRequest request, String deptId, long refId) {
 		String methodName = "listDeptUsers";
-		BasePagination<DeptUserDTO> pagination = null;
+		BasePagination<UserDTO> pagination = null;
 		try {
 			Document query1 = new Document();
 			query1.append("_id", new ObjectId(deptId));
@@ -325,8 +330,13 @@ public class DepartmentService {
 	public DepartmentDTO getDepartmentDetail(String deptId, long refId) {
 		String methodName = "getDepartmentDetail";
 		try {
-			Department dept = deptRepository.findById(deptId).get();
-			DepartmentDTO deptDto = modelMapper.map(dept, DepartmentDTO.class);
+			Document query = new Document();
+            query.append("_id", new ObjectId(deptId));
+            
+            MongoDatabase database = MongoDBConnection.getMongoDatabase();
+			MongoCollection<Document> collection = database.getCollection("departments");
+			Document deptDoc = collection.find(query).first();
+			DepartmentDTO deptDto = mongoTemplate.getConverter().read(DepartmentDTO.class, deptDoc);
 			return deptDto;
 		} catch (Exception e) {
 			AMLogger.logError(className, methodName, refId, e);
@@ -343,18 +353,29 @@ public class DepartmentService {
 			String approvalId = insertDepartmentUpdatePA(userInfo, deptId, deptDto, refId);
 			// send activity log
 			activityLogService.sendActivityLog(userInfo, request, ActivityLogService.ACTIVITY_UPDATE_DEPARTMENT,
-					ActivityLogService.ACTIVITY_UPDATE_DEPARTMENT_DESC, String.valueOf(deptId), approvalId);
+					ActivityLogService.ACTIVITY_UPDATE_DEPARTMENT_DESC, getDepartmentCode(deptId), approvalId);
 
-			Department dept = deptRepository.findById(deptId).get();
-			if (Utility.isNotNull(deptDto.getCode()))
-				dept.setCode(deptDto.getCode());
-			if (Utility.isNotNull(deptDto.getName()))
-				dept.setName(deptDto.getName());
-			if (Utility.isNotNull(deptDto.getStatus()))
-				dept.setStatus(deptDto.getStatus());
-			if (Utility.isNotNull(deptDto.getNote()))
-				dept.setNote(deptDto.getNote());
-			deptRepository.save(dept);
+			if (!deptRepository.existsById(deptId)) {
+				throw new CustomException(ErrorMessage.RESULT_NOT_FOUND, HttpStatus.OK);
+			}
+			
+			Document updateDoc = new Document();
+			if (Utility.isNotNull(deptDto.getName())) updateDoc.append("name", deptDto.getName());
+			if (Utility.isNotNull(deptDto.getStatus())) updateDoc.append("status", deptDto.getStatus());
+			if (Utility.isNotNull(deptDto.getNote())) updateDoc.append("note", deptDto.getNote());
+			
+			updateDoc.put("lastModifiedUser", Utility.getCurrentUsername());
+			updateDoc.put("lastModifiedDate", System.currentTimeMillis());
+			
+			Document query = new Document();
+			query.append("_id", new ObjectId(deptId));
+			
+			Document update = new Document();
+			update.append("$set", updateDoc);
+			
+			MongoDatabase database = MongoDBConnection.getMongoDatabase();
+			MongoCollection<Document> collection = database.getCollection("departments");
+			collection.updateOne(query, update);
 		} catch (Exception e) {
 			AMLogger.logError(className, methodName, refId, e);
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -377,8 +398,6 @@ public class DepartmentService {
 			pendingData.setAction(Constant.APPROVAL_ACTION_UPDATE);
 			pendingData.setValue(new Gson().toJson(deptDto));
 
-			Department deptpartment = deptRepository.findById(deptId).get();
-
 			PendingApproval pendingApproval = new PendingApproval();
 			pendingApproval.setApiUrl(String.format(ApprovalConstant.APPROVAL_PENDING_URL, approvalId));
 			pendingApproval.setCreatorDate(System.currentTimeMillis());
@@ -386,7 +405,7 @@ public class DepartmentService {
 			pendingApproval.setFunctionCode(SystemFunctionCode.APPROVAL_DEPARTMENT_INFO_UPDATE_CODE);
 			pendingApproval.setFunctionName(SystemFunctionCode.DEPARTMENT_INFO_UPDATE_NAME);
 			pendingApproval.setDescription(SystemFunctionCode.getApprovalDescription(pendingApproval.getFunctionName(),
-					deptpartment.getCode()));
+					getDepartmentCode(deptId)));
 			pendingApproval.setStatus(Constant.APPROVAL_STATUS_PENDING);
 			pendingApproval.setNestedObjInfo(nestedObjInfo);
 			pendingApproval.setPendingData(pendingData);
@@ -398,7 +417,7 @@ public class DepartmentService {
 		return approvalId;
 	}
 
-	public void createDepartmentUser(HttpServletRequest request, String deptId, DeptUserDTO deptUserDto, long refId) {
+	public void createDepartmentUser(HttpServletRequest request, String deptId, UserDTO deptUserDto, long refId) {
 		String methodName = "createDepartmentUser";
 		boolean existedUser = false;
 		try {
@@ -459,7 +478,7 @@ public class DepartmentService {
 		}
 	}
 
-	public String insertDepartmentUserCreatePA(UserInfoDTO userInfo, String deptId, DeptUserDTO deptUserDto,
+	public String insertDepartmentUserCreatePA(UserInfoDTO userInfo, String deptId, UserDTO deptUserDto,
 			long refId) {
 		String methodName = "insertDepartmentUserCreatePA";
 		String approvalId = "";
@@ -494,7 +513,7 @@ public class DepartmentService {
 		return approvalId;
 	}
 
-	private LoginAdminUser createLoginAdminUser(String deptId, DeptUserDTO deptUserDto, String password, String pin,
+	private LoginAdminUser createLoginAdminUser(String deptId, UserDTO deptUserDto, String password, String pin,
 			long refId) {
 		String methodName = "createLoginAdminUser";
 		try {
@@ -503,7 +522,6 @@ public class DepartmentService {
 			loginAdmUser.setPin(passwordEncoder.encode(pin));
 			loginAdmUser.setStatus(deptUserDto.getStatus());
 			loginAdmUser.setDeptId(deptId);
-			loginAdmUser.setDeptUserId(deptUserDto.get_id());
 			loginAdmUser.setCreatedUser(Utility.getCurrentUsername());
 			loginAdmUser.setCreatedDate(System.currentTimeMillis());
 			LoginAdminUser newLoginAdmUser = loginAdmUserRepo.save(loginAdmUser);
@@ -537,7 +555,7 @@ public class DepartmentService {
 	}
 
 	public void updateDepartmentUser(HttpServletRequest request, String deptId, String deptUserId,
-			UpdateDeptUserDTO deptUserDto, long refId) {
+			UpdateUserDTO deptUserDto, long refId) {
 		String methodName = "updateDepartmentUser";
 		try {
 			// get redis user info
@@ -588,7 +606,7 @@ public class DepartmentService {
 	}
 
 	public String insertDepartmentUserUpdatePA(UserInfoDTO userInfo, String deptId, String deptUserId,
-			UpdateDeptUserDTO deptUserDto, long refId) {
+			UpdateUserDTO deptUserDto, long refId) {
 		String methodName = "insertDepartmentUserUpdatePA";
 		String approvalId = "";
 		try {
@@ -625,7 +643,7 @@ public class DepartmentService {
 		return approvalId;
 	}
 
-	public DeptUserDTO getDepartmentUser(String deptId, String deptUserId, long refId) {
+	public UserDTO getDepartmentUser(String deptId, String deptUserId, long refId) {
 		String methodName = "getDepartmentUser";
 		try {
 			MongoDatabase database = MongoDBConnection.getMongoDatabase();
@@ -639,7 +657,7 @@ public class DepartmentService {
 					new Document().append("$replaceRoot", new Document().append("newRoot", "$users")));
 
 			Document resultDoc = collection.aggregate(pipeline).first();
-			DeptUserDTO deptUserDto = mongoTemplate.getConverter().read(DeptUserDTO.class, resultDoc);
+			UserDTO deptUserDto = mongoTemplate.getConverter().read(UserDTO.class, resultDoc);
 			return deptUserDto;
 		} catch (Exception e) {
 			AMLogger.logError(className, methodName, refId, e);
@@ -648,9 +666,8 @@ public class DepartmentService {
 	}
 
 	public void saveDepartmentUserRoles(HttpServletRequest request, String deptId, String deptUserId,
-			DeptUserDTO userDto, long refId) {
+			UserRolesDTO userDto, long refId) {
 		String methodName = "saveDepartmentUserRoles";
-		boolean userFound = false;
 		if (Utility.isNotNull(userDto.getRoles()) && userDto.getRoles().size() > 0) {
 			try {
 				// get redis user info
@@ -663,32 +680,34 @@ public class DepartmentService {
 						ActivityLogService.ACTIVITY_CREATE_DEPARTMENT_USER_ROLE_DESC, String.valueOf(deptUserId),
 						approvalId);
 
-				Department dept = deptRepository.findById(deptId).get();
-				for (DeptUser user : dept.getUsers()) {
-					if (deptUserId.equals(user.get_id())) {
-						userFound = true;
-						user.setRoles(userDto.getRoles());
-						break;
-					}
+				MongoDatabase database = MongoDBConnection.getMongoDatabase();
+				MongoCollection<Document> collection = database.getCollection("departments");
+				
+				List<Document> roles = new ArrayList<Document>();
+				for (UserRole role : userDto.getRoles()) {
+					Document roleDoc = new Document();
+					roleDoc.append("name", role.getName());
+					roleDoc.append("description", role.getDescription());
+					roleDoc.append("status", role.getStatus());
+					roles.add(roleDoc);
 				}
-				if (userFound) {
-					deptRepository.save(dept);
-				} else {
-					AMLogger.logMessage(className, methodName, refId, "Cannot find user with id=" + deptUserId);
-					throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
-				}
+				BasicDBObject query = new BasicDBObject();
+				query.append("_id", new ObjectId(deptId));
+				query.append("users", new BasicDBObject("$elemMatch", new BasicDBObject("_id", new ObjectId(deptUserId))));
+				
+				collection.updateOne(query, Updates.set("users.$.roles", roles));
 			} catch (Exception e) {
 				AMLogger.logError(className, methodName, refId, e);
 				throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
 			}
 		} else {
 			AMLogger.logMessage(className, methodName, refId, "Invalid input data");
-			throw new CustomException(ErrorMessage.INVALID_INPUT_DATA, HttpStatus.OK);
+			throw new CustomException(ErrorMessage.INVALID_REQUEST, HttpStatus.BAD_REQUEST);
 		}
 	}
 
 	public String insertDeptUserRoleCreatePA(UserInfoDTO userInfo, String deptId, String deptUserId,
-			DeptUserDTO deptUserDto, long refId) {
+			UserRolesDTO deptUserDto, long refId) {
 		String methodName = "insertDeptUserRoleCreatePA";
 		String approvalId = "";
 		try {
@@ -712,7 +731,7 @@ public class DepartmentService {
 			pendingApproval.setFunctionCode(SystemFunctionCode.APPROVAL_ADMIN_USER_ROLE_ASSIGN_CREATE_CODE);
 			pendingApproval.setFunctionName(SystemFunctionCode.ADMIN_USER_ROLE_ASSIGN_CREATE_NAME);
 			pendingApproval.setDescription(SystemFunctionCode.getApprovalDescription(pendingApproval.getFunctionName(),
-					deptUserDto.getUsername()));
+					userInfo.getUsername()));
 			pendingApproval.setStatus(Constant.APPROVAL_STATUS_PENDING);
 			pendingApproval.setNestedObjInfo(nestedObjInfo);
 			pendingApproval.setPendingData(pendingData);
@@ -725,9 +744,8 @@ public class DepartmentService {
 	}
 
 	public void saveDepartmentUserFunctions(HttpServletRequest request, String deptId, String deptUserId,
-			DeptUserDTO userDto, long refId) {
+			UserFunctionsDTO userDto, long refId) {
 		String methodName = "saveDepartmentUserFunctions";
-		boolean userFound = false;
 		if (Utility.isNotNull(userDto.getFunctions()) && userDto.getFunctions().size() > 0) {
 			try {
 				// get redis user info
@@ -740,32 +758,34 @@ public class DepartmentService {
 						ActivityLogService.ACTIVITY_CREATE_DEPARTMENT_USER_FUNCTIONS_DESC, String.valueOf(deptUserId),
 						approvalId);
 
-				Department dept = deptRepository.findById(deptId).get();
-				for (DeptUser user : dept.getUsers()) {
-					if (deptUserId.equals(user.get_id())) {
-						userFound = true;
-						user.setFunctions(userDto.getFunctions());
-						break;
-					}
+				MongoDatabase database = MongoDBConnection.getMongoDatabase();
+				MongoCollection<Document> collection = database.getCollection("departments");
+				
+				List<Document> functions = new ArrayList<Document>();
+				for (RoleFunction function : userDto.getFunctions()) {
+					Document funcDoc = new Document();
+					funcDoc.append("code", function.getCode());
+					funcDoc.append("name", function.getName());
+					functions.add(funcDoc);
 				}
-				if (userFound) {
-					deptRepository.save(dept);
-				} else {
-					AMLogger.logMessage(className, methodName, refId, "Cannot find user with id=" + deptUserId);
-					throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
-				}
+				BasicDBObject query = new BasicDBObject();
+				query.append("_id", new ObjectId(deptId));
+				query.append("users", new BasicDBObject("$elemMatch", new BasicDBObject("_id", new ObjectId(deptUserId))));
+				
+				collection.updateOne(query, Updates.set("users.$.functions", functions));
+				
 			} catch (Exception e) {
 				AMLogger.logError(className, methodName, refId, e);
 				throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
 			}
 		} else {
 			AMLogger.logMessage(className, methodName, refId, "Invalid input data");
-			throw new CustomException(ErrorMessage.INVALID_INPUT_DATA, HttpStatus.OK);
+			throw new CustomException(ErrorMessage.INVALID_REQUEST, HttpStatus.BAD_REQUEST);
 		}
 	}
 
 	public String insertDeptUserFunctionsCreatePA(UserInfoDTO userInfo, String deptId, String deptUserId,
-			DeptUserDTO deptUserDto, long refId) {
+			UserFunctionsDTO deptUserDto, long refId) {
 		String methodName = "insertDeptUserFunctionsCreatePA";
 		String approvalId = "";
 		try {
@@ -789,7 +809,7 @@ public class DepartmentService {
 			pendingApproval.setFunctionCode(SystemFunctionCode.APPROVAL_ADMIN_USER_FUNCTIONS_ASSIGN_CREATE_CODE);
 			pendingApproval.setFunctionName(SystemFunctionCode.ADMIN_USER_FUNCTIONS_ASSIGN_CREATE_NAME);
 			pendingApproval.setDescription(SystemFunctionCode.getApprovalDescription(pendingApproval.getFunctionName(),
-					deptUserDto.getUsername()));
+					userInfo.getUsername()));
 			pendingApproval.setStatus(Constant.APPROVAL_STATUS_PENDING);
 			pendingApproval.setNestedObjInfo(nestedObjInfo);
 			pendingApproval.setPendingData(pendingData);
@@ -804,6 +824,9 @@ public class DepartmentService {
 	public void changeUserDepartment(HttpServletRequest request, String fromDeptId, String toDeptId, String username,
 			long refId) {
 		String methodName = "changeUserDepartment";
+		if (!deptRepository.existsById(fromDeptId) || !deptRepository.existsById(toDeptId)) {
+			throw new CustomException(ErrorMessage.INVALID_REQUEST, HttpStatus.BAD_REQUEST);
+		}
 		try {
 			// get redis user info
 			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
@@ -825,6 +848,10 @@ public class DepartmentService {
 
 			Document deptUserDoc = deptCollection.aggregate(pipeline).first();
 
+			if (Utility.isNull(deptUserDoc)) {
+				throw new CustomException(ErrorMessage.INVALID_REQUEST, HttpStatus.BAD_REQUEST);
+			}
+			
 			BasicDBObject deptQuery1 = new BasicDBObject();
 			deptQuery1.put("_id", new ObjectId(fromDeptId));
 
@@ -848,6 +875,8 @@ public class DepartmentService {
 			updateObj.put("$set", newLoginAdmUser);
 
 			loginAdmUserCollection.updateOne(loginAdmUserQuery, updateObj);
+		} catch (CustomException e) {
+			throw e;
 		} catch (Exception e) {
 			AMLogger.logError(className, methodName, refId, e);
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -889,5 +918,20 @@ public class DepartmentService {
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 		return approvalId;
+	}
+	
+	private String getDepartmentCode(String deptId) {
+		MongoDatabase database = MongoDBConnection.getMongoDatabase();
+		MongoCollection<Document> deptCollection = database.getCollection("departments");
+		
+		Document query = new Document();
+		query.append("_id", new ObjectId(deptId));
+		
+		Document projection = new Document();
+		projection.append("code", 1.0);
+		
+		Document result = deptCollection.find(query).projection(projection).first();
+		DepartmentDTO dept = mongoTemplate.getConverter().read(DepartmentDTO.class, result);
+		return dept.getCode();
 	}
 }

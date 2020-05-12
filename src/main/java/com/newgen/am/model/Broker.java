@@ -18,7 +18,11 @@ import org.springframework.data.mongodb.core.mapping.Field;
  */
 @Document(collection = "brokers")
 public class Broker extends AuditModel implements Serializable {
-    @Transient
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	@Transient
     public static final String SEQUENCE_NAME = "broker_seq";
     @Id
     private String id;
@@ -35,7 +39,7 @@ public class Broker extends AuditModel implements Serializable {
     private Individual individual;
     private Contact contact;
     private BrokerUser user;
-    private List<UserRole> roles;
+    private UserRole role;
     private List<RoleFunction> functions;
     private int orderLimit;
     private List<Commodity> commodities;
@@ -136,15 +140,15 @@ public class Broker extends AuditModel implements Serializable {
         this.user = user;
     }
 
-    public List<UserRole> getRoles() {
-        return roles;
-    }
+    public UserRole getRole() {
+		return role;
+	}
 
-    public void setRoles(List<UserRole> roles) {
-        this.roles = roles;
-    }
+	public void setRole(UserRole role) {
+		this.role = role;
+	}
 
-    public List<RoleFunction> getFunctions() {
+	public List<RoleFunction> getFunctions() {
         return functions;
     }
 

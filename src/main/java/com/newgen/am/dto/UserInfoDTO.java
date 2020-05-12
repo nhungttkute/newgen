@@ -19,7 +19,11 @@ import java.util.List;
  */
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class UserInfoDTO implements Serializable {
-    private String id;
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	private String id;
     private String username;
     private String status;
     private String fullName;

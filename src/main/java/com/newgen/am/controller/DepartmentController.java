@@ -9,7 +9,6 @@ import java.util.Arrays;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -34,10 +33,12 @@ import com.newgen.am.dto.AdminResponseObj;
 import com.newgen.am.dto.BasePagination;
 import com.newgen.am.dto.DepartmentCSV;
 import com.newgen.am.dto.DepartmentDTO;
-import com.newgen.am.dto.DeptUserCSV;
-import com.newgen.am.dto.DeptUserDTO;
+import com.newgen.am.dto.UserCSV;
+import com.newgen.am.dto.UserDTO;
+import com.newgen.am.dto.UserFunctionsDTO;
+import com.newgen.am.dto.UserRolesDTO;
 import com.newgen.am.dto.UpdateDepartmentDTO;
-import com.newgen.am.dto.UpdateDeptUserDTO;
+import com.newgen.am.dto.UpdateUserDTO;
 import com.newgen.am.exception.CustomException;
 import com.newgen.am.service.DepartmentService;
 import com.newgen.am.validation.ValidationSequence;
@@ -123,8 +124,12 @@ public class DepartmentController {
 		AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [POST]/admin/deparments");
 		AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(deptDto));
 
-		deptService.createDepartment(request, deptDto, refId);
-
+		if (Utility.isNotNull(deptDto)) {
+			deptService.createDepartment(request, deptDto, refId);
+		} else {
+			throw new CustomException(ErrorMessage.INVALID_REQUEST, HttpStatus.BAD_REQUEST);
+		}
+		
 		AdminResponseObj response = new AdminResponseObj();
 		response.setStatus(Constant.RESPONSE_OK);
 
@@ -141,7 +146,11 @@ public class DepartmentController {
 		AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [PUT]/admin/deparments/" + deptId);
 		AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(deptDto));
 
-		deptService.updateDepartment(request, deptId, deptDto, refId);
+		if (Utility.isNotNull(deptDto)) {
+			deptService.updateDepartment(request, deptId, deptDto, refId);
+		} else {
+			throw new CustomException(ErrorMessage.INVALID_REQUEST, HttpStatus.BAD_REQUEST);
+		}
 
 		AdminResponseObj response = new AdminResponseObj();
 		response.setStatus(Constant.RESPONSE_OK);
@@ -182,7 +191,7 @@ public class DepartmentController {
 
 		AdminResponseObj response = new AdminResponseObj();
 		try {
-			BasePagination<DeptUserDTO> pagination = deptService.listDeptUsers(request, deptId, refId);
+			BasePagination<UserDTO> pagination = deptService.listDeptUsers(request, deptId, refId);
 			if (pagination != null && pagination.getData().size() > 0) {
 				response.setStatus(Constant.RESPONSE_OK);
 				response.setData(new AdminDataObj());
@@ -218,9 +227,9 @@ public class DepartmentController {
                     "attachment; filename=\"" + filename + "\"");
 
             //create a csv writer
-            CustomMappingStrategy<DeptUserCSV> mappingStrategy = new CustomMappingStrategy<DeptUserCSV>();
-            mappingStrategy.setType(DeptUserCSV.class);
-            StatefulBeanToCsv<DeptUserCSV> writer = new StatefulBeanToCsvBuilder<DeptUserCSV>(response.getWriter())
+            CustomMappingStrategy<UserCSV> mappingStrategy = new CustomMappingStrategy<UserCSV>();
+            mappingStrategy.setType(UserCSV.class);
+            StatefulBeanToCsv<UserCSV> writer = new StatefulBeanToCsvBuilder<UserCSV>(response.getWriter())
             		.withMappingStrategy(mappingStrategy)
                     .withQuotechar(CSVWriter.NO_QUOTE_CHARACTER)
                     .withSeparator(CSVWriter.DEFAULT_SEPARATOR)
@@ -238,7 +247,7 @@ public class DepartmentController {
 	@PostMapping("/admin/departments/{deptId}/users")
 	@PreAuthorize("hasAuthority('adminUserManagement.departmentManagement.loginAdminUserManagement.adminUserInfo.create')")
 	public AdminResponseObj createDepartmentUser(HttpServletRequest request, @PathVariable String deptId,
-			@Validated(ValidationSequence.class) @RequestBody DeptUserDTO deptUserDto) {
+			@Validated(ValidationSequence.class) @RequestBody UserDTO deptUserDto) {
 		String methodName = "createDepartmentUser";
 		long refId = System.currentTimeMillis();
 		AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [POST]/admin/departments/users");
@@ -256,7 +265,7 @@ public class DepartmentController {
 	@PutMapping("/admin/departments/{deptId}/users/{deptUserId}")
 	@PreAuthorize("hasAuthority('adminUserManagement.departmentManagement.loginAdminUserManagement.adminUserInfo.update')")
 	public AdminResponseObj updateDepartmentUser(HttpServletRequest request, @PathVariable String deptId,
-			@PathVariable String deptUserId, @Validated(ValidationSequence.class) @RequestBody UpdateDeptUserDTO deptUserDto) {
+			@PathVariable String deptUserId, @Validated(ValidationSequence.class) @RequestBody UpdateUserDTO deptUserDto) {
 		String methodName = "updateDepartmentUser";
 		long refId = System.currentTimeMillis();
 		AMLogger.logMessage(className, methodName, refId,
@@ -281,7 +290,7 @@ public class DepartmentController {
 				String.format("REQUEST_API: [GET]/admin/departments/%s/users/%s", deptId, deptUserId));
 		AdminResponseObj response = new AdminResponseObj();
 
-		DeptUserDTO deptUserDto = deptService.getDepartmentUser(deptId, deptUserId, refId);
+		UserDTO deptUserDto = deptService.getDepartmentUser(deptId, deptUserId, refId);
 		if (deptUserDto != null) {
 			response.setStatus(Constant.RESPONSE_OK);
 			response.setData(new AdminDataObj());
@@ -298,7 +307,7 @@ public class DepartmentController {
 	@PostMapping("/admin/departments/{deptId}/users/{deptUserId}/roles")
 	@PreAuthorize("hasAuthority('adminUserManagement.departmentManagement.loginAdminUserManagement.adminUserRoleAssign.create')")
 	public AdminResponseObj saveDepartmentUserRoles(HttpServletRequest request, @PathVariable String deptId,
-			@PathVariable String deptUserId, @RequestBody DeptUserDTO deptUserDto) {
+			@PathVariable String deptUserId, @Validated(ValidationSequence.class) @RequestBody UserRolesDTO deptUserDto) {
 		String methodName = "saveDepartmentUserRoles";
 		long refId = System.currentTimeMillis();
 		AMLogger.logMessage(className, methodName, refId,
@@ -316,7 +325,7 @@ public class DepartmentController {
 	@PostMapping("/admin/departments/{deptId}/users/{deptUserId}/functions")
 	@PreAuthorize("hasAuthority('adminUserManagement.departmentManagement.loginAdminUserManagement.adminUserFunctionsAssign.create')")
 	public AdminResponseObj saveDepartmentUserFunctions(HttpServletRequest request, @PathVariable String deptId,
-			@PathVariable String deptUserId, @RequestBody DeptUserDTO deptUserDto) {
+			@PathVariable String deptUserId, @Validated(ValidationSequence.class) @RequestBody UserFunctionsDTO deptUserDto) {
 		String methodName = "saveDepartmentUserFunctions";
 		long refId = System.currentTimeMillis();
 		AMLogger.logMessage(className, methodName, refId,

@@ -7,60 +7,47 @@ package com.newgen.am.model;
 
 import java.io.Serializable;
 
+import javax.validation.constraints.NotEmpty;
+
 /**
  *
  * @author nhungtt
  */
 public class Commodity extends AuditModel implements Serializable {
-    private String code;
-    private String name;
-    private String partner;
-    private String partnerAccount;
-    private long orderProcessFee;
+	@NotEmpty(message = "Required.")
+    private String commodityCode;
+	@NotEmpty(message = "Required.")
+    private String commodityName;
+    private long commodityFee;
     private String positionLimitType;
     private int positionLimit;
+    private String currency;
 
-    public String getCode() {
-        return code;
-    }
+    public String getCommodityCode() {
+		return commodityCode;
+	}
 
-    public void setCode(String code) {
-        this.code = code;
-    }
+	public void setCommodityCode(String commodityCode) {
+		this.commodityCode = commodityCode;
+	}
 
-    public String getName() {
-        return name;
-    }
+	public String getCommodityName() {
+		return commodityName;
+	}
 
-    public void setName(String name) {
-        this.name = name;
-    }
+	public void setCommodityName(String commodityName) {
+		this.commodityName = commodityName;
+	}
 
-    public String getPartner() {
-        return partner;
-    }
+    public long getCommodityFee() {
+		return commodityFee;
+	}
 
-    public void setPartner(String partner) {
-        this.partner = partner;
-    }
+	public void setCommodityFee(long commodityFee) {
+		this.commodityFee = commodityFee;
+	}
 
-    public String getPartnerAccount() {
-        return partnerAccount;
-    }
-
-    public void setPartnerAccount(String partnerAccount) {
-        this.partnerAccount = partnerAccount;
-    }
-
-    public long getOrderProcessFee() {
-        return orderProcessFee;
-    }
-
-    public void setOrderProcessFee(long orderProcessFee) {
-        this.orderProcessFee = orderProcessFee;
-    }
-
-    public int getPositionLimit() {
+	public int getPositionLimit() {
         return positionLimit;
     }
 
@@ -77,14 +64,12 @@ public class Commodity extends AuditModel implements Serializable {
 		this.positionLimitType = positionLimitType;
 	}
 
-	@Override
-    public String toString() {
-        return "Commodity{" +
-                "code='" + code + "'" +
-                ", name='" + name + "'" +
-                ", partner='" + partner + "'" +
-                ", partnerAccount='" + partnerAccount + "'" +
-                ", positionLimit='" + positionLimit + "'" +
-                ", orderProcessFee='" + orderProcessFee + "'}";
-    }
+	public String getCurrency() {
+		return currency;
+	}
+
+	public void setCurrency(String currency) {
+		this.currency = currency;
+	}
+	
 }

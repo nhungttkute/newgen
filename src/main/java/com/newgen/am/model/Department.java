@@ -18,9 +18,8 @@ import org.springframework.data.mongodb.core.mapping.Document;
  */
 @Document(collection = "departments")
 public class Department extends AuditModel implements Serializable {
-    @Transient
-    public static final String SEQUENCE_NAME = "department_seq";
-    @Id
+	private static final long serialVersionUID = 1L;
+	@Id
     private String id;
     @NonNull
     private String code;

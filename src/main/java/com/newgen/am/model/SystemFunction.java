@@ -16,7 +16,8 @@ import org.springframework.data.mongodb.core.mapping.Document;
  */
 @Document(collection = "system_functions")
 public class SystemFunction extends AuditModel implements Serializable {
-    @Transient
+	private static final long serialVersionUID = 1L;
+	@Transient
     public static final String SEQUENCE_NAME = "system_function_seq";
     @Id
     private long id;

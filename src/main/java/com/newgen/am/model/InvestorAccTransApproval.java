@@ -7,7 +7,7 @@ package com.newgen.am.model;
 
 import java.io.Serializable;
 import java.util.Date;
-import org.springframework.data.annotation.Transient;
+
 import org.springframework.data.mongodb.core.mapping.Document;
 
 /**
@@ -16,8 +16,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
  */
 @Document(collection = "investor_acc_trans_approval")
 public class InvestorAccTransApproval extends AuditModel implements Serializable {
-    @Transient
-    public static final String SEQUENCE_NAME = "inv_acc_trans_approval_seq";
+	private static final long serialVersionUID = 1L;
     private String id;
     private String memberId;
     private String memberCode;

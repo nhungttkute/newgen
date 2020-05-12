@@ -13,8 +13,6 @@ import org.springframework.data.annotation.Transient;
  * @author nhungtt
  */
 public class DeptUser extends BaseUser {
-    @Transient
-    public static final String SEQUENCE_NAME = "department_user_seq";
     private List<UserRole> roles;
     private List<RoleFunction> functions;
 

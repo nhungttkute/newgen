@@ -5,17 +5,18 @@
  */
 package com.newgen.am.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.mongodb.lang.NonNull;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
+
 import org.hibernate.validator.constraints.Length;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.mongodb.lang.NonNull;
 
 /**
  *
@@ -23,10 +24,8 @@ import org.springframework.data.mongodb.core.mapping.Field;
  */
 @Document(collection = "login_investor_users")
 public class LoginInvestorUser extends AuditModel implements Serializable {
-
-    @Transient
-    public static final String SEQUENCE_NAME = "login_investor_user_seq";
-    @Id
+	private static final long serialVersionUID = 1L;
+	@Id
     private String id;
     @Indexed(unique = true)
     @NonNull

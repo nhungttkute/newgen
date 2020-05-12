@@ -5,13 +5,19 @@
  */
 package com.newgen.am.dto;
 
+import java.util.List;
+
 import javax.validation.constraints.Email;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.Size;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.newgen.am.model.RoleFunction;
+import com.newgen.am.model.UserRole;
 import com.newgen.am.validation.FormatGroup;
+import com.newgen.am.validation.LengthGroup;
 import com.newgen.am.validation.ValidPhoneNumber;
-import com.newgen.am.validation.ValidUpdateIntegerField;
-import com.newgen.am.validation.ValidUpdateStringField;
+import com.newgen.am.validation.ValidUsername;
 
 /**
  *
@@ -21,25 +27,51 @@ import com.newgen.am.validation.ValidUpdateStringField;
  * @author E7470
  *
  */
-public class UpdateDeptUserDTO {
-	@ValidUpdateStringField
+@JsonInclude(JsonInclude.Include.NON_DEFAULT)
+public class UserDTO {
+    @JsonInclude(JsonInclude.Include.NON_DEFAULT)
+    private String _id;
+    @NotEmpty(message = "Required.")
+    @ValidUsername(groups = FormatGroup.class)
+    private String username;
+    @NotEmpty(message = "Required.")
+    @Size(min = 1, max = 100, message = "Invalid format.", groups = LengthGroup.class)
     private String fullName;
-	@ValidUpdateStringField
+    @NotEmpty(message = "Required.")
     @Email(message = "Invalid format.", groups = FormatGroup.class)
     private String email;
-	@ValidUpdateStringField
+    @NotEmpty(message = "Required.")
     @ValidPhoneNumber(groups = FormatGroup.class)
     private String phoneNumber;
-	@ValidUpdateStringField
+    @NotEmpty(message = "Required.")
+    @Size(min = 1, max = 20, message = "Invalid format.", groups = LengthGroup.class)
     private String status; //pending, active, inactive
-	@ValidUpdateStringField
     private String note;
-	@JsonInclude(JsonInclude.Include.NON_DEFAULT)
+    @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     private Boolean isPasswordExpiryCheck;
     @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     private int passwordExpiryDays;
     @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     private int expiryAlertDays;
+    private long createdDate;
+    private List<UserRole> roles;
+    private List<RoleFunction> functions;
+
+	public String get_id() {
+		return _id;
+	}
+
+	public void set_id(String _id) {
+		this._id = _id;
+	}
+
+	public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
 
     public String getFullName() {
         return fullName;
@@ -104,4 +136,29 @@ public class UpdateDeptUserDTO {
     public void setExpiryAlertDays(int expiryAlertDays) {
         this.expiryAlertDays = expiryAlertDays;
     }
+
+	public long getCreatedDate() {
+		return createdDate;
+	}
+
+	public void setCreatedDate(long createdDate) {
+		this.createdDate = createdDate;
+	}
+
+	public List<UserRole> getRoles() {
+        return roles;
+    }
+
+    public void setRoles(List<UserRole> roles) {
+        this.roles = roles;
+    }
+
+    public List<RoleFunction> getFunctions() {
+        return functions;
+    }
+
+    public void setFunctions(List<RoleFunction> functions) {
+        this.functions = functions;
+    }
+    
 }

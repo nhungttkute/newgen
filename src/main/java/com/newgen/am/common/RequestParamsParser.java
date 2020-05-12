@@ -104,22 +104,6 @@ public class RequestParamsParser {
 						filter.setFieldName(tmp[0]);
 						String operator = tmp[1].substring(0, tmp[1].length() - 1);
 						filter.setOperator("$" + operator);
-//                        if (operator.equals("in") || operator.equals("nin")) {
-//                            String[] valArr = nvp[1].split(",");
-//                            if (valArr.length > 1) {
-//                                String str = "";
-//                                for (String val : valArr) {
-//                                    str += "\"" + val + "\",";
-//                                }
-//                                filter.setValue(str);
-//                                filter.setValue(filter.getValue().substring(0, filter.getValue().length() - 1));
-//                            }  else {
-//                            	String str = nvp[1];
-//                            	filter.setValue(str);
-//                            }
-//                        } else {
-//                            filter.setValue(nvp[1]);
-//                        }
 						filter.setValue(nvp[1]);
 						arrList.add(filter);
 					}

@@ -6,27 +6,25 @@
 package com.newgen.am.model;
 
 import java.util.List;
-import org.springframework.data.annotation.Transient;
 
 /**
  *
  * @author nhungtt
  */
 public class MemberUser extends BaseUser {
-    @Transient
-    public static final String SEQUENCE_NAME = "member_user_seq";
-    private List<UserRole> roles;
+	private static final long serialVersionUID = 1L;
+	private List<UserRole> roles;
     private List<RoleFunction> functions;
 
-    public List<UserRole> getRoles() {
-        return roles;
-    }
+	public List<UserRole> getRoles() {
+		return roles;
+	}
 
-    public void setRoles(List<UserRole> roles) {
-        this.roles = roles;
-    }
+	public void setRoles(List<UserRole> roles) {
+		this.roles = roles;
+	}
 
-    public List<RoleFunction> getFunctions() {
+	public List<RoleFunction> getFunctions() {
         return functions;
     }
 

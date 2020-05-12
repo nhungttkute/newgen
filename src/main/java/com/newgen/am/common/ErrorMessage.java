@@ -17,4 +17,5 @@ public class ErrorMessage {
     public static final String INVALID_INPUT_DATA = "Invalid input data.";
     public static final String INCORRECT_PASSWORD = "Incorrect password.";
     public static final String INCORRECT_PIN = "Incorrect PIN.";
+    public static final String INVALID_REQUEST = "Invalid request.";
 }

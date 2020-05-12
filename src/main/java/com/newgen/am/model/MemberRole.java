@@ -7,8 +7,8 @@ package com.newgen.am.model;
 
 import java.io.Serializable;
 import java.util.List;
+
 import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 /**
@@ -17,24 +17,32 @@ import org.springframework.data.mongodb.core.mapping.Document;
  */
 @Document(collection = "member_roles")
 public class MemberRole extends AuditModel implements Serializable {
-    @Transient
-    public static final String SEQUENCE_NAME = "member_role_seq";
-    @Id
-    private long id;
+	private static final long serialVersionUID = 1L;
+	@Id
+    private String id;
     private String name;
     private String description;
     private String status;
     private List<RoleFunction> functions;
+    private String memberCode;
 
-    public long getId() {
-        return id;
-    }
+    public String getId() {
+		return id;
+	}
 
-    public void setId(long id) {
-        this.id = id;
-    }
+	public void setId(String id) {
+		this.id = id;
+	}
 
-    public String getName() {
+	public String getMemberCode() {
+		return memberCode;
+	}
+
+	public void setMemberCode(String memberCode) {
+		this.memberCode = memberCode;
+	}
+
+	public String getName() {
         return name;
     }
 

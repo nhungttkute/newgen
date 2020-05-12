@@ -3,7 +3,7 @@ package com.newgen.am.dto;
 import com.opencsv.bean.CsvBindByName;
 import com.opencsv.bean.CsvBindByPosition;
 
-public class SystemRoleCSV {
+public class RoleCSV {
 	@CsvBindByName(column = "ID")
 	@CsvBindByPosition(position = 0)
 	private String id;

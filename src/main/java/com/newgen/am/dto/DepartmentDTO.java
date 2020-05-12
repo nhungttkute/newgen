@@ -28,9 +28,9 @@ public class DepartmentDTO {
     private String name;
     @NotEmpty(message = "Required.")
     private String status;
-    private String createdDate;
+    private long createdDate;
     private String note;
-    private List<DeptUserDTO> users;
+    private List<UserDTO> users;
 
 	public String get_id() {
 		return _id;
@@ -72,20 +72,19 @@ public class DepartmentDTO {
         this.note = note;
     }
 
-    public List<DeptUserDTO> getUsers() {
+    public List<UserDTO> getUsers() {
         return users;
     }
 
-    public void setUsers(List<DeptUserDTO> users) {
+    public void setUsers(List<UserDTO> users) {
         this.users = users;
     }
 
-	public String getCreatedDate() {
+	public long getCreatedDate() {
 		return createdDate;
 	}
 
-	public void setCreatedDate(String createdDate) {
+	public void setCreatedDate(long createdDate) {
 		this.createdDate = createdDate;
 	}
-
 }

@@ -11,7 +11,7 @@ import com.newgen.am.validation.ValidUpdateStringField;
  *
  * @author nhungtt
  */
-public class UpdateSystemRoleDTO {
+public class UpdateRoleDTO {
     @ValidUpdateStringField
     private String name;
     @ValidUpdateStringField

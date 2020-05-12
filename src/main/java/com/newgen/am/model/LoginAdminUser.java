@@ -22,9 +22,8 @@ import org.springframework.data.mongodb.core.mapping.Document;
  */
 @Document(collection = "login_admin_users")
 public class LoginAdminUser extends AuditModel implements Serializable {
-    @Transient
-    public static final String SEQUENCE_NAME = "login_admin_user_seq";
-    @Id
+	private static final long serialVersionUID = 1L;
+	@Id
     private String id;
     @NonNull
     @Indexed(unique = true)
@@ -47,13 +46,9 @@ public class LoginAdminUser extends AuditModel implements Serializable {
     private int logonCounts;
     private long logonTime;
     private String deptId;
-    private String deptUserId;
-    private String memberId;
-    private String memberUserId;
-    private String brokerId;
-    private String brokerUserId;
-    private String collaboratorId;
-    private String collaboratorUserId;
+    private String memberCode;
+    private String brokerCode;
+    private String collaboratorCode;
     @Field
     @Length(max = 10000)
     private String layout;
@@ -134,14 +129,6 @@ public class LoginAdminUser extends AuditModel implements Serializable {
 		this.deptId = deptId;
 	}
 
-	public String getDeptUserId() {
-		return deptUserId;
-	}
-
-	public void setDeptUserId(String deptUserId) {
-		this.deptUserId = deptUserId;
-	}
-
 	public String getLayout() {
         return layout;
     }
@@ -173,54 +160,6 @@ public class LoginAdminUser extends AuditModel implements Serializable {
     public void setFontSize(int fontSize) {
         this.fontSize = fontSize;
     }
-
-    public String getMemberId() {
-        return memberId;
-    }
-
-    public void setMemberId(String memberId) {
-        this.memberId = memberId;
-    }
-
-    public String getMemberUserId() {
-		return memberUserId;
-	}
-
-	public void setMemberUserId(String memberUserId) {
-		this.memberUserId = memberUserId;
-	}
-
-	public String getBrokerId() {
-		return brokerId;
-	}
-
-	public void setBrokerId(String brokerId) {
-		this.brokerId = brokerId;
-	}
-
-	public String getBrokerUserId() {
-		return brokerUserId;
-	}
-
-	public void setBrokerUserId(String brokerUserId) {
-		this.brokerUserId = brokerUserId;
-	}
-
-	public String getCollaboratorId() {
-		return collaboratorId;
-	}
-
-	public void setCollaboratorId(String collaboratorId) {
-		this.collaboratorId = collaboratorId;
-	}
-
-	public String getCollaboratorUserId() {
-		return collaboratorUserId;
-	}
-
-	public void setCollaboratorUserId(String collaboratorUserId) {
-		this.collaboratorUserId = collaboratorUserId;
-	}
 
 	public int getLogonCounts() {
         return logonCounts;
@@ -261,5 +200,29 @@ public class LoginAdminUser extends AuditModel implements Serializable {
     public void setWatchlists(List<WatchList> watchlists) {
         this.watchlists = watchlists;
     }
+
+	public String getMemberCode() {
+		return memberCode;
+	}
+
+	public void setMemberCode(String memberCode) {
+		this.memberCode = memberCode;
+	}
+
+	public String getBrokerCode() {
+		return brokerCode;
+	}
+
+	public void setBrokerCode(String brokerCode) {
+		this.brokerCode = brokerCode;
+	}
+
+	public String getCollaboratorCode() {
+		return collaboratorCode;
+	}
+
+	public void setCollaboratorCode(String collaboratorCode) {
+		this.collaboratorCode = collaboratorCode;
+	}
 
 }

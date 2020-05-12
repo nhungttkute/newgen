@@ -17,12 +17,15 @@ import com.newgen.am.dto.LoginUserDataInputDTO;
 import com.newgen.am.exception.CustomException;
 import com.newgen.am.model.LoginAdminUser;
 import com.newgen.am.service.LoginAdminUserService;
+import com.newgen.am.validation.ValidationSequence;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -185,7 +188,7 @@ public class LoginAdminUserController {
     }
     
     @PutMapping("/admin/users/resetPassword")
-    public AdminResponseObj resetPassword(HttpServletRequest request, @Valid @RequestBody LoginUserDataInputDTO userDto) {
+    public AdminResponseObj resetPassword(HttpServletRequest request, @Validated(ValidationSequence.class) @RequestBody LoginUserDataInputDTO userDto) {
         String methodName = "resetPassword";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [PUT]/admin/users/resetPassword");
@@ -201,7 +204,7 @@ public class LoginAdminUserController {
     }
     
     @PutMapping("/admin/users/resetPin")
-    public AdminResponseObj resetPin(HttpServletRequest request, @Valid @RequestBody LoginUserDataInputDTO userDto) {
+    public AdminResponseObj resetPin(HttpServletRequest request, @Validated(ValidationSequence.class) @RequestBody LoginUserDataInputDTO userDto) {
         String methodName = "resetPin";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [PUT]/admin/users/resetPin");

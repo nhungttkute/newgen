@@ -16,7 +16,7 @@ import javax.validation.constraints.NotEmpty;
  * @author nhungtt
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class SystemRoleDTO {
+public class RoleDTO {
     @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     private String _id;
     @NotEmpty(message = "Required.")
@@ -25,7 +25,7 @@ public class SystemRoleDTO {
     private String description;
     @NotEmpty(message = "Required.")
     private String status;
-    private String createdDate;
+    private long createdDate;
     private List<RoleFunction> functions;
 
 	public String get_id() {
@@ -60,11 +60,11 @@ public class SystemRoleDTO {
         this.status = status;
     }
 
-    public String getCreatedDate() {
+	public long getCreatedDate() {
 		return createdDate;
 	}
 
-	public void setCreatedDate(String createdDate) {
+	public void setCreatedDate(long createdDate) {
 		this.createdDate = createdDate;
 	}
 

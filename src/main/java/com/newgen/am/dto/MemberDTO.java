@@ -11,7 +11,9 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.newgen.am.model.Commodity;
 import com.newgen.am.model.Company;
 import com.newgen.am.model.Contact;
+import com.newgen.am.model.MarginRatioAlert;
 import com.newgen.am.model.MemberUser;
+import com.newgen.am.model.RiskParameters;
 import com.newgen.am.model.RoleFunction;
 import com.newgen.am.model.UserRole;
 import com.newgen.am.validation.FormatGroup;
@@ -32,18 +34,23 @@ public class MemberDTO {
     @Size(min = 1, max = 20, message = "Invalid format.", groups = LengthGroup.class)
     private String status;
     private String note;
-    private String createdDate;
+    private long createdDate;
     @NotNull(message = "Required.")
     @Valid
     private Company company;
     private Contact contact;
-    private List<UserRole> roles;
+    private UserRole role;
     private List<RoleFunction> functions;
     private int orderLimit;
     private int defaultPositionLimit;
     private long defaultCommodityFee;
-    private List<Commodity> comodities;
-    private List<MemberUser> memberUsers;
+    private double marginMultiplier;
+    private long generalFee;
+    private long otherFee;
+    private MarginRatioAlert marginRatioAlert;
+    private RiskParameters riskParameters;
+    private List<Commodity> commodities;
+    private List<MemberUser> users;
     
 	public String get_id() {
 		return _id;
@@ -76,12 +83,6 @@ public class MemberDTO {
 	public void setNote(String note) {
 		this.note = note;
 	}
-	public String getCreatedDate() {
-		return createdDate;
-	}
-	public void setCreatedDate(String createdDate) {
-		this.createdDate = createdDate;
-	}
 	public Company getCompany() {
 		return company;
 	}
@@ -94,11 +95,11 @@ public class MemberDTO {
 	public void setContact(Contact contact) {
 		this.contact = contact;
 	}
-	public List<UserRole> getRoles() {
-		return roles;
+	public UserRole getRole() {
+		return role;
 	}
-	public void setRoles(List<UserRole> roles) {
-		this.roles = roles;
+	public void setRole(UserRole role) {
+		this.role = role;
 	}
 	public List<RoleFunction> getFunctions() {
 		return functions;
@@ -124,17 +125,53 @@ public class MemberDTO {
 	public void setDefaultCommodityFee(long defaultCommodityFee) {
 		this.defaultCommodityFee = defaultCommodityFee;
 	}
-	public List<Commodity> getComodities() {
-		return comodities;
+	public List<Commodity> getCommodities() {
+		return commodities;
 	}
-	public void setComodities(List<Commodity> comodities) {
-		this.comodities = comodities;
+	public void setCommodities(List<Commodity> commodities) {
+		this.commodities = commodities;
 	}
-	public List<MemberUser> getMemberUsers() {
-		return memberUsers;
+	public RiskParameters getRiskParameters() {
+		return riskParameters;
 	}
-	public void setMemberUsers(List<MemberUser> memberUsers) {
-		this.memberUsers = memberUsers;
+	public void setRiskParameters(RiskParameters riskParameters) {
+		this.riskParameters = riskParameters;
+	}
+	public double getMarginMultiplier() {
+		return marginMultiplier;
+	}
+	public void setMarginMultiplier(double marginMultiplier) {
+		this.marginMultiplier = marginMultiplier;
+	}
+	public long getGeneralFee() {
+		return generalFee;
+	}
+	public void setGeneralFee(long generalFee) {
+		this.generalFee = generalFee;
+	}
+	public long getOtherFee() {
+		return otherFee;
+	}
+	public void setOtherFee(long otherFee) {
+		this.otherFee = otherFee;
+	}
+	public MarginRatioAlert getMarginRatioAlert() {
+		return marginRatioAlert;
+	}
+	public void setMarginRatioAlert(MarginRatioAlert marginRatioAlert) {
+		this.marginRatioAlert = marginRatioAlert;
+	}
+	public long getCreatedDate() {
+		return createdDate;
+	}
+	public void setCreatedDate(long createdDate) {
+		this.createdDate = createdDate;
+	}
+	public List<MemberUser> getUsers() {
+		return users;
+	}
+	public void setUsers(List<MemberUser> users) {
+		this.users = users;
 	}
     
 }

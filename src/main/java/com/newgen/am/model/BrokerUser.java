@@ -12,6 +12,4 @@ import org.springframework.data.annotation.Transient;
  * @author nhungtt
  */
 public class BrokerUser extends BaseUser {
-    @Transient
-    public static final String SEQUENCE_NAME = "broker_user_seq";
 }

@@ -16,9 +16,8 @@ import org.springframework.data.mongodb.core.mapping.Document;
  */
 @Document(collection = "investors")
 public class Investor extends AuditModel implements Serializable {
-    @Transient
-    public static final String SEQUENCE_NAME = "investor_seq";
-    private String id;
+	private static final long serialVersionUID = 1L;
+	private String id;
     private String memberId;
     private String brokerId;
     private String collaboratorId;
@@ -43,6 +42,7 @@ public class Investor extends AuditModel implements Serializable {
     private List<Commodity> commodities;
     private MarginRatioAlert marginRatioAlert;
     private double marginMultiplier;
+    private long generalFee;
     private long otherFee;
 
     public String getId() {
@@ -252,5 +252,13 @@ public class Investor extends AuditModel implements Serializable {
     public void setOtherFee(long otherFee) {
         this.otherFee = otherFee;
     }
+
+	public long getGeneralFee() {
+		return generalFee;
+	}
+
+	public void setGeneralFee(long generalFee) {
+		this.generalFee = generalFee;
+	}
     
 }

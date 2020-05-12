@@ -7,6 +7,7 @@ package com.newgen.am.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.newgen.am.model.Commodity;
+import com.newgen.am.model.RoleFunction;
 import com.newgen.am.model.SystemFunction;
 import com.newgen.am.model.WatchList;
 import java.util.List;
@@ -28,15 +29,22 @@ public class AdminDataObj {
     
     // response for department
     private List<DepartmentDTO> departments;
-    private List<DeptUserDTO> deptUsers;
+    private List<UserDTO> deptUsers;
     private DepartmentDTO department;
-    private DeptUserDTO deptUser;
-    private List<SystemRoleDTO> systemRoles;
+    private UserDTO deptUser;
+    private List<RoleDTO> systemRoles;
     private List<SystemFunctionDTO> systemFunctions;
     
     // response for member
     private List<MemberDTO> members;
     private MemberDTO member;
+    private UserDTO memberUser;
+    private List<UserDTO> memberUsers;
+    private List<RoleDTO> memberRoles;
+    private List<RoleFunction> memberFunctions;
+    
+    // response for investor
+    private List<String> investorCodes;
 
     public LoginAdminUserOutputDTO getUser() {
         return user;
@@ -110,27 +118,27 @@ public class AdminDataObj {
         this.department = department;
     }
 
-    public DeptUserDTO getDeptUser() {
+    public UserDTO getDeptUser() {
         return deptUser;
     }
 
-    public void setDeptUser(DeptUserDTO deptUser) {
+    public void setDeptUser(UserDTO deptUser) {
         this.deptUser = deptUser;
     }
 
-    public List<SystemRoleDTO> getSystemRoles() {
+    public List<RoleDTO> getSystemRoles() {
         return systemRoles;
     }
 
-    public void setSystemRoles(List<SystemRoleDTO> systemRoles) {
+    public void setSystemRoles(List<RoleDTO> systemRoles) {
         this.systemRoles = systemRoles;
     }
 
-    public List<DeptUserDTO> getDeptUsers() {
+    public List<UserDTO> getDeptUsers() {
         return deptUsers;
     }
 
-    public void setDeptUsers(List<DeptUserDTO> deptUsers) {
+    public void setDeptUsers(List<UserDTO> deptUsers) {
         this.deptUsers = deptUsers;
     }
 
@@ -156,6 +164,46 @@ public class AdminDataObj {
 
 	public void setMember(MemberDTO member) {
 		this.member = member;
+	}
+
+	public UserDTO getMemberUser() {
+		return memberUser;
+	}
+
+	public void setMemberUser(UserDTO memberUser) {
+		this.memberUser = memberUser;
+	}
+
+	public List<UserDTO> getMemberUsers() {
+		return memberUsers;
+	}
+
+	public void setMemberUsers(List<UserDTO> memberUsers) {
+		this.memberUsers = memberUsers;
+	}
+
+	public List<RoleDTO> getMemberRoles() {
+		return memberRoles;
+	}
+
+	public void setMemberRoles(List<RoleDTO> memberRoles) {
+		this.memberRoles = memberRoles;
+	}
+
+	public List<RoleFunction> getMemberFunctions() {
+		return memberFunctions;
+	}
+
+	public void setMemberFunctions(List<RoleFunction> memberFunctions) {
+		this.memberFunctions = memberFunctions;
+	}
+
+	public List<String> getInvestorCodes() {
+		return investorCodes;
+	}
+
+	public void setInvestorCodes(List<String> investorCodes) {
+		this.investorCodes = investorCodes;
 	}
     
 }

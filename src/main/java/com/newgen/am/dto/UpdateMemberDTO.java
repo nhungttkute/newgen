@@ -6,14 +6,10 @@ import javax.validation.constraints.Size;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.newgen.am.model.Commodity;
-import com.newgen.am.model.Company;
-import com.newgen.am.model.Contact;
 import com.newgen.am.model.MemberUser;
 import com.newgen.am.model.RoleFunction;
 import com.newgen.am.model.UserRole;
-import com.newgen.am.validation.FormatGroup;
 import com.newgen.am.validation.LengthGroup;
-import com.newgen.am.validation.ValidNumber;
 import com.newgen.am.validation.ValidUpdateStringField;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -25,7 +21,6 @@ public class UpdateMemberDTO {
     @Size(min = 1, max = 20, message = "Invalid format.", groups = LengthGroup.class)
     private String status;
     private String note;
-    private String createdDate;
     private UpdateCompanyDTO company;
     private List<UserRole> roles;
     private List<RoleFunction> functions;
@@ -53,12 +48,6 @@ public class UpdateMemberDTO {
 	}
 	public void setNote(String note) {
 		this.note = note;
-	}
-	public String getCreatedDate() {
-		return createdDate;
-	}
-	public void setCreatedDate(String createdDate) {
-		this.createdDate = createdDate;
 	}
 	public UpdateCompanyDTO getCompany() {
 		return company;

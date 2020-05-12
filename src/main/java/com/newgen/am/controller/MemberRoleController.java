@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.newgen.am.controller;
 
 import java.util.Arrays;
@@ -36,36 +31,33 @@ import com.newgen.am.dto.RoleCSV;
 import com.newgen.am.dto.RoleDTO;
 import com.newgen.am.dto.UpdateRoleDTO;
 import com.newgen.am.exception.CustomException;
+import com.newgen.am.service.MemberRoleService;
 import com.newgen.am.service.SystemRoleService;
 import com.opencsv.CSVWriter;
 import com.opencsv.bean.StatefulBeanToCsv;
 import com.opencsv.bean.StatefulBeanToCsvBuilder;
 
-/**
- *
- * @author nhungtt
- */
 @RestController
-public class SystemRoleController {
-    private String className = "SystemRoleController";
+public class MemberRoleController {
+private String className = "MemberRoleController";
     
     @Autowired
-    SystemRoleService sysRoleService;
+    MemberRoleService memberRoleService;
     
-    @GetMapping("/admin/systemRoles")
-    @PreAuthorize("hasAuthority('adminUserManagement.roleManagement.functionList.view')")
-    public AdminResponseObj listSystemRoles(HttpServletRequest request) {
-        String methodName = "listSystemRoles";
+    @GetMapping("/admin/members/{memberCode}/memberRoles")
+    @PreAuthorize("hasAuthority('clientManagement.memberManagement.memberRoleManagement.memberRoleList.view')")
+    public AdminResponseObj listMemberRoles(HttpServletRequest request, @PathVariable String memberCode) {
+        String methodName = "listMemberRoles";
         long refId = System.currentTimeMillis();
-        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [GET]/admin/systemRoles");
+        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: " + String.format("[GET]/admin/members/%s/memberRoles", memberCode));
         
         AdminResponseObj response = new AdminResponseObj();
         try {
-        	BasePagination<RoleDTO> pagination = sysRoleService.list(request, refId);
+        	BasePagination<RoleDTO> pagination = memberRoleService.list(request, memberCode, refId);
             if (pagination != null && pagination.getData().size() > 0) {
                 response.setStatus(Constant.RESPONSE_OK);
                 response.setData(new AdminDataObj());
-                response.getData().setSystemRoles(pagination.getData());
+                response.getData().setMemberRoles(pagination.getData());
                 response.setPagination(Utility.getPagination(request, pagination.getCount()));
                 response.setFilterList(Arrays.asList(Constant.STATUS_ACTIVE, Constant.STATUS_INACTIVE));
             } else {
@@ -81,16 +73,16 @@ public class SystemRoleController {
         return response;
     }
     
-    @GetMapping("/admin/systemRoles/csv")
-    @PreAuthorize("hasAuthority('adminUserManagement.roleManagement.functionList.view')")
-    public void downloadSystemRolesCsv(HttpServletRequest request, HttpServletResponse response) {
-        String methodName = "downloadSystemRolesCsv";
+    @GetMapping("/admin/members/{memberCode}/memberRoles/csv")
+    @PreAuthorize("hasAuthority('clientManagement.memberManagement.memberRoleManagement.memberRoleList.view')")
+    public void downloadMemberRolesCsv(HttpServletRequest request, HttpServletResponse response, @PathVariable String memberCode) {
+        String methodName = "downloadMemberRolesCsv";
         long refId = System.currentTimeMillis();
-        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [GET]/admin/systemRoles/csv");
+        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: " + String.format("[GET]/admin/members/%s/memberRoles/csv", memberCode));
         
         try {
         	//set file name and content type
-            String filename = Constant.CSV_SYSTEM_ROLES;
+            String filename = Constant.CSV_MEMBER_ROLES;
 
             response.setContentType("text/csv");
             response.setHeader(HttpHeaders.CONTENT_DISPOSITION,
@@ -108,22 +100,22 @@ public class SystemRoleController {
                     .build();
 
             //write all users to csv file
-            writer.write(sysRoleService.listCsv(request, refId));
+            writer.write(memberRoleService.listCsv(request, memberCode, refId));
         } catch (Exception e) {
         	AMLogger.logError(className, methodName, refId, e);
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
     
-    @PostMapping("/admin/systemRoles")
-    @PreAuthorize("hasAuthority('adminUserManagement.roleManagement.roleInfo.create')")
-    public AdminResponseObj createSystemRole(HttpServletRequest request, @Valid @RequestBody RoleDTO sysRoleDto) {
-        String methodName = "createSystemRole";
+    @PostMapping("/admin/members/{memberCode}/memberRoles")
+    @PreAuthorize("hasAuthority('clientManagement.memberManagement.memberRoleManagement.memberRole.create')")
+    public AdminResponseObj createMemberRole(HttpServletRequest request, @PathVariable String memberCode, @Valid @RequestBody RoleDTO roleDto) {
+        String methodName = "createMemberRole";
         long refId = System.currentTimeMillis();
-        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [POST]/admin/systemRoles");
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(sysRoleDto));
+        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: " + String.format("[POST]/admin/members/%s/memberRoles", memberCode));
+        AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(roleDto));
         
-        sysRoleService.createSystemRole(request, sysRoleDto, refId);
+        memberRoleService.createMemberRole(request, memberCode, roleDto, refId);
         
         AdminResponseObj response = new AdminResponseObj();
         response.setStatus(Constant.RESPONSE_OK);
@@ -132,15 +124,15 @@ public class SystemRoleController {
         return response;
     }
     
-    @PutMapping("/admin/systemRoles/{sysRoleId}")
-    @PreAuthorize("hasAuthority('adminUserManagement.roleManagement.roleInfo.update')")
-    public AdminResponseObj updateSystemRole(HttpServletRequest request, @PathVariable String sysRoleId, @Valid @RequestBody UpdateRoleDTO sysRoleDto) {
-        String methodName = "updateSystemRole";
+    @PutMapping("/admin/members/{memberCode}/memberRoles/{roleId}")
+    @PreAuthorize("hasAuthority('clientManagement.memberManagement.memberRoleManagement.memberRole.update')")
+    public AdminResponseObj updateMemberRole(HttpServletRequest request, @PathVariable String memberCode, @PathVariable String roleId, @Valid @RequestBody UpdateRoleDTO roleDto) {
+        String methodName = "updateMemberRole";
         long refId = System.currentTimeMillis();
-        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [PUT]/admin/systemRoles/" + sysRoleId);
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(sysRoleDto));
+        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: " + String.format("[PUT]/admin/members/%s/memberRoles/%s", memberCode, roleId));
+        AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(roleDto));
         
-        sysRoleService.updateSystemRole(request, sysRoleId, sysRoleDto, refId);
+        memberRoleService.updateMemberRole(request, memberCode, roleId, roleDto, refId);
         
         AdminResponseObj response = new AdminResponseObj();
         response.setStatus(Constant.RESPONSE_OK);
@@ -149,15 +141,15 @@ public class SystemRoleController {
         return response;
     }
     
-    @PostMapping("/admin/systemRoles/{sysRoleId}/functions")
-    @PreAuthorize("hasAuthority('adminUserManagement.roleManagement.roleFunctionsAssign.create')")
-    public AdminResponseObj createSystemRoleFunctions(HttpServletRequest request, @PathVariable String sysRoleId, @Valid @RequestBody FunctionsDTO sysRoleDto) {
-        String methodName = "createSystemRoleFunctions";
+    @PostMapping("/admin/members/{memberCode}/memberRoles/{roleId}/functions")
+    @PreAuthorize("hasAuthority('clientManagement.memberManagement.memberRoleManagement.memberRoleFunctionsAssign.create')")
+    public AdminResponseObj createMemberRoleFunctions(HttpServletRequest request, @PathVariable String memberCode, @PathVariable String roleId, @Valid @RequestBody FunctionsDTO roleDto) {
+        String methodName = "createMemberRoleFunctions";
         long refId = System.currentTimeMillis();
-        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: " + String.format("[POST]/admin/systemRoles/%s/functions", sysRoleId));
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(sysRoleDto));
+        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: " + String.format("[POST]/admin/members/%s/memberRoles/%s/functions", memberCode, roleId));
+        AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(roleDto));
         
-        sysRoleService.createSystemRoleFunctions(request, sysRoleId, sysRoleDto, refId);
+        memberRoleService.createMemberRoleFunctions(request, memberCode, roleId, roleDto, refId);
         
         AdminResponseObj response = new AdminResponseObj();
         response.setStatus(Constant.RESPONSE_OK);

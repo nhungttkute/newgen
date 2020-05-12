@@ -5,22 +5,17 @@
  */
 package com.newgen.am.model;
 
+import javax.validation.constraints.NotEmpty;
+
 /**
  *
  * @author nhungtt
  */
 public class RoleFunction {
-    private long _id;
+	@NotEmpty(message = "Required.")
     private String code;
+	@NotEmpty(message = "Required.")
     private String name;
-
-    public long getId() {
-        return _id;
-    }
-
-    public void setId(long _id) {
-        this._id = _id;
-    }
 
     public String getCode() {
         return code;

@@ -39,8 +39,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 public class Utility {
     private static String className = "Utility";
 
-    public static String lpadWith0(long id) {
-        return String.format("%010d", id);
+    public static String lpad3With0(long id) {
+        return String.format("%03d", id);
     }
 
     public static boolean isNull(Object obj) {
@@ -213,4 +213,5 @@ public class Utility {
 		double scale = Math.pow(10, places);
 		return Math.round(value * scale) / scale;
 	}
+    
 }
