@@ -66,8 +66,8 @@ public class ActivityLogService {
     public static final String ACTIVITY_CREATE_MEMBER_FUNCTIONS_DESC = "Gán quyền riêng cho TVKD %s - mã phê duyệt %s";
     public static final String ACTIVITY_CREATE_MEMBER_MASTER_USER = "Tạo đăng nhập tổng TVKD";
     public static final String ACTIVITY_CREATE_MEMBER_MASTER_USER_DESC = "Tạo đăng nhập tổng TVKD %s";
-    public static final String ACTIVITY_CREATE_MEMBER_LIMIT = "Thiết lập hạn mức TKVD";
-    public static final String ACTIVITY_CREATE_MEMBER_LIMIT_DESC = "Thiết lập hạn mức TKVD %s - mã phê duyệt %s";
+    public static final String ACTIVITY_CREATE_MEMBER_DEFAULT_SETTING = "Thiết lập hạn mức, phí HH mặc định TKVD";
+    public static final String ACTIVITY_CREATE_MEMBER_DEFAULT_SETTING_DESC = "Thiết lập hạn mức, phí HH mặc định TKVD %s - mã phê duyệt %s";
     public static final String ACTIVITY_CREATE_MEMBER_COMMODITIES_ASSIGN = "Gán hàng hóa, phí HH, hạn mức HH cho TKVD";
     public static final String ACTIVITY_CREATE_MEMBER_COMMODITIES_ASSIGN_DESC = "Gán hàng hóa, phí HH, hạn mức HH cho TKVD %s - mã phê duyệt %s";
     public static final String ACTIVITY_CREATE_MEMBER_COMMODITIES_FEE = "Thiết lập phí hàng hóa cho TKVD";
@@ -102,6 +102,28 @@ public class ActivityLogService {
     public static final String ACTIVITY_UPDATE_MEMBER_ROLE_DESC = "Cập nhật thông tin nhóm quyền %s của TVKD %s - mã phê duyệt %s";
     public static final String ACTIVITY_CREATE_MEMBER_ROLE_FUNCTIONS = "Gán quyền cho nhóm quyền của TVKD";
     public static final String ACTIVITY_CREATE_MEMBER_ROLE_FUNCTIONS_DESC = "Gán quyền cho nhóm quyền %s của TVKD %s - mã phê duyệt %s";
+    
+    public static final String ACTIVITY_CREATE_BROKER = "Tạo thông tin MG";
+    public static final String ACTIVITY_CREATE_BROKER_DESC = "Tạo thông tin MG %s - mã phê duyệt %s";
+    public static final String ACTIVITY_UPDATE_BROKER = "Cập nhật thông tin MG";
+    public static final String ACTIVITY_UPDATE_BROKER_DESC = "Cập nhật thông tin MG %s - mã phê duyệt %s";
+    public static final String ACTIVITY_CREATE_BROKER_FUNCTIONS = "Gán quyền riêng cho MG";
+    public static final String ACTIVITY_CREATE_BROKER_FUNCTIONS_DESC = "Gán quyền riêng cho MG %s - mã phê duyệt %s";
+    public static final String ACTIVITY_CREATE_BROKER_USER = "Tạo đăng nhập MG";
+    public static final String ACTIVITY_CREATE_BROKER_USER_DESC = "Tạo đăng nhập MG %s";
+    public static final String ACTIVITY_CREATE_BROKER_DEFAULT_SETTING = "Thiết lập phí HH mặc định cho MG";
+    public static final String ACTIVITY_CREATE_BROKER_DEFAULT_SETTING_DESC = "Thiết lập phí HH mặc định cho MG %s";
+    public static final String ACTIVITY_CREATE_BROKER_COMMODITIES_ASSIGN = "Gán hàng hóa, phí HH cho MG";
+    public static final String ACTIVITY_CREATE_BROKER_COMMODITIES_ASSIGN_DESC = "Gán hàng hóa, phí HH cho MG %s";
+    
+    public static final String ACTIVITY_CREATE_COLLABORATOR = "Tạo thông tin CTV MG";
+    public static final String ACTIVITY_CREATE_COLLABORATOR_DESC = "Tạo thông tin CTV MG %s - mã phê duyệt %s";
+    public static final String ACTIVITY_CREATE_COLLABORATOR_USER = "Tạo đăng nhập CTV MG";
+    public static final String ACTIVITY_CREATE_COLLABORATOR_USER_DESC = "Tạo đăng nhập CTV MG %s";
+    public static final String ACTIVITY_UPDATE_COLLABORATOR = "Cập nhật thông tin CTV MG";
+    public static final String ACTIVITY_UPDATE_COLLABORATOR_DESC = "Cập nhật thông tin CTV MG %s - mã phê duyệt %s";
+    public static final String ACTIVITY_CREATE_COLLABORATOR_FUNCTIONS = "Gán quyền riêng cho MG";
+    public static final String ACTIVITY_CREATE_COLLABORATOR_FUNCTIONS_DESC = "Gán quyền riêng cho CTV MG %s - mã phê duyệt %s";
     
     @Autowired
     private RedisMessagePublisher redisMessagePublisher;

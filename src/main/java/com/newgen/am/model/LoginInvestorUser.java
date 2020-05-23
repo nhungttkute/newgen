@@ -47,11 +47,10 @@ public class LoginInvestorUser extends AuditModel implements Serializable {
     @Field
     private int logonCounts = 0;
     private Date logonTime;
-    private String memberId;
-    private String brokerId;
-    private String collaboratorId;
-    private String investorId;
-    private String investorUserId;
+    private String memberCode;
+    private String brokerCode;
+    private String collaboratorCode;
+    private String investorCode;
     @Field
     @Length(max = 10000)
     private String layout;
@@ -66,46 +65,6 @@ public class LoginInvestorUser extends AuditModel implements Serializable {
 
 	public void setId(String id) {
 		this.id = id;
-	}
-
-	public String getMemberId() {
-		return memberId;
-	}
-
-	public void setMemberId(String memberId) {
-		this.memberId = memberId;
-	}
-
-	public String getBrokerId() {
-		return brokerId;
-	}
-
-	public void setBrokerId(String brokerId) {
-		this.brokerId = brokerId;
-	}
-
-	public String getCollaboratorId() {
-		return collaboratorId;
-	}
-
-	public void setCollaboratorId(String collaboratorId) {
-		this.collaboratorId = collaboratorId;
-	}
-
-	public String getInvestorId() {
-		return investorId;
-	}
-
-	public void setInvestorId(String investorId) {
-		this.investorId = investorId;
-	}
-
-	public String getInvestorUserId() {
-		return investorUserId;
-	}
-
-	public void setInvestorUserId(String investorUserId) {
-		this.investorUserId = investorUserId;
 	}
 
 	public String getUsername() {
@@ -235,5 +194,37 @@ public class LoginInvestorUser extends AuditModel implements Serializable {
     public void setMustChangePassword(Boolean mustChangePassword) {
         this.mustChangePassword = mustChangePassword;
     }
+
+	public String getMemberCode() {
+		return memberCode;
+	}
+
+	public void setMemberCode(String memberCode) {
+		this.memberCode = memberCode;
+	}
+
+	public String getBrokerCode() {
+		return brokerCode;
+	}
+
+	public void setBrokerCode(String brokerCode) {
+		this.brokerCode = brokerCode;
+	}
+
+	public String getCollaboratorCode() {
+		return collaboratorCode;
+	}
+
+	public void setCollaboratorCode(String collaboratorCode) {
+		this.collaboratorCode = collaboratorCode;
+	}
+
+	public String getInvestorCode() {
+		return investorCode;
+	}
+
+	public void setInvestorCode(String investorCode) {
+		this.investorCode = investorCode;
+	}
     
 }

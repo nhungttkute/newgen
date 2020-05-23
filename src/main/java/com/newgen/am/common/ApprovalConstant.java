@@ -46,4 +46,14 @@ public class ApprovalConstant {
     public static final String MEMBER_ROLE_CREATE = "MemberRoleService.createMemberRole";
     public static final String MEMBER_ROLE_UPDATE = "MemberRoleService.updateMemberRole";
     public static final String MEMBER_ROLE_FUNCTIONS_CREATE = "MemberRoleService.createMemberRoleFunctions";
+    
+    public static final String BROKER_CREATE = "BrokerService.createBroker";
+    public static final String BROKER_UPDATE = "BrokerService.updateBroker";
+    public static final String BROKER_FUNCTIONS_CREATE = "BrokerService.";
+    public static final String BROKER_DEFAULT_SETTING_CREATE = "BrokerService.";
+    public static final String BROKER_COMMODITIES_SETTING_CREATE = "BrokerService.";
+    
+    public static final String COLLABORATOR_CREATE = "CollaboratorService.createCollaborator";
+    public static final String COLLABORATOR_UPDATE = "CollaboratorService.createCollaborator";
+    public static final String COLLABORATOR_FUNCTIONS_CREATE = "CollaboratorService.createCollaborator";
 }

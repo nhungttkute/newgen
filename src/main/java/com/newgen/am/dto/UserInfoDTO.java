@@ -33,26 +33,16 @@ public class UserInfoDTO implements Serializable {
     private long tokenExpiration;
     private Boolean logined;
     private Boolean mustChangePassword;
-    private String memberId;
     private String memberCode;
     private String memberName;
-    private String memberUserId;
-    private String brokerId;
     private String brokerCode;
     private String brokerName;
-    private String brokerUserId;
-    private String collaboratorId;
     private String collaboratorCode;
     private String collaboratorName;
-    private String collaboratorUserId;
-    private String investorId;
     private String investorCode;
     private String investorName;
-    private String investorUserId;
-    private String deptId;
     private String deptCode;
     private String deptName;
-    private String deptUserId;
     private List<WatchList> watchLists;
     private String layout;
     private String language;
@@ -322,85 +312,4 @@ public class UserInfoDTO implements Serializable {
     public void setDeptName(String deptName) {
         this.deptName = deptName;
     }
-
-	public String getMemberId() {
-		return memberId;
-	}
-
-	public void setMemberId(String memberId) {
-		this.memberId = memberId;
-	}
-
-	public String getMemberUserId() {
-		return memberUserId;
-	}
-
-	public void setMemberUserId(String memberUserId) {
-		this.memberUserId = memberUserId;
-	}
-
-	public String getBrokerId() {
-		return brokerId;
-	}
-
-	public void setBrokerId(String brokerId) {
-		this.brokerId = brokerId;
-	}
-
-	public String getBrokerUserId() {
-		return brokerUserId;
-	}
-
-	public void setBrokerUserId(String brokerUserId) {
-		this.brokerUserId = brokerUserId;
-	}
-
-	public String getCollaboratorId() {
-		return collaboratorId;
-	}
-
-	public void setCollaboratorId(String collaboratorId) {
-		this.collaboratorId = collaboratorId;
-	}
-
-	public String getCollaboratorUserId() {
-		return collaboratorUserId;
-	}
-
-	public void setCollaboratorUserId(String collaboratorUserId) {
-		this.collaboratorUserId = collaboratorUserId;
-	}
-
-	public String getInvestorId() {
-		return investorId;
-	}
-
-	public void setInvestorId(String investorId) {
-		this.investorId = investorId;
-	}
-
-	public String getInvestorUserId() {
-		return investorUserId;
-	}
-
-	public void setInvestorUserId(String investorUserId) {
-		this.investorUserId = investorUserId;
-	}
-
-	public String getDeptId() {
-		return deptId;
-	}
-
-	public void setDeptId(String deptId) {
-		this.deptId = deptId;
-	}
-
-	public String getDeptUserId() {
-		return deptUserId;
-	}
-
-	public void setDeptUserId(String deptUserId) {
-		this.deptUserId = deptUserId;
-	}
-
 }

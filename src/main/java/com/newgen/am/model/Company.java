@@ -16,6 +16,8 @@ import org.springframework.validation.annotation.Validated;
 
 import com.newgen.am.validation.FormatGroup;
 import com.newgen.am.validation.LengthGroup;
+import com.newgen.am.validation.UniqueGroup;
+import com.newgen.am.validation.UniqueTaxCode;
 import com.newgen.am.validation.ValidNumber;
 import com.newgen.am.validation.ValidPhoneNumber;
 import com.newgen.am.validation.ValidationSequence;
@@ -31,6 +33,7 @@ public class Company {
 	@NotEmpty(message = "Required.")
 	@ValidNumber(groups = FormatGroup.class)
 	@Size(min = 1, max = 20, message = "Invalid format.", groups = LengthGroup.class)
+	@UniqueTaxCode(groups = UniqueGroup.class)
     private String taxCode;
 	@NotEmpty(message = "Required.")
 	@Size(min = 1, max = 300, message = "Invalid format.", groups = LengthGroup.class)
@@ -42,6 +45,7 @@ public class Company {
     private String fax;
     @NotEmpty(message = "Required.")
     @Email(message = "Invalid format.", groups = FormatGroup.class)
+    @Size(min = 1, max = 50, message = "Invalid format.", groups = LengthGroup.class)
     private String email;
     @NotNull(message = "Required.")
     @Valid

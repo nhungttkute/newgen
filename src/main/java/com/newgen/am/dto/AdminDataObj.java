@@ -26,6 +26,7 @@ public class AdminDataObj {
     private String theme;
     @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     private int fontSize;
+    private List<LoginAdminUsersDTO> adminUsers;
     
     // response for department
     private List<DepartmentDTO> departments;
@@ -42,6 +43,20 @@ public class AdminDataObj {
     private List<UserDTO> memberUsers;
     private List<RoleDTO> memberRoles;
     private List<RoleFunction> memberFunctions;
+    
+    // response for broker
+    private List<BrokerDTO> brokers;
+    private BrokerDTO broker;
+    private UserDTO brokerUser;
+    
+    // response for collaborator
+    private List<CollaboratorDTO> collaborators;
+    private CollaboratorDTO collaborator;
+    private UserDTO collaboratorUser;
+    
+    // response for common list
+    private List<ListElementDTO> memberList;
+    private List<ListElementDTO> brokerList;
     
     // response for investor
     private List<String> investorCodes;
@@ -204,6 +219,78 @@ public class AdminDataObj {
 
 	public void setInvestorCodes(List<String> investorCodes) {
 		this.investorCodes = investorCodes;
+	}
+
+	public List<LoginAdminUsersDTO> getAdminUsers() {
+		return adminUsers;
+	}
+
+	public void setAdminUsers(List<LoginAdminUsersDTO> adminUsers) {
+		this.adminUsers = adminUsers;
+	}
+
+	public List<BrokerDTO> getBrokers() {
+		return brokers;
+	}
+
+	public void setBrokers(List<BrokerDTO> brokers) {
+		this.brokers = brokers;
+	}
+
+	public BrokerDTO getBroker() {
+		return broker;
+	}
+
+	public void setBroker(BrokerDTO broker) {
+		this.broker = broker;
+	}
+
+	public UserDTO getBrokerUser() {
+		return brokerUser;
+	}
+
+	public void setBrokerUser(UserDTO brokerUser) {
+		this.brokerUser = brokerUser;
+	}
+
+	public List<CollaboratorDTO> getCollaborators() {
+		return collaborators;
+	}
+
+	public void setCollaborators(List<CollaboratorDTO> collaborators) {
+		this.collaborators = collaborators;
+	}
+
+	public CollaboratorDTO getCollaborator() {
+		return collaborator;
+	}
+
+	public void setCollaborator(CollaboratorDTO collaborator) {
+		this.collaborator = collaborator;
+	}
+
+	public UserDTO getCollaboratorUser() {
+		return collaboratorUser;
+	}
+
+	public void setCollaboratorUser(UserDTO collaboratorUser) {
+		this.collaboratorUser = collaboratorUser;
+	}
+
+	public List<ListElementDTO> getMemberList() {
+		return memberList;
+	}
+
+	public void setMemberList(List<ListElementDTO> memberList) {
+		this.memberList = memberList;
+	}
+
+	public List<ListElementDTO> getBrokerList() {
+		return brokerList;
+	}
+
+	public void setBrokerList(List<ListElementDTO> brokerList) {
+		this.brokerList = brokerList;
 	}
     
 }

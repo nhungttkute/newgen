@@ -1,0 +1,206 @@
+package com.newgen.am.controller;
+
+import java.util.Arrays;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.google.gson.Gson;
+import com.newgen.am.common.AMLogger;
+import com.newgen.am.common.Constant;
+import com.newgen.am.common.CustomMappingStrategy;
+import com.newgen.am.common.ErrorMessage;
+import com.newgen.am.common.Utility;
+import com.newgen.am.dto.AdminDataObj;
+import com.newgen.am.dto.AdminResponseObj;
+import com.newgen.am.dto.BasePagination;
+import com.newgen.am.dto.BrokerCSV;
+import com.newgen.am.dto.BrokerDTO;
+import com.newgen.am.dto.CollaboratorCSV;
+import com.newgen.am.dto.CollaboratorDTO;
+import com.newgen.am.dto.FunctionsDTO;
+import com.newgen.am.dto.UpdateBrokerDTO;
+import com.newgen.am.dto.UpdateCollaboratorDTO;
+import com.newgen.am.dto.UserDTO;
+import com.newgen.am.exception.CustomException;
+import com.newgen.am.service.BrokerService;
+import com.newgen.am.service.CollaboratorService;
+import com.newgen.am.validation.ValidationSequence;
+import com.opencsv.CSVWriter;
+import com.opencsv.bean.StatefulBeanToCsv;
+import com.opencsv.bean.StatefulBeanToCsvBuilder;
+
+@RestController
+public class CollaboratorController {
+private String className = "CollaboratorController";
+	
+	@Autowired
+	private CollaboratorService collaboratorService;
+	
+	@GetMapping("/admin/collaborators")
+	@PreAuthorize("hasAuthority('clientManagement.brokerCollaboratorManagement.collaboratorList.view')")
+	public AdminResponseObj listBrokers(HttpServletRequest request) {
+		String methodName = "listBrokers";
+		long refId = System.currentTimeMillis();
+		AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [GET]/admin/collaborators");
+		AdminResponseObj response = new AdminResponseObj();
+		
+		try {
+			BasePagination<CollaboratorDTO> pagination = collaboratorService.list(request, refId);
+			if (pagination != null && pagination.getData().size() > 0) {
+				response.setStatus(Constant.RESPONSE_OK);
+				response.setData(new AdminDataObj());
+				response.getData().setCollaborators(pagination.getData());
+				response.setPagination(Utility.getPagination(request, pagination.getCount()));
+				response.setFilterList(Arrays.asList(Constant.STATUS_ACTIVE, Constant.STATUS_INACTIVE));
+			} else {
+				response.setStatus(Constant.RESPONSE_ERROR);
+				response.setErrMsg(ErrorMessage.RESULT_NOT_FOUND);
+			}
+		} catch (Exception e) {
+			AMLogger.logError(className, methodName, refId, e);
+			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+		return response;
+	}
+
+	@GetMapping("/admin/collaborators/csv")
+	@PreAuthorize("hasAuthority('clientManagement.brokerCollaboratorManagement.collaboratorList.view')")
+	public void downloadCollaboratorsCsv(HttpServletRequest request, HttpServletResponse response) {
+		String methodName = "downloadCollaboratorsCsv";
+		long refId = System.currentTimeMillis();
+		AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [GET]/admin/collaborators/csv");
+
+		try {
+			// set file name and content type
+			String filename = Constant.CSV_COLLABORATORS;
+
+			response.setContentType("text/csv");
+			response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"");
+
+			// create a csv writer
+			CustomMappingStrategy<CollaboratorCSV> mappingStrategy = new CustomMappingStrategy<CollaboratorCSV>();
+			mappingStrategy.setType(CollaboratorCSV.class);
+
+			StatefulBeanToCsv<CollaboratorCSV> writer = new StatefulBeanToCsvBuilder<CollaboratorCSV>(response.getWriter())
+					.withMappingStrategy(mappingStrategy).withQuotechar(CSVWriter.NO_QUOTE_CHARACTER)
+					.withSeparator(CSVWriter.DEFAULT_SEPARATOR).withOrderedResults(false).build();
+
+			// write all users to csv file
+			writer.write(collaboratorService.listCsv(request, refId));
+		} catch (Exception e) {
+			AMLogger.logError(className, methodName, refId, e);
+			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+	
+	@PostMapping("/admin/collaborators")
+	@PreAuthorize("hasAuthority('clientManagement.brokerCollaboratorManagement.collaboratorInfo.create')")
+	public AdminResponseObj createBroker(HttpServletRequest request, @Validated(ValidationSequence.class) @RequestBody CollaboratorDTO collaboratorDto) {
+		String methodName = "createBroker";
+		long refId = System.currentTimeMillis();
+		AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [POST]/admin/collaborators");
+		AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(collaboratorDto));
+
+		collaboratorService.createCollaborator(request, collaboratorDto, refId);
+
+		AdminResponseObj response = new AdminResponseObj();
+		response.setStatus(Constant.RESPONSE_OK);
+
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+		return response;
+	}
+	
+	@PutMapping("/admin/collaborators/{collaboratorCode}")
+	@PreAuthorize("hasAuthority('clientManagement.brokerCollaboratorManagement.collaboratorInfo.update')")
+	public AdminResponseObj updateCollaborator(HttpServletRequest request, @PathVariable String collaboratorCode,
+			@Validated(ValidationSequence.class) @RequestBody UpdateCollaboratorDTO collaboratorDto) {
+		String methodName = "updateCollaborator";
+		long refId = System.currentTimeMillis();
+		AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [PUT]/admin/collaborators/" + collaboratorCode);
+		AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(collaboratorDto));
+
+		collaboratorService.updateCollaborator(request, collaboratorCode, collaboratorDto, refId);
+
+		AdminResponseObj response = new AdminResponseObj();
+		response.setStatus(Constant.RESPONSE_OK);
+
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+		return response;
+	}
+
+	@GetMapping("/admin/collaborators/{collaboratorCode}")
+	@PreAuthorize("hasAuthority('clientManagement.brokerCollaboratorManagement.collaboratorInfo.view')")
+	public AdminResponseObj getCollaboratorDetail(@PathVariable String collaboratorCode) {
+		String methodName = "getCollaboratorDetail";
+		long refId = System.currentTimeMillis();
+		AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [GET]/admin/collaborators/" + collaboratorCode);
+		AdminResponseObj response = new AdminResponseObj();
+
+		CollaboratorDTO collaboratorDto = collaboratorService.getCollaboratorDetail(collaboratorCode, refId);
+		if (collaboratorDto != null) {
+			response.setStatus(Constant.RESPONSE_OK);
+			response.setData(new AdminDataObj());
+			response.getData().setCollaborator(collaboratorDto);
+		} else {
+			response.setStatus(Constant.RESPONSE_ERROR);
+			response.setErrMsg(ErrorMessage.RESULT_NOT_FOUND);
+		}
+
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+		return response;
+	}
+	
+	@GetMapping("/admin/collaborators/{collaboratorCode}/user")
+	@PreAuthorize("hasAuthority('clientManagement.brokerCollaboratorManagement.collaboratorUserInfo.view')")
+	public AdminResponseObj getCollaboratorUser(@PathVariable String collaboratorCode) {
+		String methodName = "getCollaboratorUser";
+		long refId = System.currentTimeMillis();
+		AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [GET]/admin/collaborators/" + collaboratorCode + "/user");
+		AdminResponseObj response = new AdminResponseObj();
+
+		UserDTO collaboratorUserDto = collaboratorService.getCollaboratorUserDetail(collaboratorCode, refId);
+		if (collaboratorUserDto != null) {
+			response.setStatus(Constant.RESPONSE_OK);
+			response.setData(new AdminDataObj());
+			response.getData().setCollaboratorUser(collaboratorUserDto);
+		} else {
+			response.setStatus(Constant.RESPONSE_ERROR);
+			response.setErrMsg(ErrorMessage.RESULT_NOT_FOUND);
+		}
+
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+		return response;
+	}
+	
+	@PostMapping("/admin/collaborators/{collaboratorCode}/functions")
+    @PreAuthorize("hasAuthority('clientManagement.brokerCollaboratorManagement.collaboratorFunctionsAssign.create')")
+    public AdminResponseObj createCollaboratorFunctions(HttpServletRequest request, @PathVariable String collaboratorCode, @Validated(ValidationSequence.class) @RequestBody FunctionsDTO collaboratorDto) {
+        String methodName = "createCollaboratorFunctions";
+        long refId = System.currentTimeMillis();
+        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: " + String.format("[POST]/admin/collaborators/%s/functions", collaboratorCode));
+        AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(collaboratorDto));
+        
+        collaboratorService.createCollaboratorFunctions(request, collaboratorCode, collaboratorDto, refId);
+        
+        AdminResponseObj response = new AdminResponseObj();
+        response.setStatus(Constant.RESPONSE_OK);
+        
+        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+        return response;
+    }
+}

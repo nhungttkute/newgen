@@ -43,6 +43,7 @@ public class Member extends AuditModel implements Serializable {
     private MarginRatioAlert marginRatioAlert;
     private RiskParameters riskParameters;
     private List<Commodity> commodities;
+    private List<CommodityFee> commodityFees;
     private List<MemberUser> users;
 
     public String getId() {
@@ -195,5 +196,13 @@ public class Member extends AuditModel implements Serializable {
 
 	public void setMarginRatioAlert(MarginRatioAlert marginRatioAlert) {
 		this.marginRatioAlert = marginRatioAlert;
+	}
+
+	public List<CommodityFee> getCommodityFees() {
+		return commodityFees;
+	}
+
+	public void setCommodityFees(List<CommodityFee> commodityFees) {
+		this.commodityFees = commodityFees;
 	}
 }

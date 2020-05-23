@@ -8,18 +8,25 @@ package com.newgen.am.model;
 import java.io.Serializable;
 
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.Positive;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
 
 /**
  *
  * @author nhungtt
  */
-public class Commodity extends AuditModel implements Serializable {
+@JsonInclude(JsonInclude.Include.NON_DEFAULT)
+public class Commodity implements Serializable {
+	private static final long serialVersionUID = 1L;
 	@NotEmpty(message = "Required.")
     private String commodityCode;
 	@NotEmpty(message = "Required.")
     private String commodityName;
+	@Positive
     private long commodityFee;
     private String positionLimitType;
+    @Positive
     private int positionLimit;
     private String currency;
 

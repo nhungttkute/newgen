@@ -3,48 +3,64 @@ package com.newgen.am.dto;
 import java.io.Serializable;
 import java.util.List;
 
+import javax.validation.Valid;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.Size;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.newgen.am.model.BrokerUser;
-import com.newgen.am.model.Commodity;
 import com.newgen.am.model.Company;
 import com.newgen.am.model.Contact;
 import com.newgen.am.model.Individual;
 import com.newgen.am.model.RoleFunction;
 import com.newgen.am.model.UserRole;
+import com.newgen.am.validation.FormatGroup;
+import com.newgen.am.validation.LengthGroup;
+import com.newgen.am.validation.ValidNumber;
 
+@JsonInclude(JsonInclude.Include.NON_DEFAULT)
 public class BrokerDTO implements Serializable {
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
 	private String _id;
-    private String memberId;
+	@NotEmpty(message = "Required.")
+    @ValidNumber(groups = FormatGroup.class)
+    @Size(min = 3, max = 3, message = "Invalid format.", groups = LengthGroup.class)
     private String memberCode;
+	@NotEmpty(message = "Required.")
+    @Size(min = 1, max = 200, message = "Invalid format.", groups = LengthGroup.class)
     private String memberName;
     private String code;
+    @NotEmpty(message = "Required.")
+    @Size(min = 1, max = 200, message = "Invalid format.", groups = LengthGroup.class)
     private String name;
+    @Size(min = 1, max = 200, message = "Invalid format.", groups = LengthGroup.class)
     private String note;
+    @NotEmpty(message = "Required.")
+    @Size(min = 1, max = 20, message = "Invalid format.", groups = LengthGroup.class)
     private String status;
+    @NotEmpty(message = "Required.")
+    @Size(min = 1, max = 20, message = "Invalid format.", groups = LengthGroup.class)
     private String type;
-    private String businessType;
+    private long createdDate;
+    @Valid
     private Company company;
+    @Valid
     private Individual individual;
     private Contact contact;
     private BrokerUser user;
     private UserRole role;
     private List<RoleFunction> functions;
-    private int orderLimit;
-    private List<Commodity> commodities;
+    private long defaultCommodityFee;
+    private List<BrokerCommodity> commodities;
+    
 	public String get_id() {
 		return _id;
 	}
 	public void set_id(String _id) {
 		this._id = _id;
-	}
-	public String getMemberId() {
-		return memberId;
-	}
-	public void setMemberId(String memberId) {
-		this.memberId = memberId;
 	}
 	public String getMemberCode() {
 		return memberCode;
@@ -88,12 +104,6 @@ public class BrokerDTO implements Serializable {
 	public void setType(String type) {
 		this.type = type;
 	}
-	public String getBusinessType() {
-		return businessType;
-	}
-	public void setBusinessType(String businessType) {
-		this.businessType = businessType;
-	}
 	public Company getCompany() {
 		return company;
 	}
@@ -130,17 +140,23 @@ public class BrokerDTO implements Serializable {
 	public void setFunctions(List<RoleFunction> functions) {
 		this.functions = functions;
 	}
-	public int getOrderLimit() {
-		return orderLimit;
-	}
-	public void setOrderLimit(int orderLimit) {
-		this.orderLimit = orderLimit;
-	}
-	public List<Commodity> getCommodities() {
+	public List<BrokerCommodity> getCommodities() {
 		return commodities;
 	}
-	public void setCommodities(List<Commodity> commodities) {
+	public void setCommodities(List<BrokerCommodity> commodities) {
 		this.commodities = commodities;
+	}
+	public long getDefaultCommodityFee() {
+		return defaultCommodityFee;
+	}
+	public void setDefaultCommodityFee(long defaultCommodityFee) {
+		this.defaultCommodityFee = defaultCommodityFee;
+	}
+	public long getCreatedDate() {
+		return createdDate;
+	}
+	public void setCreatedDate(long createdDate) {
+		this.createdDate = createdDate;
 	}
     
 }

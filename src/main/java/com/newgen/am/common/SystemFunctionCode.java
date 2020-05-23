@@ -85,6 +85,20 @@ public class SystemFunctionCode {
     public static final String MEMBER_ROLE_FUNCTIONS_ASSIGN_CREATE_NAME = "Gán quyền cho nhóm quyền của TVKD";
     public static final String MEMBER_ROLE_FUNCTIONS_ASSIGN_CREATE_DESC = "Gán quyền cho nhóm quyền %s của TVKD %s";
     
+    public static final String APPROVAL_BROKER_CREATE_CODE = "approval.clientManagement.brokerManagement.brokerInfo.create";
+    public static final String BROKER_CREATE_NAME = "Tạo thông tin MG";
+    public static final String APPROVAL_BROKER_UPDATE_CODE = "approval.clientManagement.brokerManagement.brokerInfo.update";
+    public static final String BROKER_UPDATE_NAME = "Cập nhật thông tin MG";
+    public static final String APPROVAL_BROKER_FUNCTIONS_ASSIGN_CREATE_CODE = "approval.clientManagement.brokerManagement.brokerFunctionsAssign.create";
+    public static final String BROKER_FUNCTIONS_ASSIGN_CREATE_NAME = "Gán quyền riêng cho MG";
+    
+    public static final String APPROVAL_COLLABORATOR_CREATE_CODE = "approval.clientManagement.brokerCollaboratorManagement.collaboratorInfo.create";
+    public static final String COLLABORATOR_CREATE_NAME = "Tạo thông tin CTV MG";
+    public static final String APPROVAL_COLLABORATOR_UPDATE_CODE = "approval.clientManagement.brokerCollaboratorManagement.collaboratorInfo.update";
+    public static final String COLLABORATOR_UPDATE_NAME = "Cập nhật thông tin CTV MG";
+    public static final String APPROVAL_COLLABORATOR_FUNCTIONS_ASSIGN_CREATE_CODE = "approval.clientManagement.brokerCollaboratorManagement.collaboratorFunctionsAssign.create";
+    public static final String COLLABORATOR_FUNCTIONS_ASSIGN_CREATE_NAME = "Gán quyền riêng cho CTV MG";
+    
     public static String getApprovalDescription(String name, String value) {
         return (name + " " + value);
     }

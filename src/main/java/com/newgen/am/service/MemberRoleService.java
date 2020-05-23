@@ -346,9 +346,17 @@ public class MemberRoleService {
 				BasicDBObject query = new BasicDBObject();
 				query.append("_id", new ObjectId(roleId));
 				
+				BasicDBObject updateDocument = new BasicDBObject();
+				updateDocument.append("functions", functions);
+				updateDocument.append("lastModifiedUser", Utility.getCurrentUsername());
+				updateDocument.append("lastModifiedDate", System.currentTimeMillis());
+				
+				BasicDBObject update = new BasicDBObject();
+				update.append("$set", updateDocument);
+				
 				MongoDatabase database = MongoDBConnection.getMongoDatabase();
 				MongoCollection<Document> collection = database.getCollection("member_roles");
-				collection.updateOne(query, Updates.set("functions", functions));
+				collection.updateOne(query, update);
 			} catch (Exception e) {
 				AMLogger.logError(className, methodName, refId, e);
 				throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);

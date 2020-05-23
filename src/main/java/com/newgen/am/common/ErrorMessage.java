@@ -14,8 +14,10 @@ public class ErrorMessage {
     public static final String ERROR_OCCURRED = "An error occurred.";
     public static final String RESULT_NOT_FOUND = "Result not found.";
     public static final String DOCUMENT_ALREADY_EXISTED = "The document already existed.";
-    public static final String INVALID_INPUT_DATA = "Invalid input data.";
     public static final String INCORRECT_PASSWORD = "Incorrect password.";
     public static final String INCORRECT_PIN = "Incorrect PIN.";
     public static final String INVALID_REQUEST = "Invalid request.";
+    public static final String TAX_CODE_ALREADY_EXISTED = "The tax code already existed.";
+    public static final String IDENTITY_CARD_ALREADY_EXISTED = "The identity card already existed.";
+    public static final String DEFAULT_ROLE_DOESNT_EXIST = "Default role doesn't exist.";
 }

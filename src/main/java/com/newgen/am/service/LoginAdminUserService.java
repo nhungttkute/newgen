@@ -16,10 +16,14 @@ import com.newgen.am.common.ErrorMessage;
 import com.newgen.am.common.FileUtility;
 import com.newgen.am.common.LocalServiceConnection;
 import com.newgen.am.common.MongoDBConnection;
+import com.newgen.am.common.RequestParamsParser;
 import com.newgen.am.common.Utility;
+import com.newgen.am.dto.BasePagination;
 import com.newgen.am.dto.EmailDTO;
 import com.newgen.am.dto.LoginAdminUserOutputDTO;
+import com.newgen.am.dto.LoginAdminUsersDTO;
 import com.newgen.am.dto.LoginUserDataInputDTO;
+import com.newgen.am.dto.MemberDTO;
 import com.newgen.am.dto.UserInfoDTO;
 import com.newgen.am.exception.CustomException;
 import com.newgen.am.model.Investor;
@@ -77,6 +81,9 @@ public class LoginAdminUserService {
 
 	@Autowired
 	private ActivityLogService activityLogService;
+	
+	@Autowired
+	private RequestParamsParser rqParamsParser;
 
 	private PasswordEncoder passwordEncoder;
 
@@ -97,7 +104,7 @@ public class LoginAdminUserService {
 			// get user
 			LoginAdminUser user = loginAdmUserRepository.findByUsername(username);
 			// delete old redis user info
-			deleteOldRedisUserInfo(user.getAccessToken(), refId);
+			Utility.deleteOldRedisUserInfo(template, user.getAccessToken(), refId);
 
 			// set new access token for user
 			user.setAccessToken(accessToken);
@@ -125,12 +132,6 @@ public class LoginAdminUserService {
 
 	}
 
-	private void deleteOldRedisUserInfo(String accessToken, long refId) {
-		String key = Utility.genRedisKey(accessToken);
-		AMLogger.logMessage(className, "deleteOldRedisUserInfo", refId, "REDIS_DELETE: key=" + key);
-		template.delete(key);
-	}
-
 	public void logout(HttpServletRequest request, String userId, long refId) throws CustomException {
 		String methodName = "logout";
 		try {
@@ -139,7 +140,7 @@ public class LoginAdminUserService {
 			// get redis user info
 			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, user.getAccessToken(), refId);
 			// delete old redis user info
-			deleteOldRedisUserInfo(user.getAccessToken(), refId);
+			Utility.deleteOldRedisUserInfo(template, user.getAccessToken(), refId);
 
 			// delete access token
 			user.setAccessToken(null);
@@ -224,8 +225,7 @@ public class LoginAdminUserService {
 							new Document().append("from", "system_roles").append("localField", "users.roles.name")
 									.append("foreignField", "name").append("as", "roleObj")),
 					new Document().append("$unwind", new Document().append("path", "$roleObj")),
-					new Document().append("$project", new Document().append("deptId", "$_id")
-							.append("deptCode", "$code").append("deptName", "$name").append("deptUserId", new Document().append("$toString", "$users._id"))
+					new Document().append("$project", new Document().append("deptCode", "$code").append("deptName", "$name")
 							.append("fullName", "$users.fullName").append("email", "$users.email")
 							.append("phoneNumber", "$users.phoneNumber")
 							.append("userFunctions",
@@ -248,10 +248,8 @@ public class LoginAdminUserService {
 			allFunctions.addAll(userFunctions);
 			allFunctions.addAll(roleFunctions);
 			if (result != null) {
-				userInfo.setDeptId(result.getDeptId());
 				userInfo.setDeptCode(result.getDeptCode());
 				userInfo.setDeptName(result.getDeptName());
-				userInfo.setDeptUserId(result.getDeptUserId());
 				userInfo.setFullName(result.getFullName());
 				userInfo.setEmail(result.getEmail());
 				userInfo.setPhoneNumber(result.getPhoneNumber());
@@ -443,5 +441,69 @@ public class LoginAdminUserService {
 			AMLogger.logError(className, methodName, refId, e);
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
+	}
+	
+	public BasePagination<LoginAdminUsersDTO> listAdminUsers(HttpServletRequest request, long refId) {
+		String methodName = "list";
+		BasePagination<LoginAdminUsersDTO> pagination = null;
+		try {
+			RequestParamsParser.SearchCriteria searchCriteria = rqParamsParser
+					.getSearchCriteria(request.getQueryString(), "", refId);
+
+			List<? extends Bson> pipeline = Arrays.asList(
+                    new Document()
+                            .append("$match", searchCriteria.getQuery()), 
+                    new Document()
+                            .append("$sort", searchCriteria.getSort()), 
+                    new Document()
+                            .append("$project", new Document()
+                            		.append("_id", 0.0)
+                                    .append("deptCode", 1.0)
+                                    .append("memberCode", 1.0)
+                                    .append("brokerCode", 1.0)
+                                    .append("collaboratorCode", 1.0)
+                                    .append("username", 1.0)
+                                    .append("fullName", 1.0)
+                                    .append("email", 1.0)
+                                    .append("phoneNumber", 1.0)
+                                    .append("status", 1.0)
+                                    .append("logined", 1.0)
+                                    .append("logonCounts", 1.0)
+                                    .append("logonTime", 1.0)
+                            ), 
+                    new Document()
+                            .append("$facet", new Document()
+                                    .append("stage1", Arrays.asList(
+                                            new Document()
+                                                    .append("$count", "total")
+                                        )
+                                    )
+                                    .append("stage2", Arrays.asList(
+                                            new Document()
+                                                    .append("$skip", searchCriteria.getSkip()),
+                                            new Document()
+                                                    .append("$limit", searchCriteria.getLimit())
+                                        )
+                                    )
+                            ), 
+                    new Document()
+                            .append("$unwind", new Document()
+                                    .append("path", "$stage1")
+                            ), 
+                    new Document()
+                            .append("$project", new Document()
+                                    .append("count", "$stage1.total")
+                                    .append("data", "$stage2")
+                            )
+            );
+			MongoDatabase database = MongoDBConnection.getMongoDatabase();
+			MongoCollection<Document> collection = database.getCollection("login_admin_users");
+			Document resultDoc = collection.aggregate(pipeline).first();
+			pagination = mongoTemplate.getConverter().read(BasePagination.class, resultDoc);
+		} catch (Exception e) {
+			AMLogger.logError(className, methodName, refId, e);
+			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		return pagination;
 	}
 }

@@ -13,6 +13,8 @@ import org.springframework.validation.annotation.Validated;
 
 import com.newgen.am.validation.FormatGroup;
 import com.newgen.am.validation.LengthGroup;
+import com.newgen.am.validation.UniqueGroup;
+import com.newgen.am.validation.UniqueIdentityCard;
 import com.newgen.am.validation.ValidDate;
 import com.newgen.am.validation.ValidNumber;
 import com.newgen.am.validation.ValidPhoneNumber;
@@ -32,6 +34,7 @@ public class Delegate {
 	@NotEmpty(message = "Required.")
 	@ValidNumber(groups = FormatGroup.class)
 	@Size(min = 1, max = 20, groups = LengthGroup.class)
+	@UniqueIdentityCard(groups = UniqueGroup.class)
     private String identityCard;
 	@NotEmpty(message = "Required.")
 	@ValidDate(groups = FormatGroup.class)
@@ -41,6 +44,7 @@ public class Delegate {
     private String idCreatedLocation;
 	@NotEmpty(message = "Required.")
 	@Email(message = "Invalid format.", groups = FormatGroup.class)
+	@Size(min = 1, max = 50, message = "Invalid format.", groups = LengthGroup.class)
     private String email;
 	@NotEmpty(message = "Required.")
     @ValidPhoneNumber(groups = FormatGroup.class)

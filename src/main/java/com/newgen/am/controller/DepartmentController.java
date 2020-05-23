@@ -33,12 +33,12 @@ import com.newgen.am.dto.AdminResponseObj;
 import com.newgen.am.dto.BasePagination;
 import com.newgen.am.dto.DepartmentCSV;
 import com.newgen.am.dto.DepartmentDTO;
-import com.newgen.am.dto.UserCSV;
-import com.newgen.am.dto.UserDTO;
-import com.newgen.am.dto.UserFunctionsDTO;
-import com.newgen.am.dto.UserRolesDTO;
+import com.newgen.am.dto.FunctionsDTO;
 import com.newgen.am.dto.UpdateDepartmentDTO;
 import com.newgen.am.dto.UpdateUserDTO;
+import com.newgen.am.dto.UserCSV;
+import com.newgen.am.dto.UserDTO;
+import com.newgen.am.dto.UserRolesDTO;
 import com.newgen.am.exception.CustomException;
 import com.newgen.am.service.DepartmentService;
 import com.newgen.am.validation.ValidationSequence;
@@ -325,7 +325,7 @@ public class DepartmentController {
 	@PostMapping("/admin/departments/{deptId}/users/{deptUserId}/functions")
 	@PreAuthorize("hasAuthority('adminUserManagement.departmentManagement.loginAdminUserManagement.adminUserFunctionsAssign.create')")
 	public AdminResponseObj saveDepartmentUserFunctions(HttpServletRequest request, @PathVariable String deptId,
-			@PathVariable String deptUserId, @Validated(ValidationSequence.class) @RequestBody UserFunctionsDTO deptUserDto) {
+			@PathVariable String deptUserId, @Validated(ValidationSequence.class) @RequestBody FunctionsDTO deptUserDto) {
 		String methodName = "saveDepartmentUserFunctions";
 		long refId = System.currentTimeMillis();
 		AMLogger.logMessage(className, methodName, refId,

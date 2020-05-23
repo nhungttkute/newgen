@@ -9,6 +9,7 @@ import javax.validation.constraints.Size;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.newgen.am.model.Commodity;
+import com.newgen.am.model.CommodityFee;
 import com.newgen.am.model.Company;
 import com.newgen.am.model.Contact;
 import com.newgen.am.model.MarginRatioAlert;
@@ -20,7 +21,7 @@ import com.newgen.am.validation.FormatGroup;
 import com.newgen.am.validation.LengthGroup;
 import com.newgen.am.validation.ValidNumber;
 
-@JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonInclude(JsonInclude.Include.NON_DEFAULT)
 public class MemberDTO {
 	private String _id;
     @NotEmpty(message = "Required.")
@@ -33,6 +34,7 @@ public class MemberDTO {
     @NotEmpty(message = "Required.")
     @Size(min = 1, max = 20, message = "Invalid format.", groups = LengthGroup.class)
     private String status;
+    @Size(min = 1, max = 200, message = "Invalid format.", groups = LengthGroup.class)
     private String note;
     private long createdDate;
     @NotNull(message = "Required.")
@@ -50,6 +52,7 @@ public class MemberDTO {
     private MarginRatioAlert marginRatioAlert;
     private RiskParameters riskParameters;
     private List<Commodity> commodities;
+    private List<CommodityFee> commodityFees;
     private List<MemberUser> users;
     
 	public String get_id() {
@@ -173,5 +176,10 @@ public class MemberDTO {
 	public void setUsers(List<MemberUser> users) {
 		this.users = users;
 	}
-    
+	public List<CommodityFee> getCommodityFees() {
+		return commodityFees;
+	}
+	public void setCommodityFees(List<CommodityFee> commodityFees) {
+		this.commodityFees = commodityFees;
+	}
 }

@@ -1,6 +1,7 @@
 package com.newgen.am.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.newgen.am.model.Commodity;
 import com.newgen.am.model.WatchList;
 import java.util.List;
 
@@ -18,19 +19,15 @@ public class LoginInvestorUserOutputDTO {
     private long tokenExpiration;
     private Boolean logined;
     private Boolean mustChangePassword;
-    private String memberId;
     private String memberCode;
     private String memberName;
-    private String brokerId;
     private String brokerCode;
     private String brokerName;
-    private String collaboratorId;
     private String collaboratorCode;
     private String collaboratorName;
-    private String investorId;
     private String investorCode;
     private String investorName;
-    private String investorUserId;
+    private List<Commodity> commodities;
     private List<WatchList> watchLists;
     private String layout;
     private String language;
@@ -224,44 +221,11 @@ public class LoginInvestorUserOutputDTO {
 		this.id = id;
 	}
 
-	public String getMemberId() {
-		return memberId;
+	public List<Commodity> getCommodities() {
+		return commodities;
 	}
 
-	public void setMemberId(String memberId) {
-		this.memberId = memberId;
+	public void setCommodities(List<Commodity> commodities) {
+		this.commodities = commodities;
 	}
-
-	public String getBrokerId() {
-		return brokerId;
-	}
-
-	public void setBrokerId(String brokerId) {
-		this.brokerId = brokerId;
-	}
-
-	public String getCollaboratorId() {
-		return collaboratorId;
-	}
-
-	public void setCollaboratorId(String collaboratorId) {
-		this.collaboratorId = collaboratorId;
-	}
-
-	public String getInvestorId() {
-		return investorId;
-	}
-
-	public void setInvestorId(String investorId) {
-		this.investorId = investorId;
-	}
-
-	public String getInvestorUserId() {
-		return investorUserId;
-	}
-
-	public void setInvestorUserId(String investorUserId) {
-		this.investorUserId = investorUserId;
-	}
-
 }

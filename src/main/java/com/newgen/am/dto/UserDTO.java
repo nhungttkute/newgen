@@ -9,6 +9,7 @@ import java.util.List;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -39,6 +40,7 @@ public class UserDTO {
     private String fullName;
     @NotEmpty(message = "Required.")
     @Email(message = "Invalid format.", groups = FormatGroup.class)
+    @Size(min = 1, max = 50, message = "Invalid format.", groups = LengthGroup.class)
     private String email;
     @NotEmpty(message = "Required.")
     @ValidPhoneNumber(groups = FormatGroup.class)
@@ -46,14 +48,17 @@ public class UserDTO {
     @NotEmpty(message = "Required.")
     @Size(min = 1, max = 20, message = "Invalid format.", groups = LengthGroup.class)
     private String status; //pending, active, inactive
+    @Size(min = 1, max = 200, message = "Invalid format.", groups = LengthGroup.class)
     private String note;
     @JsonInclude(JsonInclude.Include.NON_DEFAULT)
+    @NotNull(message = "Required.")
     private Boolean isPasswordExpiryCheck;
     @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     private int passwordExpiryDays;
     @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     private int expiryAlertDays;
     private long createdDate;
+    private UserRole role;
     private List<UserRole> roles;
     private List<RoleFunction> functions;
 
@@ -143,6 +148,14 @@ public class UserDTO {
 
 	public void setCreatedDate(long createdDate) {
 		this.createdDate = createdDate;
+	}
+
+	public UserRole getRole() {
+		return role;
+	}
+
+	public void setRole(UserRole role) {
+		this.role = role;
 	}
 
 	public List<UserRole> getRoles() {

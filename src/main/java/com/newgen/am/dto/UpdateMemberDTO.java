@@ -2,6 +2,7 @@ package com.newgen.am.dto;
 
 import java.util.List;
 
+import javax.validation.Valid;
 import javax.validation.constraints.Size;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -20,7 +21,9 @@ public class UpdateMemberDTO {
     @ValidUpdateStringField
     @Size(min = 1, max = 20, message = "Invalid format.", groups = LengthGroup.class)
     private String status;
+    @Size(min = 1, max = 200, message = "Invalid format.", groups = LengthGroup.class)
     private String note;
+    @Valid
     private UpdateCompanyDTO company;
     private List<UserRole> roles;
     private List<RoleFunction> functions;

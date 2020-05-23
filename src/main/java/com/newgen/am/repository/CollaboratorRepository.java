@@ -13,5 +13,5 @@ import org.springframework.data.mongodb.repository.MongoRepository;
  * @author nhungtt
  */
 public interface CollaboratorRepository extends MongoRepository<Collaborator, String> {
-    
+	boolean existsCollaboratorByCode(String code);
 }

@@ -31,6 +31,9 @@ public class LoginAdminUser extends AuditModel implements Serializable {
     @NonNull
     @JsonIgnore
     private String password;
+    private String fullName;
+    private String email;
+    private String phoneNumber;
     @Field
     private Boolean checkPin = true;
     @NonNull
@@ -45,7 +48,7 @@ public class LoginAdminUser extends AuditModel implements Serializable {
     private Boolean mustChangePassword = true;
     private int logonCounts;
     private long logonTime;
-    private String deptId;
+    private String deptCode;
     private String memberCode;
     private String brokerCode;
     private String collaboratorCode;
@@ -81,7 +84,31 @@ public class LoginAdminUser extends AuditModel implements Serializable {
         this.password = password;
     }
 
-    public Boolean getCheckPin() {
+    public String getFullName() {
+		return fullName;
+	}
+
+	public void setFullName(String fullName) {
+		this.fullName = fullName;
+	}
+
+	public String getEmail() {
+		return email;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
+	}
+
+	public String getPhoneNumber() {
+		return phoneNumber;
+	}
+
+	public void setPhoneNumber(String phoneNumber) {
+		this.phoneNumber = phoneNumber;
+	}
+
+	public Boolean getCheckPin() {
         return checkPin;
     }
 
@@ -120,14 +147,6 @@ public class LoginAdminUser extends AuditModel implements Serializable {
     public void setLogined(Boolean logined) {
         this.logined = logined;
     }
-
-    public String getDeptId() {
-		return deptId;
-	}
-
-	public void setDeptId(String deptId) {
-		this.deptId = deptId;
-	}
 
 	public String getLayout() {
         return layout;
@@ -225,4 +244,11 @@ public class LoginAdminUser extends AuditModel implements Serializable {
 		this.collaboratorCode = collaboratorCode;
 	}
 
+	public String getDeptCode() {
+		return deptCode;
+	}
+
+	public void setDeptCode(String deptCode) {
+		this.deptCode = deptCode;
+	}
 }

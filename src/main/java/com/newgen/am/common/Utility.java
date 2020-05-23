@@ -5,14 +5,10 @@
  */
 package com.newgen.am.common;
 
-import com.google.gson.Gson;
-import com.newgen.am.dto.Pagination;
-import com.newgen.am.dto.UserInfoDTO;
-import com.newgen.am.exception.CustomException;
-
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -20,10 +16,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
 import javax.servlet.http.HttpServletRequest;
+
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.SerializationUtils;
+import org.bson.Document;
 import org.bson.json.JsonWriterSettings;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
@@ -31,6 +30,13 @@ import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+
+import com.google.gson.Gson;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
+import com.newgen.am.dto.Pagination;
+import com.newgen.am.dto.UserInfoDTO;
+import com.newgen.am.exception.CustomException;
 
 /**
  *
@@ -41,6 +47,10 @@ public class Utility {
 
     public static String lpad3With0(long id) {
         return String.format("%03d", id);
+    }
+    
+    public static String lpad5With0(long id) {
+        return String.format("%05d", id);
     }
 
     public static boolean isNull(Object obj) {
@@ -209,9 +219,112 @@ public class Utility {
         }
     }
     
+    public static void deleteOldRedisUserInfo(RedisTemplate template, String accessToken, long refId) {
+		String key = Utility.genRedisKey(accessToken);
+		AMLogger.logMessage(className, "deleteOldRedisUserInfo", refId, "REDIS_DELETE: key=" + key);
+		template.delete(key);
+	}
+    
+    public static <T> void setRedisInfo(RedisTemplate template, String key, T object, long refId) {
+    	String value = new Gson().toJson(object);
+    	AMLogger.logMessage(className, "setRedisInfo", refId, "REDIS_SET: key=" + key + ", value=" + value);
+        template.opsForValue().set(key, value);
+    }
+    
+    public static void deleteRedisInfo(RedisTemplate template, String key, long refId) {
+		AMLogger.logMessage(className, "deleteRedisInfo", refId, "REDIS_DELETE: key=" + key);
+		template.delete(key);
+	}
+    
     public static double roundAvoid(double value, int places) {
 		double scale = Math.pow(10, places);
 		return Math.round(value * scale) / scale;
 	}
     
+    public static boolean checkExistedTaxCode(String taxCode) {
+    	long totalCount = 0;
+    	
+    	// check in members
+    	MongoDatabase database = MongoDBConnection.getMongoDatabase();
+		MongoCollection<Document> memberCollection = database.getCollection("members");
+		
+		Document memberQuery = new Document();
+		memberQuery.append("company.taxCode", taxCode);
+		
+		long memberCount = memberCollection.countDocuments(memberQuery);
+		totalCount = totalCount + memberCount;
+		
+		// check in brokers
+		MongoCollection<Document> brokerCollection = database.getCollection("brokers");
+		
+		Document brokerQuery = new Document();
+		brokerQuery.append("company.taxCode", taxCode);
+		
+		long brokerCount = brokerCollection.countDocuments(brokerQuery);
+		totalCount = totalCount + brokerCount;
+		
+		// check in investors
+		MongoCollection<Document> investorCollection = database.getCollection("investors");
+		
+		Document invQuery = new Document();
+		invQuery.append("company.taxCode", taxCode);
+		
+		long invCount = investorCollection.countDocuments(invQuery);
+		totalCount = totalCount + invCount;
+		
+		return (totalCount > 0) ? true : false;
+    }
+    
+    public static boolean checkExistedIdentityCard(String identityCard) {
+    	long totalCount = 0;
+    	
+    	// check in members
+    	MongoDatabase database = MongoDBConnection.getMongoDatabase();
+		MongoCollection<Document> memberCollection = database.getCollection("members");
+		
+		Document memberQuery = new Document();
+		memberQuery.append("company.delegate.identityCard", identityCard);
+		
+		long memberCount = memberCollection.countDocuments(memberQuery);
+		
+		totalCount = totalCount + memberCount;
+		
+		// check in brokers
+		MongoCollection<Document> brokerCollection = database.getCollection("brokers");
+		
+		Document brokerQuery1 = new Document();
+		brokerQuery1.append("company.delegate.identityCard", identityCard);
+		
+		long brokerCount1 = brokerCollection.countDocuments(brokerQuery1);
+		totalCount = totalCount + brokerCount1;
+		
+		Document brokerQuery2 = new Document();
+		brokerQuery2.append("individual.identityCard", identityCard);
+		
+		long brokerCount2 = brokerCollection.countDocuments(brokerQuery2);
+		totalCount = totalCount + brokerCount2;
+		
+		// check in investors
+		MongoCollection<Document> investorCollection = database.getCollection("investors");
+		
+		Document invQuery1 = new Document();
+		invQuery1.append("company.delegate.identityCard", identityCard);
+		
+		long invCount1 = investorCollection.countDocuments(invQuery1);
+		totalCount = totalCount + invCount1;
+		
+		Document invQuery2 = new Document();
+		invQuery2.append("individual.identityCard", identityCard);
+		
+		long invCount2 = investorCollection.countDocuments(invQuery1);
+		totalCount = totalCount + invCount2;
+		
+		return (totalCount > 0) ? true : false;
+    }
+    
+    public static List<String> getNumberQueryFieldNames() {
+    	List<String> fieldNames = new ArrayList<String>();
+    	fieldNames.add("createdDate");
+    	return fieldNames;
+    }
 }

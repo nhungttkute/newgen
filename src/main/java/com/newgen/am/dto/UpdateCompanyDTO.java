@@ -9,6 +9,8 @@ import javax.validation.constraints.Size;
 import com.newgen.am.model.Delegate;
 import com.newgen.am.validation.FormatGroup;
 import com.newgen.am.validation.LengthGroup;
+import com.newgen.am.validation.UniqueGroup;
+import com.newgen.am.validation.UniqueTaxCode;
 import com.newgen.am.validation.ValidNumber;
 import com.newgen.am.validation.ValidPhoneNumber;
 import com.newgen.am.validation.ValidUpdateStringField;
@@ -20,6 +22,7 @@ public class UpdateCompanyDTO {
 	@ValidUpdateStringField
 	@ValidNumber(groups = FormatGroup.class)
 	@Size(min = 1, max = 20, message = "Invalid format.", groups = LengthGroup.class)
+	@UniqueTaxCode(groups = UniqueGroup.class)
     private String taxCode;
 	@ValidUpdateStringField
 	@Size(min = 1, max = 300, message = "Invalid format.", groups = LengthGroup.class)
@@ -31,6 +34,7 @@ public class UpdateCompanyDTO {
     private String fax;
 	@ValidUpdateStringField
     @Email(message = "Invalid format.", groups = FormatGroup.class)
+	@Size(min = 1, max = 50, message = "Invalid format.", groups = LengthGroup.class)
     private String email;
     @Valid
     private UpdateDelegateDTO delegate;

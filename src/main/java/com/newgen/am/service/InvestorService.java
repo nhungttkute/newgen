@@ -5,6 +5,17 @@
  */
 package com.newgen.am.service;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.bson.Document;
+import org.bson.types.ObjectId;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.mongodb.BasicDBObject;
@@ -15,29 +26,14 @@ import com.newgen.am.common.AMLogger;
 import com.newgen.am.common.ErrorMessage;
 import com.newgen.am.common.MongoDBConnection;
 import com.newgen.am.common.Utility;
-import com.newgen.am.dto.BasePagination;
 import com.newgen.am.dto.InvestorAccountDTO;
 import com.newgen.am.dto.InvestorDTO;
-import com.newgen.am.dto.RoleCSV;
 import com.newgen.am.exception.CustomException;
 import com.newgen.am.model.Investor;
 import com.newgen.am.model.LoginAdminUser;
 import com.newgen.am.model.LoginInvestorUser;
 import com.newgen.am.repository.LoginAdminUserRepository;
 import com.newgen.am.repository.LoginInvestorUserRepository;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.servlet.http.HttpServletRequest;
-
-import org.bson.Document;
-import org.bson.types.ObjectId;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Service;
 
 /**
  *
@@ -69,7 +65,7 @@ public class InvestorService {
             
             LoginInvestorUser user = loginInvUserRepo.findByUsername(Utility.getCurrentUsername());
             BasicDBObject searchQuery = new BasicDBObject();
-            searchQuery.put("_id", new ObjectId(user.getInvestorId()));
+            searchQuery.put("investorCode", user.getInvestorCode());
             BasicDBObject projection = new BasicDBObject();
             projection.append("investorCode", 1);
             projection.append("investorName", 1);

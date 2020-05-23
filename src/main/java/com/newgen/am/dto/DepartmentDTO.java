@@ -8,9 +8,11 @@ package com.newgen.am.dto;
 import java.util.List;
 
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.Size;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.newgen.am.validation.FormatGroup;
+import com.newgen.am.validation.LengthGroup;
 import com.newgen.am.validation.ValidCode;
 
 /**
@@ -25,10 +27,13 @@ public class DepartmentDTO {
     @ValidCode(groups = FormatGroup.class)
     private String code;
     @NotEmpty(message = "Required.")
+    @Size(min = 1, max = 100, message = "Invalid format.", groups = LengthGroup.class)
     private String name;
     @NotEmpty(message = "Required.")
+    @Size(min = 1, max = 20, message = "Invalid format.", groups = LengthGroup.class)
     private String status;
     private long createdDate;
+    @Size(min = 1, max = 200, message = "Invalid format.", groups = LengthGroup.class)
     private String note;
     private List<UserDTO> users;
 

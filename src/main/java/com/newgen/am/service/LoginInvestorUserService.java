@@ -76,7 +76,7 @@ public class LoginInvestorUserService {
 			// get user
 			LoginInvestorUser user = loginInvUserRepository.findByUsername(username);
 			// delete old redis user info
-			deleteOldRedisUserInfo(user.getAccessToken(), refId);
+			Utility.deleteOldRedisUserInfo(template, user.getAccessToken(), refId);
 
 			// set new access token for user
 			user.setAccessToken(accessToken);
@@ -110,7 +110,7 @@ public class LoginInvestorUserService {
 			// get redis user info
 			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, user.getAccessToken(), refId);
 			// delete old redis user info
-			deleteOldRedisUserInfo(user.getAccessToken(), refId);
+			Utility.deleteOldRedisUserInfo(template, user.getAccessToken(), refId);
 
 			// delete access token
 			user.setAccessToken(null);
@@ -216,12 +216,6 @@ public class LoginInvestorUserService {
 		}
 	}
 
-	private void deleteOldRedisUserInfo(String accessToken, long refId) {
-		String key = Utility.genRedisKey(accessToken);
-		AMLogger.logMessage(className, "deleteOldRedisUserInfo", refId, "REDIS_DELETE: key=" + key);
-		template.delete(key);
-	}
-
 	private UserInfoDTO getInvestorUserInfoDTO(LoginInvestorUser user, long refId) {
 		UserInfoDTO userInfoDto = new UserInfoDTO();
 		try {
@@ -235,10 +229,8 @@ public class LoginInvestorUserService {
 					new Document().append("$lookup",
 							new Document().append("from", "system_roles").append("localField", "role.name")
 									.append("foreignField", "name").append("as", "roleObj")),
-					new Document().append("$project", new Document().append("_id", 0.0).append("investorId", new Document().append("$toString", "$_id"))
-							.append("investorUserId", new Document().append("$toString", "$users._id")).append("fullName", "$users.fullName")
+					new Document().append("$project", new Document().append("_id", 0.0).append("fullName", "$users.fullName")
 							.append("email", "$users.email").append("phoneNumber", "$users.phoneNumber")
-							.append("memberId", 1.0).append("brokerId", 1.0).append("collaboratorId", 1.0)
 							.append("memberCode", 1.0).append("memberName", 1.0).append("brokerCode", 1.0)
 							.append("brokerName", 1.0).append("collaboratorCode", 1.0).append("collaboratorName", 1.0)
 							.append("investorCode", 1.0).append("investorName", 1.0).append("account", 1.0)

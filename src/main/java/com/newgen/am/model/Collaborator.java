@@ -17,12 +17,9 @@ import org.springframework.data.mongodb.core.mapping.Document;
  */
 @Document(collection = "collaborators")
 public class Collaborator extends AuditModel implements Serializable {
-    @Transient
-    public static final String SEQUENCE_NAME = "collaborator_seq";
+	private static final long serialVersionUID = 1L;
     @Id
     private String id;
-    private String memberId;
-    private String brokerId;
     private String memberCode;
     private String memberName;
     private String brokerCode;
@@ -31,10 +28,10 @@ public class Collaborator extends AuditModel implements Serializable {
     private String name;
     private String note;
     private String status;
-    private Individual individualInfo;
+    private Delegate delegate;
     private Contact contact;
     private CollaboratorUser user;
-    private List<UserRole> roles;
+    private UserRole role;
     private List<RoleFunction> functions;
 
     public String getId() {
@@ -43,22 +40,6 @@ public class Collaborator extends AuditModel implements Serializable {
 
 	public void setId(String id) {
 		this.id = id;
-	}
-
-	public String getMemberId() {
-		return memberId;
-	}
-
-	public void setMemberId(String memberId) {
-		this.memberId = memberId;
-	}
-
-	public String getBrokerId() {
-		return brokerId;
-	}
-
-	public void setBrokerId(String brokerId) {
-		this.brokerId = brokerId;
 	}
 
 	public String getCode() {
@@ -133,14 +114,6 @@ public class Collaborator extends AuditModel implements Serializable {
         this.brokerName = brokerName;
     }
 
-    public Individual getIndividualInfo() {
-        return individualInfo;
-    }
-
-    public void setIndividualInfo(Individual individualInfo) {
-        this.individualInfo = individualInfo;
-    }
-
     public CollaboratorUser getUser() {
         return user;
     }
@@ -149,20 +122,27 @@ public class Collaborator extends AuditModel implements Serializable {
         this.user = user;
     }
 
-    public List<UserRole> getRoles() {
-        return roles;
-    }
+    public Delegate getDelegate() {
+		return delegate;
+	}
 
-    public void setRoles(List<UserRole> roles) {
-        this.roles = roles;
-    }
+	public void setDelegate(Delegate delegate) {
+		this.delegate = delegate;
+	}
 
-    public List<RoleFunction> getFunctions() {
+	public UserRole getRole() {
+		return role;
+	}
+
+	public void setRole(UserRole role) {
+		this.role = role;
+	}
+
+	public List<RoleFunction> getFunctions() {
         return functions;
     }
 
     public void setFunctions(List<RoleFunction> functions) {
         this.functions = functions;
     }
-
 }

@@ -6,6 +6,8 @@ import javax.validation.constraints.Size;
 
 import com.newgen.am.validation.FormatGroup;
 import com.newgen.am.validation.LengthGroup;
+import com.newgen.am.validation.UniqueGroup;
+import com.newgen.am.validation.UniqueIdentityCard;
 import com.newgen.am.validation.ValidDate;
 import com.newgen.am.validation.ValidNumber;
 import com.newgen.am.validation.ValidPhoneNumber;
@@ -21,6 +23,7 @@ public class UpdateDelegateDTO {
 	@ValidUpdateStringField
 	@ValidNumber(groups = FormatGroup.class)
 	@Size(min = 1, max = 20, groups = LengthGroup.class)
+	@UniqueIdentityCard(groups = UniqueGroup.class)
     private String identityCard;
 	@ValidUpdateStringField
 	@ValidDate(groups = FormatGroup.class)
@@ -30,6 +33,7 @@ public class UpdateDelegateDTO {
     private String idCreatedLocation;
 	@ValidUpdateStringField
 	@Email(message = "Invalid format.", groups = FormatGroup.class)
+	@Size(min = 1, max = 50, message = "Invalid format.", groups = LengthGroup.class)
     private String email;
 	@ValidUpdateStringField
     @ValidPhoneNumber(groups = FormatGroup.class)
@@ -42,7 +46,7 @@ public class UpdateDelegateDTO {
     private String scannedFrontIdCard; //image data
 	@ValidUpdateStringField
 	@Size(min = 1, max = 134000, message = "Invalid format.", groups = LengthGroup.class)
-    private String scannedEndIdCard; //image data
+    private String scannedBackIdCard; //image data
 	@ValidUpdateStringField
 	@Size(min = 1, max = 134000, message = "Invalid format.", groups = LengthGroup.class)
     private String scannedSignature; //image data
@@ -100,17 +104,17 @@ public class UpdateDelegateDTO {
 	public void setScannedFrontIdCard(String scannedFrontIdCard) {
 		this.scannedFrontIdCard = scannedFrontIdCard;
 	}
-	public String getScannedEndIdCard() {
-		return scannedEndIdCard;
-	}
-	public void setScannedEndIdCard(String scannedEndIdCard) {
-		this.scannedEndIdCard = scannedEndIdCard;
-	}
 	public String getScannedSignature() {
 		return scannedSignature;
 	}
 	public void setScannedSignature(String scannedSignature) {
 		this.scannedSignature = scannedSignature;
+	}
+	public String getScannedBackIdCard() {
+		return scannedBackIdCard;
+	}
+	public void setScannedBackIdCard(String scannedBackIdCard) {
+		this.scannedBackIdCard = scannedBackIdCard;
 	}
     
 }

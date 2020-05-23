@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import javax.print.Doc;
 import javax.servlet.http.HttpServletRequest;
 
 import org.bson.Document;
@@ -43,17 +42,15 @@ import com.newgen.am.common.Utility;
 import com.newgen.am.dto.BasePagination;
 import com.newgen.am.dto.DepartmentCSV;
 import com.newgen.am.dto.DepartmentDTO;
-import com.newgen.am.dto.UserCSV;
-import com.newgen.am.dto.UserDTO;
-import com.newgen.am.dto.UserFunctionsDTO;
-import com.newgen.am.dto.UserRolesDTO;
 import com.newgen.am.dto.EmailDTO;
+import com.newgen.am.dto.FunctionsDTO;
 import com.newgen.am.dto.UpdateDepartmentDTO;
 import com.newgen.am.dto.UpdateUserDTO;
+import com.newgen.am.dto.UserCSV;
+import com.newgen.am.dto.UserDTO;
 import com.newgen.am.dto.UserInfoDTO;
+import com.newgen.am.dto.UserRolesDTO;
 import com.newgen.am.exception.CustomException;
-import com.newgen.am.model.Department;
-import com.newgen.am.model.DeptUser;
 import com.newgen.am.model.LoginAdminUser;
 import com.newgen.am.model.NestedObjectInfo;
 import com.newgen.am.model.PendingApproval;
@@ -521,7 +518,7 @@ public class DepartmentService {
 			loginAdmUser.setPassword(passwordEncoder.encode(password));
 			loginAdmUser.setPin(passwordEncoder.encode(pin));
 			loginAdmUser.setStatus(deptUserDto.getStatus());
-			loginAdmUser.setDeptId(deptId);
+			loginAdmUser.setDeptCode(getDepartmentCode(deptId));
 			loginAdmUser.setCreatedUser(Utility.getCurrentUsername());
 			loginAdmUser.setCreatedDate(System.currentTimeMillis());
 			LoginAdminUser newLoginAdmUser = loginAdmUserRepo.save(loginAdmUser);
@@ -744,7 +741,7 @@ public class DepartmentService {
 	}
 
 	public void saveDepartmentUserFunctions(HttpServletRequest request, String deptId, String deptUserId,
-			UserFunctionsDTO userDto, long refId) {
+			FunctionsDTO userDto, long refId) {
 		String methodName = "saveDepartmentUserFunctions";
 		if (Utility.isNotNull(userDto.getFunctions()) && userDto.getFunctions().size() > 0) {
 			try {
@@ -785,7 +782,7 @@ public class DepartmentService {
 	}
 
 	public String insertDeptUserFunctionsCreatePA(UserInfoDTO userInfo, String deptId, String deptUserId,
-			UserFunctionsDTO deptUserDto, long refId) {
+			FunctionsDTO deptUserDto, long refId) {
 		String methodName = "insertDeptUserFunctionsCreatePA";
 		String approvalId = "";
 		try {

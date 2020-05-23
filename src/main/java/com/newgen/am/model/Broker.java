@@ -22,11 +22,8 @@ public class Broker extends AuditModel implements Serializable {
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	@Transient
-    public static final String SEQUENCE_NAME = "broker_seq";
     @Id
     private String id;
-    private String memberId;
     private String memberCode;
     private String memberName;
     private String code;
@@ -34,14 +31,13 @@ public class Broker extends AuditModel implements Serializable {
     private String note;
     private String status;
     private String type;
-    private String businessType;
     private Company company;
     private Individual individual;
     private Contact contact;
     private BrokerUser user;
     private UserRole role;
     private List<RoleFunction> functions;
-    private int orderLimit;
+    private long defaultCommodityFee;
     private List<Commodity> commodities;
 
     public String getId() {
@@ -50,14 +46,6 @@ public class Broker extends AuditModel implements Serializable {
 
 	public void setId(String id) {
 		this.id = id;
-	}
-
-	public String getMemberId() {
-		return memberId;
-	}
-
-	public void setMemberId(String memberId) {
-		this.memberId = memberId;
 	}
 
 	public String getCode() {
@@ -98,14 +86,6 @@ public class Broker extends AuditModel implements Serializable {
 
     public void setType(String type) {
         this.type = type;
-    }
-
-    public String getBusinessType() {
-        return businessType;
-    }
-
-    public void setBusinessType(String businessType) {
-        this.businessType = businessType;
     }
 
     public Company getCompany() {
@@ -164,15 +144,15 @@ public class Broker extends AuditModel implements Serializable {
         this.commodities = commodities;
     }
 
-    public int getOrderLimit() {
-        return orderLimit;
-    }
+    public long getDefaultCommodityFee() {
+		return defaultCommodityFee;
+	}
 
-    public void setOrderLimit(int orderLimit) {
-        this.orderLimit = orderLimit;
-    }
+	public void setDefaultCommodityFee(long defaultCommodityFee) {
+		this.defaultCommodityFee = defaultCommodityFee;
+	}
 
-    public String getMemberCode() {
+	public String getMemberCode() {
         return memberCode;
     }
 

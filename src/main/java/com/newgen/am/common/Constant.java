@@ -23,6 +23,12 @@ public class Constant {
     public static final String MONGODB_USERNAME = "MONGODB_USERNAME";
     public static final String MONGODB_PASSWORD = "MONGODB_PASSWORD";
     public static final String MONGODB_DATABASE = "MONGODB_DATABASE";
+    public static final String MONGODB_CONNECTIONS_PER_HOST = "MONGODB_CONNECTIONS_PER_HOST";
+    public static final String MONGODB_CONNECTION_TIMEOUT = "MONGODB_CONNECTION_TIMEOUT";
+    public static final String MONGODB_THREADS_ALLOWED_TO_BLOCK = "MONGODB_THREADS_ALLOWED_TO_BLOCK";
+    public static final String MONGODB_MAX_TIME_WAIT = "MONGODB_MAX_TIME_WAIT";
+    public static final String MONGODB_SOCKET_TIMEOUT = "MONGODB_SOCKET_TIMEOUT";
+    public static final String MONGODB_HEARTBEAT_CONNECT_TIMEOUT = "MONGODB_HEARTBEAT_CONNECT_TIMEOUT";
     
     public static final String INVESTOR_JWT_SECRET = "INVESTOR_JWT_SECRET";
     public static final String INVESTOR_JWT_EXPIRATION = "INVESTOR_JWT_EXPIRATION";
@@ -66,6 +72,8 @@ public class Constant {
     public static final String CSV_MEMBERS = "members.csv";
     public static final String CSV_MEMBER_USERS = "member_users.csv";
     public static final String CSV_MEMBER_ROLES = "member_roles.csv";
+    public static final String CSV_BROKERS = "brokers.csv";
+    public static final String CSV_COLLABORATORS = "collaborators.csv";
     
     public static final String POSITION_LIMITED = "LIMITED";
     public static final String POSITION_INHERITED = "INHERITED";
@@ -73,5 +81,17 @@ public class Constant {
     public static final String MEMBER_DEFAULT_ROLE = "TVKD";
     public static final String MEMBER_MASTER_USER_PREFIX = "TVKD_";
     
+    public static final String BROKER_SEQ = "broker_seq_";
+    public static final String COLLABORATOR_SEQ = "collaborator_seq_";
+    
+    public static final String BROKER_DEFAULT_ROLE = "Moi_Gioi";
+    public static final String BROKER_USER_PREFIX = "MG_";
+    
+    public static final String COLLABORATOR_DEFAULT_ROLE = "CTV_Moi_Gioi";
+    public static final String COLLABORATOR_USER_PREFIX = "CTVMG_";
+    
     public static final String CURRENCY_VND = "VND";
+    
+    public static final String BROKER_TYPE_INDIVIDUAL = "INDIVIDUAL";
+    public static final String BROKER_TYPE_COMPANY = "COMPANY";
 }

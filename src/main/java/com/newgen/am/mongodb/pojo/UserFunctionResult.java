@@ -12,31 +12,13 @@ import java.util.List;
  * @author nhungtt
  */
 public class UserFunctionResult {
-    private String deptId;
     private String deptCode;
     private String deptName;
-    private String deptUserId;
     private String fullName;
     private String email;
     private String phoneNumber;
     private List<String> userFunctions;
     private List<String> roleFunctions;
-
-    public String getDeptId() {
-		return deptId;
-	}
-
-	public void setDeptId(String deptId) {
-		this.deptId = deptId;
-	}
-
-	public String getDeptUserId() {
-		return deptUserId;
-	}
-
-	public void setDeptUserId(String deptUserId) {
-		this.deptUserId = deptUserId;
-	}
 
 	public String getDeptCode() {
         return deptCode;

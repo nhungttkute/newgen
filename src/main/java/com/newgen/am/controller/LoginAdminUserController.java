@@ -5,6 +5,22 @@
  */
 package com.newgen.am.controller;
 
+import java.util.Arrays;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.google.gson.Gson;
 import com.newgen.am.common.AMLogger;
 import com.newgen.am.common.Constant;
@@ -12,25 +28,14 @@ import com.newgen.am.common.ErrorMessage;
 import com.newgen.am.common.Utility;
 import com.newgen.am.dto.AdminDataObj;
 import com.newgen.am.dto.AdminResponseObj;
+import com.newgen.am.dto.BasePagination;
 import com.newgen.am.dto.LoginAdminUserOutputDTO;
+import com.newgen.am.dto.LoginAdminUsersDTO;
 import com.newgen.am.dto.LoginUserDataInputDTO;
 import com.newgen.am.exception.CustomException;
 import com.newgen.am.model.LoginAdminUser;
 import com.newgen.am.service.LoginAdminUserService;
 import com.newgen.am.validation.ValidationSequence;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.validation.Valid;
-
-import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
 
 /**
  *
@@ -218,4 +223,33 @@ public class LoginAdminUserController {
         AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
         return response;
     }
+    
+    @GetMapping("/admin/users")
+	@PreAuthorize("hasAuthority('systemManagement.loginUserStatusList')")
+	public AdminResponseObj listAdminUsers(HttpServletRequest request) {
+		String methodName = "listAdminUsers";
+		long refId = System.currentTimeMillis();
+		AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [GET]/admin/users");
+		AdminResponseObj response = new AdminResponseObj();
+		
+		try {
+			BasePagination<LoginAdminUsersDTO> pagination = loginAdmUserService.listAdminUsers(request, refId);
+			if (pagination != null && pagination.getData().size() > 0) {
+				response.setStatus(Constant.RESPONSE_OK);
+				response.setData(new AdminDataObj());
+				response.getData().setAdminUsers(pagination.getData());
+				response.setPagination(Utility.getPagination(request, pagination.getCount()));
+				response.setFilterList(Arrays.asList(Constant.STATUS_ACTIVE, Constant.STATUS_INACTIVE));
+			} else {
+				response.setStatus(Constant.RESPONSE_ERROR);
+				response.setErrMsg(ErrorMessage.RESULT_NOT_FOUND);
+			}
+		} catch (Exception e) {
+			AMLogger.logError(className, methodName, refId, e);
+			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+		return response;
+	}
 }

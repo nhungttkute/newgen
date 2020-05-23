@@ -184,7 +184,12 @@ public class RequestParamsParser {
 					String queryValue = String.format(".*%s.*", filter.getValue());
 					query.append(filter.getFieldName(), new BsonRegularExpression(queryValue, "i"));
 				} else if (Constant.OPT_EQUALS.equals(filter.getOperator())) {
-					query.append(filter.getFieldName(), filter.getValue());
+					if (Utility.getNumberQueryFieldNames().contains(filter.getFieldName())) {
+						query.append(filter.getFieldName(), Long.valueOf(filter.getValue()));
+					} else {
+						query.append(filter.getFieldName(), filter.getValue());
+					}
+					
 				} else if (Constant.OPT_IN.equals(filter.getOperator())
 						|| Constant.OPT_NOT_IN.equals(filter.getOperator())) {
 					query.append(filter.getFieldName(),

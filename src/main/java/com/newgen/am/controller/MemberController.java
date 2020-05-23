@@ -28,6 +28,7 @@ import com.newgen.am.dto.AdminDataObj;
 import com.newgen.am.dto.AdminResponseObj;
 import com.newgen.am.dto.BasePagination;
 import com.newgen.am.dto.CommoditiesDTO;
+import com.newgen.am.dto.CommodityFeesDTO;
 import com.newgen.am.dto.FunctionsDTO;
 import com.newgen.am.dto.GeneralFeeDTO;
 import com.newgen.am.dto.MarginMultiplierDTO;
@@ -40,7 +41,6 @@ import com.newgen.am.dto.UpdateMemberDTO;
 import com.newgen.am.dto.UpdateUserDTO;
 import com.newgen.am.dto.UserCSV;
 import com.newgen.am.dto.UserDTO;
-import com.newgen.am.dto.UserFunctionsDTO;
 import com.newgen.am.dto.UserRolesDTO;
 import com.newgen.am.exception.CustomException;
 import com.newgen.am.model.RoleFunction;
@@ -197,8 +197,8 @@ public class MemberController {
 	
 	@PostMapping("/admin/members/{memberCode}/functions")
     @PreAuthorize("hasAuthority('clientManagement.memberManagement.memberFunctionsAssign.create')")
-    public AdminResponseObj createMemberUserFunctions(HttpServletRequest request, @PathVariable String memberCode, @Validated(ValidationSequence.class) @RequestBody FunctionsDTO memberDto) {
-        String methodName = "createMemberUserFunctions";
+    public AdminResponseObj createMemberFunctions(HttpServletRequest request, @PathVariable String memberCode, @Validated(ValidationSequence.class) @RequestBody FunctionsDTO memberDto) {
+        String methodName = "createMemberFunctions";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, "REQUEST_API: " + String.format("[POST]/admin/members/%s/functions", memberCode));
         AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(memberDto));
@@ -376,7 +376,7 @@ public class MemberController {
 	
 	@PutMapping("/admin/members/{memberCode}/brokerCommoditiesFeeBulk")
     @PreAuthorize("hasAuthority('approval.clientManagement.memberManagement.memberCommoditiesFeeBulkConfig.create')")
-    public AdminResponseObj setBrokerCommoditiesFeeBulk(HttpServletRequest request, @PathVariable String memberCode, @Validated(ValidationSequence.class) @RequestBody CommoditiesDTO memberDto) {
+    public AdminResponseObj setBrokerCommoditiesFeeBulk(HttpServletRequest request, @PathVariable String memberCode, @Validated(ValidationSequence.class) @RequestBody CommodityFeesDTO memberDto) {
         String methodName = "setBrokerCommoditiesFeeBulk";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, "REQUEST_API: " + String.format("[PUT]/admin/members/%s/brokerCommoditiesFeeBulk", memberCode));
@@ -393,7 +393,7 @@ public class MemberController {
 	
 	@PutMapping("/admin/members/{memberCode}/investorCommoditiesFeeBulk")
     @PreAuthorize("hasAuthority('approval.clientManagement.memberManagement.memberCommoditiesFeeBulkConfig.create')")
-    public AdminResponseObj setInvestorCommoditiesFeeBulk(HttpServletRequest request, @PathVariable String memberCode, @Validated(ValidationSequence.class) @RequestBody CommoditiesDTO memberDto) {
+    public AdminResponseObj setInvestorCommoditiesFeeBulk(HttpServletRequest request, @PathVariable String memberCode, @Validated(ValidationSequence.class) @RequestBody CommodityFeesDTO memberDto) {
         String methodName = "setInvestorCommoditiesFeeBulk";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, "REQUEST_API: " + String.format("[PUT]/admin/members/%s/investorCommoditiesFeeBulk", memberCode));
@@ -547,7 +547,7 @@ public class MemberController {
 	@PostMapping("/admin/members/{memberCode}/users/{username}/functions")
 	@PreAuthorize("hasAuthority('clientManagement.memberManagement.memberUserManagement.memberUserFunctionsAssign.create')")
 	public AdminResponseObj saveMemberUserFunctions(HttpServletRequest request, @PathVariable String memberCode,
-			@PathVariable String username, @Validated(ValidationSequence.class) @RequestBody UserFunctionsDTO userDto) {
+			@PathVariable String username, @Validated(ValidationSequence.class) @RequestBody FunctionsDTO userDto) {
 		String methodName = "saveMemberUserFunctions";
 		long refId = System.currentTimeMillis();
 		AMLogger.logMessage(className, methodName, refId,
@@ -581,6 +581,29 @@ public class MemberController {
             response.setStatus(Constant.RESPONSE_ERROR);
             response.setErrMsg(ErrorMessage.RESULT_NOT_FOUND);
         }
+
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+		return response;
+	}
+	
+	@GetMapping("/admin/members/{memberCode}/commodities")
+	@PreAuthorize("hasAuthority('clientManagement.brokerManagement.brokerCommoditiesAssign.create')")
+	public AdminResponseObj getMemberCommodities(@PathVariable String memberCode) {
+		String methodName = "getMemberCommodities";
+		long refId = System.currentTimeMillis();
+		AMLogger.logMessage(className, methodName, refId,
+				String.format("REQUEST_API: [GET]/admin/members/%s/commodities", memberCode));
+		
+		AdminResponseObj response = new AdminResponseObj();
+		MemberDTO memberDto = memberService.getMemberCommodities(memberCode, refId);
+		if (memberDto != null) {
+			response.setStatus(Constant.RESPONSE_OK);
+			response.setData(new AdminDataObj());
+			response.getData().setMember(memberDto);
+		} else {
+			response.setStatus(Constant.RESPONSE_ERROR);
+			response.setErrMsg(ErrorMessage.RESULT_NOT_FOUND);
+		}
 
 		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
 		return response;
