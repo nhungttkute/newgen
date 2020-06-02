@@ -5,6 +5,8 @@
  */
 package com.newgen.am.model;
 
+import java.io.Serializable;
+
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Size;
@@ -21,7 +23,8 @@ import com.newgen.am.validation.ValidPhoneNumber;
  *
  * @author nhungtt
  */
-public class Individual {
+public class Individual implements Serializable {
+	private static final long serialVersionUID = 1L;
 	@NotEmpty(message = "Required.")
 	@Size(min = 1, max = 100, message = "Invalid format.", groups = LengthGroup.class)
     private String fullName;

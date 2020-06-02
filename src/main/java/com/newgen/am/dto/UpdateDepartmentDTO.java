@@ -5,19 +5,24 @@
  */
 package com.newgen.am.dto;
 
+import javax.validation.constraints.Size;
+
 import com.newgen.am.validation.FormatGroup;
+import com.newgen.am.validation.LengthGroup;
 import com.newgen.am.validation.ValidCode;
 import com.newgen.am.validation.ValidUpdateStringField;
 
 /**
  *
  * @author nhungtt
- */
-public class UpdateDepartmentDTO {
+ */public class UpdateDepartmentDTO {
     @ValidUpdateStringField
+    @Size(max = 200, message = "Invalid format.", groups = LengthGroup.class)
     private String name;
     @ValidUpdateStringField
+    @Size(max = 20, message = "Invalid format.", groups = LengthGroup.class)
     private String status;
+    @Size(max = 200, message = "Invalid format.", groups = LengthGroup.class)
     private String note;
 
     public String getName() {

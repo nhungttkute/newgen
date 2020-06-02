@@ -7,6 +7,7 @@ package com.newgen.am.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.newgen.am.model.Commodity;
+import com.newgen.am.model.CqgInfo;
 import com.newgen.am.model.InvestorAccount;
 import com.newgen.am.model.MarginRatioAlert;
 import com.newgen.am.model.WatchList;
@@ -19,9 +20,6 @@ import java.util.List;
  */
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class UserInfoDTO implements Serializable {
-    /**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
 	private String id;
     private String username;
@@ -56,6 +54,7 @@ public class UserInfoDTO implements Serializable {
     private MarginRatioAlert marginRatioAlert;
     private double marginMultiplier;
     private long otherFee;
+    private CqgInfo cqgInfo;
 
     public String getId() {
 		return id;
@@ -312,4 +311,12 @@ public class UserInfoDTO implements Serializable {
     public void setDeptName(String deptName) {
         this.deptName = deptName;
     }
+
+	public CqgInfo getCqgInfo() {
+		return cqgInfo;
+	}
+
+	public void setCqgInfo(CqgInfo cqgInfo) {
+		this.cqgInfo = cqgInfo;
+	}
 }

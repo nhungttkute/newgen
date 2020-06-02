@@ -5,6 +5,7 @@ import java.util.Arrays;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang.SerializationUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -161,7 +162,14 @@ private String className = "CollaboratorController";
 			response.setErrMsg(ErrorMessage.RESULT_NOT_FOUND);
 		}
 
-		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+		AdminResponseObj logResponse = (AdminResponseObj) SerializationUtils.clone(response);
+		if (logResponse.getData().getCollaborator() != null && logResponse.getData().getCollaborator().getDelegate() != null) {
+			logResponse.getData().getCollaborator().getDelegate().setScannedBackIdCard("");
+			logResponse.getData().getCollaborator().getDelegate().setScannedFrontIdCard("");
+			logResponse.getData().getCollaborator().getDelegate().setScannedSignature("");
+		}
+		
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(logResponse));
 		return response;
 	}
 	

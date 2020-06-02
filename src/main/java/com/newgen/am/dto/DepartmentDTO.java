@@ -33,7 +33,7 @@ public class DepartmentDTO {
     @Size(min = 1, max = 20, message = "Invalid format.", groups = LengthGroup.class)
     private String status;
     private long createdDate;
-    @Size(min = 1, max = 200, message = "Invalid format.", groups = LengthGroup.class)
+    @Size(max = 200, message = "Invalid format.", groups = LengthGroup.class)
     private String note;
     private List<UserDTO> users;
 

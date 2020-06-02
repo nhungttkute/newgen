@@ -9,6 +9,7 @@ import java.util.Arrays;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.lang.SerializationUtils;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -32,6 +33,7 @@ import com.newgen.am.dto.BasePagination;
 import com.newgen.am.dto.LoginAdminUserOutputDTO;
 import com.newgen.am.dto.LoginAdminUsersDTO;
 import com.newgen.am.dto.LoginUserDataInputDTO;
+import com.newgen.am.dto.ResponseObj;
 import com.newgen.am.exception.CustomException;
 import com.newgen.am.model.LoginAdminUser;
 import com.newgen.am.service.LoginAdminUserService;
@@ -65,7 +67,13 @@ public class LoginAdminUserController {
         response.setData(new AdminDataObj());
         response.getData().setUser(loginUserDto);
         
-        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+        AdminResponseObj logResponse = (AdminResponseObj) SerializationUtils.clone(response);
+        if (logResponse != null && logResponse.getData() != null && logResponse.getData().getUser() != null) {
+        	logResponse.getData().setLayout("");
+        	logResponse.getData().getUser().setFunctions(null);
+        }
+        
+        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(logResponse));
         return response;
     }
     

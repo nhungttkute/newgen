@@ -10,7 +10,8 @@ package com.newgen.am.model;
  * @author nhungtt
  */
 public class BaseUser extends AuditModel {
-    private String _id;
+	private static final long serialVersionUID = 1L;
+	private String _id;
     private String username;
     private String fullName;
     private String email;

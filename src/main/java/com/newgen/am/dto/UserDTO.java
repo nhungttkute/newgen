@@ -18,6 +18,7 @@ import com.newgen.am.model.UserRole;
 import com.newgen.am.validation.FormatGroup;
 import com.newgen.am.validation.LengthGroup;
 import com.newgen.am.validation.ValidPhoneNumber;
+import com.newgen.am.validation.ValidUpdateStringField;
 import com.newgen.am.validation.ValidUsername;
 
 /**
@@ -32,6 +33,12 @@ import com.newgen.am.validation.ValidUsername;
 public class UserDTO {
     @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     private String _id;
+    @ValidUpdateStringField
+    private String memberCode;
+    @ValidUpdateStringField
+    private String brokerCode;
+    @ValidUpdateStringField
+    private String collaboratorCode;
     @NotEmpty(message = "Required.")
     @ValidUsername(groups = FormatGroup.class)
     private String username;
@@ -68,6 +75,30 @@ public class UserDTO {
 
 	public void set_id(String _id) {
 		this._id = _id;
+	}
+
+	public String getMemberCode() {
+		return memberCode;
+	}
+
+	public void setMemberCode(String memberCode) {
+		this.memberCode = memberCode;
+	}
+
+	public String getBrokerCode() {
+		return brokerCode;
+	}
+
+	public void setBrokerCode(String brokerCode) {
+		this.brokerCode = brokerCode;
+	}
+
+	public String getCollaboratorCode() {
+		return collaboratorCode;
+	}
+
+	public void setCollaboratorCode(String collaboratorCode) {
+		this.collaboratorCode = collaboratorCode;
 	}
 
 	public String getUsername() {

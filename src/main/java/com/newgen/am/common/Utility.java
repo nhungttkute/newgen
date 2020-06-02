@@ -8,6 +8,7 @@ package com.newgen.am.common;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -68,6 +69,13 @@ public class Utility {
         return obj;
     }
 
+    public static long getLong(Long obj) {
+        if (isNull(obj)) {
+            return 0;
+        }
+        return obj;
+    }
+    
     public static int getInt(Integer obj) {
         if (isNull(obj)) {
             return 0;
@@ -202,8 +210,7 @@ public class Utility {
         redisUserInfo.setFontSize(0);
         String key = Utility.genRedisKey(accessToken);
         String value = new Gson().toJson(redisUserInfo);
-        AMLogger.logMessage(className, "setRedisUserInfo", refId, "REDIS_SET: key=" + key + ", value=" + value);
-        template.opsForValue().set(key, value);
+        template.opsForValue().set(key, value, Duration.ofDays(1));
     }
     
     public static UserInfoDTO getRedisUserInfo(RedisTemplate template, String accessToken, long refId) {
@@ -211,7 +218,6 @@ public class Utility {
         try {
             String key = genRedisKey(accessToken);
             String value = (String) template.opsForValue().get(key);
-            AMLogger.logMessage(className, methodName, refId, "REDIS_GET: key=" + key + ", value=" + value);
             return new Gson().fromJson(value, UserInfoDTO.class);
         } catch (Exception e) {
             AMLogger.logError(className, methodName, refId, e);
@@ -326,5 +332,21 @@ public class Utility {
     	List<String> fieldNames = new ArrayList<String>();
     	fieldNames.add("createdDate");
     	return fieldNames;
+    }
+    
+    public static boolean isInvestorCompany(String type) {
+    	boolean flag = false;
+    	if (Constant.INVESTOR_TYPE_INNER_TRADING_COMPANY.equals(type) || Constant.INVESTOR_TYPE_LOCAL_COMPANY.equals(type) || Constant.INVESTOR_TYPE_FOREIGN_COMPANY.equals(type)) {
+    		flag = true;
+    	}
+    	return flag;
+    }
+    
+    public static boolean isInvestorIndividual(String type) {
+    	boolean flag = false;
+    	if (Constant.INVESTOR_TYPE_LOCAL_INDIVIDUAL.equals(type) || Constant.INVESTOR_TYPE_FOREIGN_INDIVIDUAL.equals(type)) {
+    		flag = true;
+    	}
+    	return flag;
     }
 }

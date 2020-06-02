@@ -449,7 +449,7 @@ public class CollaboratorService {
 			boolean isUserUpdated = false;
 			
 			if (Utility.isNotNull(collaboratorDto.getName())) collaboratorMember.append("name", collaboratorDto.getName());
-			if (Utility.isNotNull(collaboratorDto.getStatus())) collaboratorMember.append("status", collaboratorDto.getName());
+			if (Utility.isNotNull(collaboratorDto.getStatus())) collaboratorMember.append("status", collaboratorDto.getStatus());
 			if (Utility.isNotNull(collaboratorDto.getNote())) {
 				collaboratorMember.append("note", collaboratorDto.getNote());
 				collaboratorMember.append("user.note", collaboratorDto.getNote());
@@ -612,57 +612,52 @@ public class CollaboratorService {
 	public void createCollaboratorFunctions(HttpServletRequest request, String collaboratorCode, FunctionsDTO collaboratorDto,
 			long refId) {
 		String methodName = "createCollaboratorFunctions";
-		if (Utility.isNotNull(collaboratorDto.getFunctions()) && collaboratorDto.getFunctions().size() > 0) {
-			try {
-				// get redis user info
-				UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
-				// insert data to pending_approvals
-				String approvalId = insertCollaboratorFunctionsAssignPA(userInfo, collaboratorCode, collaboratorDto, refId);
-				// send activity log
-				activityLogService.sendActivityLog(userInfo, request,
-						ActivityLogService.ACTIVITY_CREATE_COLLABORATOR_FUNCTIONS,
-						ActivityLogService.ACTIVITY_CREATE_COLLABORATOR_FUNCTIONS_DESC, String.valueOf(collaboratorCode),
-						approvalId);
+		try {
+			// get redis user info
+			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
+			// insert data to pending_approvals
+			String approvalId = insertCollaboratorFunctionsAssignPA(userInfo, collaboratorCode, collaboratorDto, refId);
+			// send activity log
+			activityLogService.sendActivityLog(userInfo, request,
+					ActivityLogService.ACTIVITY_CREATE_COLLABORATOR_FUNCTIONS,
+					ActivityLogService.ACTIVITY_CREATE_COLLABORATOR_FUNCTIONS_DESC, String.valueOf(collaboratorCode),
+					approvalId);
 
-				if (!collaboratorRepo.existsCollaboratorByCode(collaboratorCode)) {
-					throw new CustomException(ErrorMessage.RESULT_NOT_FOUND, HttpStatus.OK);
-				}
-				
-				List<Document> functions = new ArrayList<Document>();
-				for (RoleFunction function : collaboratorDto.getFunctions()) {
-					Document func = new Document();
-					func.append("code", function.getCode());
-					func.append("name", function.getName());
-					functions.add(func);
-				}
-				MongoDatabase database = MongoDBConnection.getMongoDatabase();
-				MongoCollection<Document> collection = database.getCollection("collaborators");
-				
-				BasicDBObject query = new BasicDBObject();
-				query.append("code", collaboratorCode);
-				
-				BasicDBObject updateBroker = new BasicDBObject();
-				updateBroker.append("functions", functions);
-				updateBroker.append("user.functions", functions);
-				updateBroker.append("lastModifiedUser", Utility.getCurrentUsername());
-				updateBroker.append("lastModifiedDate", System.currentTimeMillis());
-				updateBroker.append("user.lastModifiedUser", Utility.getCurrentUsername());
-				updateBroker.append("user.lastModifiedDate", System.currentTimeMillis());
-				
-				
-				BasicDBObject update = new BasicDBObject();
-				update.append("$set", updateBroker);
-				
-				collection.updateOne(query, update);
-			} catch (CustomException e) {
-				throw e;
-			} catch (Exception e) {
-				AMLogger.logError(className, methodName, refId, e);
-				throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+			if (!collaboratorRepo.existsCollaboratorByCode(collaboratorCode)) {
+				throw new CustomException(ErrorMessage.RESULT_NOT_FOUND, HttpStatus.OK);
 			}
-		} else {
-			AMLogger.logMessage(className, methodName, refId, "Invalid input data");
-			throw new CustomException(ErrorMessage.INVALID_REQUEST, HttpStatus.BAD_REQUEST);
+			
+			List<Document> functions = new ArrayList<Document>();
+			for (RoleFunction function : collaboratorDto.getFunctions()) {
+				Document func = new Document();
+				func.append("code", function.getCode());
+				func.append("name", function.getName());
+				functions.add(func);
+			}
+			MongoDatabase database = MongoDBConnection.getMongoDatabase();
+			MongoCollection<Document> collection = database.getCollection("collaborators");
+			
+			BasicDBObject query = new BasicDBObject();
+			query.append("code", collaboratorCode);
+			
+			BasicDBObject updateBroker = new BasicDBObject();
+			updateBroker.append("functions", functions);
+			updateBroker.append("user.functions", functions);
+			updateBroker.append("lastModifiedUser", Utility.getCurrentUsername());
+			updateBroker.append("lastModifiedDate", System.currentTimeMillis());
+			updateBroker.append("user.lastModifiedUser", Utility.getCurrentUsername());
+			updateBroker.append("user.lastModifiedDate", System.currentTimeMillis());
+			
+			
+			BasicDBObject update = new BasicDBObject();
+			update.append("$set", updateBroker);
+			
+			collection.updateOne(query, update);
+		} catch (CustomException e) {
+			throw e;
+		} catch (Exception e) {
+			AMLogger.logError(className, methodName, refId, e);
+			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 	

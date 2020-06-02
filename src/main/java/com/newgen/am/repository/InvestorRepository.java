@@ -13,5 +13,5 @@ import org.springframework.data.mongodb.repository.MongoRepository;
  * @author nhungtt
  */
 public interface InvestorRepository  extends MongoRepository<Investor, String>{
-    
+	boolean existsInvestorByInvestorCode(String investorCode);
 }

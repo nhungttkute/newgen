@@ -11,12 +11,12 @@ import com.newgen.am.validation.ValidUpdateStringField;
 public class UpdateCollaboratorDTO implements Serializable {
 	private static final long serialVersionUID = 1L;
 	@ValidUpdateStringField
-    @Size(min = 1, max = 200, message = "Invalid format.", groups = LengthGroup.class)
+    @Size(max = 200, message = "Invalid format.", groups = LengthGroup.class)
     private String name;
-    @Size(min = 1, max = 200, message = "Invalid format.", groups = LengthGroup.class)
+    @Size(max = 200, message = "Invalid format.", groups = LengthGroup.class)
     private String note;
     @ValidUpdateStringField
-    @Size(min = 1, max = 20, message = "Invalid format.", groups = LengthGroup.class)
+    @Size(max = 20, message = "Invalid format.", groups = LengthGroup.class)
     private String status;
     @Valid
     private UpdateDelegateDTO delegate;

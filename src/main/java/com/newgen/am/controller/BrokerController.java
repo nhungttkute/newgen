@@ -5,6 +5,7 @@ import java.util.Arrays;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang.SerializationUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -159,7 +160,18 @@ public class BrokerController {
 			response.setErrMsg(ErrorMessage.RESULT_NOT_FOUND);
 		}
 
-		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+		AdminResponseObj logResponse = (AdminResponseObj) SerializationUtils.clone(response);
+		if (logResponse.getData().getBroker() != null && logResponse.getData().getBroker().getCompany() != null && logResponse.getData().getBroker().getCompany().getDelegate() != null) {
+			logResponse.getData().getBroker().getCompany().getDelegate().setScannedBackIdCard("");
+			logResponse.getData().getBroker().getCompany().getDelegate().setScannedFrontIdCard("");
+			logResponse.getData().getBroker().getCompany().getDelegate().setScannedSignature("");
+		}
+		if (logResponse.getData().getBroker() != null && logResponse.getData().getBroker().getIndividual() != null) {
+			logResponse.getData().getBroker().getIndividual().setScannedBackIdCard("");
+			logResponse.getData().getBroker().getIndividual().setScannedFrontIdCard("");
+			logResponse.getData().getBroker().getIndividual().setScannedSignature("");
+		}
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(logResponse));
 		return response;
 	}
 	
@@ -245,11 +257,11 @@ public class BrokerController {
 				String.format("REQUEST_API: [GET]/admin/brokers/%s/commodities", brokerCode));
 		
 		AdminResponseObj response = new AdminResponseObj();
-		BrokerDTO brokerDto = brokerService.getBrokerCommodities(brokerCode, refId);
+		BrokerCommoditiesDTO brokerDto = brokerService.getBrokerCommodities(brokerCode, refId);
 		if (brokerDto != null) {
 			response.setStatus(Constant.RESPONSE_OK);
 			response.setData(new AdminDataObj());
-			response.getData().setBroker(brokerDto);
+			response.getData().setBrokerCommodities(brokerDto);
 		} else {
 			response.setStatus(Constant.RESPONSE_ERROR);
 			response.setErrMsg(ErrorMessage.RESULT_NOT_FOUND);

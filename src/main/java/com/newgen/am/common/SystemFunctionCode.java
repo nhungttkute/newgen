@@ -99,6 +99,28 @@ public class SystemFunctionCode {
     public static final String APPROVAL_COLLABORATOR_FUNCTIONS_ASSIGN_CREATE_CODE = "approval.clientManagement.brokerCollaboratorManagement.collaboratorFunctionsAssign.create";
     public static final String COLLABORATOR_FUNCTIONS_ASSIGN_CREATE_NAME = "Gán quyền riêng cho CTV MG";
     
+    public static final String APPROVAL_INVESTOR_CREATE_CODE = "approval.clientManagement.investorManagement.investorInfo.create";
+    public static final String INVESTOR_CREATE_NAME = "Tạo thông tin TKGD";
+    public static final String APPROVAL_INVESTOR_UPDATE_CODE = "approval.clientManagement.investorManagement.investorInfo.update";
+    public static final String INVESTOR_UPDATE_NAME = "Cập nhật thông tin TKGD";
+    public static final String APPROVAL_INVESTOR_USER_CREATE_CODE = "approval.clientManagement.investorManagement.investorUser.create";
+    public static final String INVESTOR_USER_CREATE_NAME = "Tạo đăng nhập thứ hai trở lên của TKGD";
+    public static final String INVESTOR_USER_CREATE_DESC = "Tạo đăng nhập %s của TKGD %s";
+    public static final String APPROVAL_INVESTOR_RISK_ORDER_LOCK_CREATE_CODE = "approval.clientManagement.investorManagement.investorRiskManagement.orderLockConfig.create";
+    public static final String INVESTOR_RISK_ORDER_LOCK_CREATE_NAME = "Thiết lập chức năng khoá giao dịch của TKGD";
+    public static final String APPROVAL_INVESTOR_RISK_NEW_ORDER_LOCK_CREATE_CODE = "approval.clientManagement.investorManagement.investorRiskManagement.newOrderLockConfig.create";
+    public static final String INVESTOR_RISK_NEW_ORDER_LOCK_CREATE_NAME = "Thiết lập chức năng chặn giao dịch một chiều của TKGD";
+    public static final String APPROVAL_INVESTOR_BROKER_CHANGE_CODE = "approval.clientManagement.investorManagement.investorNewBroker.transfer";
+    public static final String INVESTOR_BROKER_CHANGE_NAME = "Chuyển TKGD sang MG mới";
+    public static final String INVESTOR_BROKER_CHANGE_DESC = "Chuyển TKGD %s sang MG %s";
+    public static final String APPROVAL_INVESTOR_COLLABORATOR_CHANGE_CODE = "approval.clientManagement.investorManagement.investorNewCollaborator.transfer";
+    public static final String INVESTOR_COLLABORATOR_CHANGE_NAME = "Chuyển TKGD sang CTV MG mới";
+    public static final String INVESTOR_COLLABORATOR_CHANGE_DESC = "Chuyển TKGD %s sang CTV MG %s";
+    public static final String APPROVAL_INVESTOR_MARGIN_DEPOSIT_CODE = "approval.clientManagement.marginDepositWithdrawalManagement.investorMarginDeposit.create";
+    public static final String INVESTOR_MARGIN_DEPOSIT_NAME = "Nộp ký quỹ TKGD";
+    public static final String APPROVAL_INVESTOR_MARGIN_WITHDRAWAL_CODE = "approval.clientManagement.marginDepositWithdrawalManagement.investorMarginWithdrawal.create";
+    public static final String INVESTOR_MARGIN_WITHDRAWAL_NAME = "Rút ký quỹ TKGD";
+    
     public static String getApprovalDescription(String name, String value) {
         return (name + " " + value);
     }

@@ -363,21 +363,13 @@ public class BrokerService {
 				String fullName = "";
 				String email = "";
 				String phoneNumber = "";
-				if (Utility.isNotNull(brokerDto.getCompany().getDelegate().getFullName())) {
+				if (Utility.isNotNull(brokerDto.getCompany()) && Utility.isNotNull(brokerDto.getCompany().getDelegate())) {
 					fullName = brokerDto.getCompany().getDelegate().getFullName();
-				} else if (Utility.isNotNull(brokerDto.getIndividual().getFullName())) {
-					fullName = brokerDto.getIndividual().getFullName();
-				}
-				
-				if (Utility.isNotNull(brokerDto.getCompany().getDelegate().getEmail())) {
 					email = brokerDto.getCompany().getDelegate().getEmail();
-				} else if (Utility.isNotNull(brokerDto.getIndividual().getEmail())) {
-					email = brokerDto.getIndividual().getEmail();
-				}
-				
-				if (Utility.isNotNull(brokerDto.getCompany().getDelegate().getPhoneNumber())) {
 					phoneNumber = brokerDto.getCompany().getDelegate().getPhoneNumber();
-				} else if (Utility.isNotNull(brokerDto.getIndividual().getPhoneNumber())) {
+				} else if (Utility.isNotNull(brokerDto.getIndividual())) {
+					fullName = brokerDto.getIndividual().getFullName();
+					email = brokerDto.getIndividual().getEmail();
 					phoneNumber = brokerDto.getIndividual().getPhoneNumber();
 				}
 				
@@ -518,32 +510,11 @@ public class BrokerService {
 			MongoDatabase database = MongoDBConnection.getMongoDatabase();
 			MongoCollection<Document> collection = database.getCollection("brokers");
 			
-			// get broker type
-			Document query1 = new Document();
-			query1.append("code", brokerCode);
-			
-			Document projection = new Document();
-			projection.append("_id", 0.0);
-			projection.append("type", 1.0);
-			
-			Document brokerDoc = collection.find(query1).projection(projection).first();
-			BrokerDTO broker = mongoTemplate.getConverter().read(BrokerDTO.class, brokerDoc);
-			
-			if (Constant.BROKER_TYPE_COMPANY.equalsIgnoreCase(broker.getType())) {
-				if (Utility.isNull(brokerDto.getCompany())) {
-					throw new CustomException(ErrorMessage.INVALID_REQUEST, HttpStatus.BAD_REQUEST);
-				}
-			} else if (Constant.BROKER_TYPE_INDIVIDUAL.equalsIgnoreCase(broker.getType())) {
-				if (Utility.isNull(brokerDto.getIndividual())) {
-					throw new CustomException(ErrorMessage.INVALID_REQUEST, HttpStatus.BAD_REQUEST);
-				}
-			}
-			
 			BasicDBObject updateBroker = new BasicDBObject();
 			boolean isUserUpdated = false;
 			
 			if (Utility.isNotNull(brokerDto.getName())) updateBroker.append("name", brokerDto.getName());
-			if (Utility.isNotNull(brokerDto.getStatus())) updateBroker.append("status", brokerDto.getName());
+			if (Utility.isNotNull(brokerDto.getStatus())) updateBroker.append("status", brokerDto.getStatus());
 			if (Utility.isNotNull(brokerDto.getNote())) {
 				updateBroker.append("note", brokerDto.getNote());
 				updateBroker.append("user.note", brokerDto.getNote());
@@ -744,57 +715,52 @@ public class BrokerService {
 	public void createBrokerFunctions(HttpServletRequest request, String brokerCode, FunctionsDTO brokerDto,
 			long refId) {
 		String methodName = "createBrokerFunctions";
-		if (Utility.isNotNull(brokerDto.getFunctions()) && brokerDto.getFunctions().size() > 0) {
-			try {
-				// get redis user info
-				UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
-				// insert data to pending_approvals
-				String approvalId = insertBrokerFunctionsAssignPA(userInfo, brokerCode, brokerDto, refId);
-				// send activity log
-				activityLogService.sendActivityLog(userInfo, request,
-						ActivityLogService.ACTIVITY_CREATE_MEMBER_FUNCTIONS,
-						ActivityLogService.ACTIVITY_CREATE_MEMBER_FUNCTIONS_DESC, String.valueOf(brokerCode),
-						approvalId);
+		try {
+			// get redis user info
+			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
+			// insert data to pending_approvals
+			String approvalId = insertBrokerFunctionsAssignPA(userInfo, brokerCode, brokerDto, refId);
+			// send activity log
+			activityLogService.sendActivityLog(userInfo, request,
+					ActivityLogService.ACTIVITY_CREATE_MEMBER_FUNCTIONS,
+					ActivityLogService.ACTIVITY_CREATE_MEMBER_FUNCTIONS_DESC, String.valueOf(brokerCode),
+					approvalId);
 
-				if (!brokerRepository.existsBrokerByCode(brokerCode)) {
-					throw new CustomException(ErrorMessage.RESULT_NOT_FOUND, HttpStatus.OK);
-				}
-				
-				List<Document> functions = new ArrayList<Document>();
-				for (RoleFunction function : brokerDto.getFunctions()) {
-					Document func = new Document();
-					func.append("code", function.getCode());
-					func.append("name", function.getName());
-					functions.add(func);
-				}
-				MongoDatabase database = MongoDBConnection.getMongoDatabase();
-				MongoCollection<Document> collection = database.getCollection("brokers");
-				
-				BasicDBObject query = new BasicDBObject();
-				query.append("code", brokerCode);
-				
-				BasicDBObject updateBroker = new BasicDBObject();
-				updateBroker.append("functions", functions);
-				updateBroker.append("user.functions", functions);
-				updateBroker.append("lastModifiedUser", Utility.getCurrentUsername());
-				updateBroker.append("lastModifiedDate", System.currentTimeMillis());
-				updateBroker.append("user.lastModifiedUser", Utility.getCurrentUsername());
-				updateBroker.append("user.lastModifiedDate", System.currentTimeMillis());
-				
-				
-				BasicDBObject update = new BasicDBObject();
-				update.append("$set", updateBroker);
-				
-				collection.updateOne(query, update);
-			} catch (CustomException e) {
-				throw e;
-			} catch (Exception e) {
-				AMLogger.logError(className, methodName, refId, e);
-				throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+			if (!brokerRepository.existsBrokerByCode(brokerCode)) {
+				throw new CustomException(ErrorMessage.RESULT_NOT_FOUND, HttpStatus.OK);
 			}
-		} else {
-			AMLogger.logMessage(className, methodName, refId, "Invalid input data");
-			throw new CustomException(ErrorMessage.INVALID_REQUEST, HttpStatus.BAD_REQUEST);
+			
+			List<Document> functions = new ArrayList<Document>();
+			for (RoleFunction function : brokerDto.getFunctions()) {
+				Document func = new Document();
+				func.append("code", function.getCode());
+				func.append("name", function.getName());
+				functions.add(func);
+			}
+			MongoDatabase database = MongoDBConnection.getMongoDatabase();
+			MongoCollection<Document> collection = database.getCollection("brokers");
+			
+			BasicDBObject query = new BasicDBObject();
+			query.append("code", brokerCode);
+			
+			BasicDBObject updateBroker = new BasicDBObject();
+			updateBroker.append("functions", functions);
+			updateBroker.append("user.functions", functions);
+			updateBroker.append("lastModifiedUser", Utility.getCurrentUsername());
+			updateBroker.append("lastModifiedDate", System.currentTimeMillis());
+			updateBroker.append("user.lastModifiedUser", Utility.getCurrentUsername());
+			updateBroker.append("user.lastModifiedDate", System.currentTimeMillis());
+			
+			
+			BasicDBObject update = new BasicDBObject();
+			update.append("$set", updateBroker);
+			
+			collection.updateOne(query, update);
+		} catch (CustomException e) {
+			throw e;
+		} catch (Exception e) {
+			AMLogger.logError(className, methodName, refId, e);
+			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 	
@@ -931,7 +897,7 @@ public class BrokerService {
 		}
 	}
 	
-	public BrokerDTO getBrokerCommodities(String brokerCode, long refId) {
+	public BrokerCommoditiesDTO getBrokerCommodities(String brokerCode, long refId) {
 		String methodName = "getBrokerCommodities";
 		try {
 			if (!brokerRepository.existsBrokerByCode(brokerCode)) {
@@ -950,7 +916,7 @@ public class BrokerService {
             projection.append("commodities.commodityName", 1.0);
             
             Document result = collection.find(query).projection(projection).first();
-			BrokerDTO brokerDto = mongoTemplate.getConverter().read(BrokerDTO.class, result);
+            BrokerCommoditiesDTO brokerDto = mongoTemplate.getConverter().read(BrokerCommoditiesDTO.class, result);
 			return brokerDto;
 		} catch (CustomException e) {
 			throw e;

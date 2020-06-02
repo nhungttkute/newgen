@@ -1,5 +1,6 @@
 package com.newgen.am.dto;
 
+import java.io.Serializable;
 import java.util.List;
 
 import javax.validation.Valid;
@@ -7,7 +8,6 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.newgen.am.model.Commodity;
 import com.newgen.am.model.CommodityFee;
 import com.newgen.am.model.Company;
@@ -21,8 +21,8 @@ import com.newgen.am.validation.FormatGroup;
 import com.newgen.am.validation.LengthGroup;
 import com.newgen.am.validation.ValidNumber;
 
-@JsonInclude(JsonInclude.Include.NON_DEFAULT)
-public class MemberDTO {
+public class MemberDTO implements Serializable{
+	private static final long serialVersionUID = 1L;
 	private String _id;
     @NotEmpty(message = "Required.")
     @ValidNumber(groups = FormatGroup.class)
@@ -34,7 +34,7 @@ public class MemberDTO {
     @NotEmpty(message = "Required.")
     @Size(min = 1, max = 20, message = "Invalid format.", groups = LengthGroup.class)
     private String status;
-    @Size(min = 1, max = 200, message = "Invalid format.", groups = LengthGroup.class)
+    @Size(max = 200, message = "Invalid format.", groups = LengthGroup.class)
     private String note;
     private long createdDate;
     @NotNull(message = "Required.")

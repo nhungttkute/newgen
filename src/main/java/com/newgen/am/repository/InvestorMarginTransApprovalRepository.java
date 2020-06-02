@@ -5,13 +5,13 @@
  */
 package com.newgen.am.repository;
 
-import com.newgen.am.model.InvestorAccTransApproval;
+import com.newgen.am.model.InvestorMarginTransApproval;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
 /**
  *
  * @author nhungtt
  */
-public interface InvestorAccTransApprovalRepository extends MongoRepository<InvestorAccTransApproval, String> {
+public interface InvestorMarginTransApprovalRepository extends MongoRepository<InvestorMarginTransApproval, String> {
     
 }

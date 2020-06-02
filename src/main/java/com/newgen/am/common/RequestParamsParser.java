@@ -215,7 +215,7 @@ public class RequestParamsParser {
 			while (itSort.hasNext()) {
 				Filter filter = itSort.next();
 				AMLogger.logMessage(className, methodName, refId, "[SORT]: " + filter.toString());
-				sort.append(filter.getFieldName(), Integer.parseInt(filter.getValue()));
+				sort.append(filter.getFieldName(), Double.parseDouble(filter.getValue()));
 			}
 		}
 
@@ -226,7 +226,7 @@ public class RequestParamsParser {
 		int skip = Constant.PAGINATION_DEFAULT_OFFSET;
 		int limit = Constant.PAGINATION_DEFAULT_LIMIT;
 		Document defaultSort = new Document();
-		defaultSort.append(nestedObjName + Constant.SORT_DETAUL_FIELD, -1);
+		defaultSort.append(nestedObjName + Constant.SORT_DETAUL_FIELD, -1d);
 		Document query = new Document();
 		if (Utility.isNotNull(queryString)) {
 			String reqParams = Utility.decode(queryString);

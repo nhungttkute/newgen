@@ -7,8 +7,9 @@ import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
 
 public abstract class AuditModel implements Serializable {
+	private static final long serialVersionUID = 1L;
 
-    @CreatedBy
+	@CreatedBy
     private String createdUser;
 
     @CreatedDate

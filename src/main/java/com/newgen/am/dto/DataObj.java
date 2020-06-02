@@ -26,7 +26,7 @@ public class DataObj implements Serializable {
     @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     private int fontSize;
     private List<ListUserDTO> users;
-    private InvestorAccountDTO investorAccount;
+    private AccountStatusDTO investorAccount;
 
     public LoginInvestorUserOutputDTO getUser() {
         return user;
@@ -92,11 +92,11 @@ public class DataObj implements Serializable {
         this.users = users;
     }
 
-    public InvestorAccountDTO getInvestorAccount() {
+    public AccountStatusDTO getInvestorAccount() {
         return investorAccount;
     }
 
-    public void setInvestorAccount(InvestorAccountDTO investorAccount) {
+    public void setInvestorAccount(AccountStatusDTO investorAccount) {
         this.investorAccount = investorAccount;
     }
 }

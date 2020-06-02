@@ -5,13 +5,16 @@
  */
 package com.newgen.am.model;
 
+import java.io.Serializable;
+
 import javax.validation.constraints.NotEmpty;
 
 /**
  *
  * @author nhungtt
  */
-public class UserRole {
+public class UserRole implements Serializable {
+	private static final long serialVersionUID = 1L;
 	@NotEmpty(message = "Required.")
     private String name;
 	@NotEmpty(message = "Required.")

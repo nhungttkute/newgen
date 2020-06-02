@@ -37,11 +37,12 @@ public class CollaboratorDTO implements Serializable {
     @NotEmpty(message = "Required.")
     @Size(min = 1, max = 200, message = "Invalid format.", groups = LengthGroup.class)
     private String name;
-    @Size(min = 1, max = 200, message = "Invalid format.", groups = LengthGroup.class)
+    @Size(max = 200, message = "Invalid format.", groups = LengthGroup.class)
     private String note;
     @NotEmpty(message = "Required.")
     @Size(min = 1, max = 20, message = "Invalid format.", groups = LengthGroup.class)
     private String status;
+    private long createdDate;
     @NotNull(message = "Required.")
     @Valid
     private Delegate delegate;
@@ -126,6 +127,12 @@ public class CollaboratorDTO implements Serializable {
 	}
 	public void setFunctions(List<RoleFunction> functions) {
 		this.functions = functions;
+	}
+	public long getCreatedDate() {
+		return createdDate;
+	}
+	public void setCreatedDate(long createdDate) {
+		this.createdDate = createdDate;
 	}
     
 }

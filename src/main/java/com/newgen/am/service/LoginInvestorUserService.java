@@ -188,7 +188,8 @@ public class LoginInvestorUserService {
 			long refId) {
 		String methodName = "changePassword";
 		try {
-			LoginInvestorUser user = loginInvUserRepository.findById(userId).get();
+			String username = Utility.getCurrentUsername();
+			LoginInvestorUser user = loginInvUserRepository.findByUsername(username);
 			if (user != null) {
 				if (passwordEncoder.matches(oldPassword, user.getPassword())) {
 					user.setPassword(passwordEncoder.encode(newPassword));
@@ -210,6 +211,8 @@ public class LoginInvestorUserService {
 				AMLogger.logMessage(newPassword, methodName, refId, "Can find user - id: " + userId);
 				throw new CustomException(ErrorMessage.USER_DOES_NOT_EXIST, HttpStatus.OK);
 			}
+		} catch (CustomException e) {
+			throw e;
 		} catch (Exception e) {
 			AMLogger.logError(className, methodName, refId, e);
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -233,7 +236,7 @@ public class LoginInvestorUserService {
 							.append("email", "$users.email").append("phoneNumber", "$users.phoneNumber")
 							.append("memberCode", 1.0).append("memberName", 1.0).append("brokerCode", 1.0)
 							.append("brokerName", 1.0).append("collaboratorCode", 1.0).append("collaboratorName", 1.0)
-							.append("investorCode", 1.0).append("investorName", 1.0).append("account", 1.0)
+							.append("investorCode", 1.0).append("investorName", 1.0).append("account", 1.0).append("cqgInfo", 1.0)
 							.append("orderLimit", 1.0).append("commodities", 1.0).append("marginRatioAlert", 1.0)
 							.append("marginMultiplier", 1.0).append("otherFee", 1.0).append("functions", new Document()
 									.append("$arrayElemAt", Arrays.asList("$roleObj.functions.code", 0.0)))));

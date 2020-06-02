@@ -3,13 +3,15 @@ package com.newgen.am.dto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.newgen.am.model.Commodity;
 import com.newgen.am.model.WatchList;
+
+import java.io.Serializable;
 import java.util.List;
 
 
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-public class LoginInvestorUserOutputDTO {
-
-    private String id;
+public class LoginInvestorUserOutputDTO implements Serializable {
+	private static final long serialVersionUID = 1L;
+	private String id;
     private String username;
     private String fullName;
     private String phoneNumber;

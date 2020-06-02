@@ -1,8 +1,11 @@
 package com.newgen.am.model;
 
+import java.io.Serializable;
+
 import com.newgen.am.validation.ValidUpdateStringField;
 
-public class RiskParameters {
+public class RiskParameters implements Serializable {
+	private static final long serialVersionUID = 1L;
 	@ValidUpdateStringField
 	private String newPositionOrderLock;
 	@ValidUpdateStringField

@@ -8,9 +8,6 @@ package com.newgen.am.model;
 import java.io.Serializable;
 
 import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.Positive;
-
-import org.modelmapper.internal.bytebuddy.implementation.bind.annotation.Pipe;
 
 import com.newgen.am.common.Constant;
 
@@ -24,9 +21,7 @@ public class CommodityFee extends AuditModel implements Serializable {
     private String commodityCode;
 	@NotEmpty(message = "Required.")
     private String commodityName;
-	@Positive
     private long brokerCommodityFee;
-	@Positive
     private long investorCommodityFee;
     private String currency = Constant.CURRENCY_VND;
 
@@ -69,5 +64,4 @@ public class CommodityFee extends AuditModel implements Serializable {
 	public void setInvestorCommodityFee(long investorCommodityFee) {
 		this.investorCommodityFee = investorCommodityFee;
 	}
-	
 }

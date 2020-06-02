@@ -5,6 +5,24 @@
  */
 package com.newgen.am.service;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.bson.Document;
+import org.bson.conversions.Bson;
+import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
 import com.google.gson.Gson;
 import com.mongodb.BasicDBObject;
 import com.mongodb.client.MongoCollection;
@@ -23,34 +41,15 @@ import com.newgen.am.dto.EmailDTO;
 import com.newgen.am.dto.LoginAdminUserOutputDTO;
 import com.newgen.am.dto.LoginAdminUsersDTO;
 import com.newgen.am.dto.LoginUserDataInputDTO;
-import com.newgen.am.dto.MemberDTO;
 import com.newgen.am.dto.UserInfoDTO;
 import com.newgen.am.exception.CustomException;
-import com.newgen.am.model.Investor;
 import com.newgen.am.model.LoginAdminUser;
+import com.newgen.am.model.LoginInvestorUser;
 import com.newgen.am.mongodb.pojo.UserFunctionResult;
 import com.newgen.am.repository.LoginAdminUserRepository;
 import com.newgen.am.security.AdminAuthenticationProvider;
 import com.newgen.am.security.AdminJwtTokenProvider;
 import com.newgen.am.security.AdminUsernamePasswordAuthenticationToken;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import javax.servlet.http.HttpServletRequest;
-import org.bson.Document;
-import org.bson.conversions.Bson;
-import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.http.HttpStatus;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
 
 /**
  *
@@ -178,7 +177,8 @@ public class LoginAdminUserService {
 			long refId) {
 		String methodName = "changePassword";
 		try {
-			LoginAdminUser user = loginAdmUserRepository.findById(userId).get();
+			String username = Utility.getCurrentUsername();
+			LoginAdminUser user = loginAdmUserRepository.findByUsername(username);
 			if (user != null) {
 				if (passwordEncoder.matches(oldPassword, user.getPassword())) {
 					user.setPassword(passwordEncoder.encode(newPassword));
@@ -201,6 +201,8 @@ public class LoginAdminUserService {
 				AMLogger.logMessage(newPassword, methodName, refId, "Can't find user - id: " + userId);
 				throw new CustomException(ErrorMessage.USER_DOES_NOT_EXIST, HttpStatus.OK);
 			}
+		} catch (CustomException e) {
+			throw e;
 		} catch (Exception e) {
 			AMLogger.logError(className, methodName, refId, e);
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -215,46 +217,258 @@ public class LoginAdminUserService {
 		List<String> roleFunctions = new ArrayList<>();
 		try {
 			MongoDatabase database = MongoDBConnection.getMongoDatabase();
-			MongoCollection<Document> collection = database.getCollection("departments");
+			
+			// if user is admin user
+			if (Utility.isNotNull(user.getDeptCode())) {
+				MongoCollection<Document> collection = database.getCollection("departments");
 
-			List<? extends Bson> pipeline = Arrays.asList(
-					new Document().append("$match", new Document().append("users.username", user.getUsername())),
-					new Document().append("$unwind", new Document().append("path", "$users")),
-					new Document().append("$match", new Document().append("users.username", user.getUsername())),
-					new Document().append("$lookup",
-							new Document().append("from", "system_roles").append("localField", "users.roles.name")
-									.append("foreignField", "name").append("as", "roleObj")),
-					new Document().append("$unwind", new Document().append("path", "$roleObj")),
-					new Document().append("$project", new Document().append("deptCode", "$code").append("deptName", "$name")
-							.append("fullName", "$users.fullName").append("email", "$users.email")
-							.append("phoneNumber", "$users.phoneNumber")
-							.append("userFunctions",
-									new Document().append("$concatArrays", Arrays.asList("$users.functions.code")))
-							.append("roleFunctions",
-									new Document().append("$concatArrays", Arrays.asList("$roleObj.functions.code")))));
+				List<? extends Bson> pipeline = Arrays.asList(
+						new Document().append("$match", new Document().append("users.username", user.getUsername())),
+						new Document().append("$unwind", new Document().append("path", "$users")),
+						new Document().append("$match", new Document().append("users.username", user.getUsername())),
+						new Document().append("$lookup",
+								new Document().append("from", "system_roles").append("localField", "users.roles.name")
+										.append("foreignField", "name").append("as", "roleObj")),
+						new Document().append("$unwind", new Document().append("path", "$roleObj")),
+						new Document().append("$project", new Document().append("_id", 0.0).append("deptCode", "$code").append("deptName", "$name")
+								.append("fullName", "$users.fullName").append("email", "$users.email")
+								.append("phoneNumber", "$users.phoneNumber")
+								.append("userFunctions",
+										new Document().append("$concatArrays", Arrays.asList("$users.functions.code")))
+								.append("roleFunctions",
+										new Document().append("$concatArrays", Arrays.asList("$roleObj.functions.code")))));
 
-			UserFunctionResult result = null;
-			try (MongoCursor<Document> cur = collection.aggregate(pipeline).iterator()) {
+				UserFunctionResult result = null;
+				try (MongoCursor<Document> cur = collection.aggregate(pipeline).iterator()) {
 
-				while (cur.hasNext()) {
-					result = mongoTemplate.getConverter().read(UserFunctionResult.class, cur.next());
-					if (result.getUserFunctions() != null)
-						userFunctions = result.getUserFunctions();
-					if (result.getRoleFunctions() != null)
-						roleFunctions.addAll(result.getRoleFunctions());
+					while (cur.hasNext()) {
+						result = mongoTemplate.getConverter().read(UserFunctionResult.class, cur.next());
+						if (result.getUserFunctions() != null)
+							userFunctions = result.getUserFunctions();
+						if (result.getRoleFunctions() != null)
+							roleFunctions.addAll(result.getRoleFunctions());
+					}
 				}
-			}
 
-			allFunctions.addAll(userFunctions);
-			allFunctions.addAll(roleFunctions);
-			if (result != null) {
-				userInfo.setDeptCode(result.getDeptCode());
-				userInfo.setDeptName(result.getDeptName());
-				userInfo.setFullName(result.getFullName());
-				userInfo.setEmail(result.getEmail());
-				userInfo.setPhoneNumber(result.getPhoneNumber());
+				allFunctions.addAll(userFunctions);
+				allFunctions.addAll(roleFunctions);
+				if (result != null) {
+					userInfo.setDeptCode(result.getDeptCode());
+					userInfo.setDeptName(result.getDeptName());
+					userInfo.setFullName(result.getFullName());
+					userInfo.setEmail(result.getEmail());
+					userInfo.setPhoneNumber(result.getPhoneNumber());
+				}
+				userInfo.setFunctions(allFunctions);
+			} else if (Utility.isNotNull(userInfo.getMemberCode())) {
+				MongoCollection<Document> collection = database.getCollection("members");
+				
+				List<? extends Bson> pipeline = Arrays.asList(
+	                    new Document()
+	                            .append("$match", new Document()
+	                                    .append("users.username", userInfo.getUsername())
+	                            ), 
+	                    new Document()
+	                            .append("$unwind", new Document()
+	                                    .append("path", "$users")
+	                            ), 
+	                    new Document()
+	                            .append("$match", new Document()
+	                                    .append("users.username", userInfo.getUsername())
+	                            ), 
+	                    new Document()
+	                            .append("$lookup", new Document()
+	                                    .append("from", "system_roles")
+	                                    .append("localField", "users.roles.name")
+	                                    .append("foreignField", "name")
+	                                    .append("as", "roleObj")
+	                            ), 
+	                    new Document().append("$unwind", new Document().append("path", "$roleObj")),
+	                    new Document()
+	                            .append("$project", new Document()
+	                            		.append("_id", 0.0)
+	                                    .append("memberCode", "$code")
+	                                    .append("memberName", "$name")
+	                                    .append("fullName", "$users.fullName")
+	                                    .append("email", "$users.email")
+	                                    .append("phoneNumber", "$users.phoneNumber")
+	                                    .append("commodities", 1.0)
+	                                    .append("userFunctions", new Document()
+	                                            .append("$concatArrays", Arrays.asList(
+	                                                    "$users.functions.code"
+	                                                )
+	                                            )
+	                                    )
+	                                    .append("roleFunctions", new Document()
+	                                            .append("$concatArrays", Arrays.asList(
+	                                                    "$roleObj.functions.code"
+	                                                )
+	                                            )
+	                                    )
+	                            )
+	                  
+	            );
+				
+				UserFunctionResult result = null;
+				try (MongoCursor<Document> cur = collection.aggregate(pipeline).iterator()) {
+
+					while (cur.hasNext()) {
+						result = mongoTemplate.getConverter().read(UserFunctionResult.class, cur.next());
+						if (result.getUserFunctions() != null)
+							userFunctions = result.getUserFunctions();
+						if (result.getRoleFunctions() != null)
+							roleFunctions.addAll(result.getRoleFunctions());
+					}
+				}
+
+				allFunctions.addAll(userFunctions);
+				allFunctions.addAll(roleFunctions);
+				if (result != null) {
+					userInfo.setMemberCode(result.getMemberCode());
+					userInfo.setMemberName(result.getMemberName());
+					userInfo.setFullName(result.getFullName());
+					userInfo.setEmail(result.getEmail());
+					userInfo.setPhoneNumber(result.getPhoneNumber());
+					userInfo.setCommodities(result.getCommodities());
+				}
+				userInfo.setFunctions(allFunctions);
+			} else if (Utility.isNotNull(userInfo.getBrokerCode())) {
+				MongoCollection<Document> collection = database.getCollection("brokers");
+				
+				List<? extends Bson> pipeline = Arrays.asList(
+	                    new Document()
+	                            .append("$match", new Document()
+	                                    .append("user.username", userInfo.getUsername())
+	                            ), 
+	                    new Document()
+	                            .append("$lookup", new Document()
+	                                    .append("from", "system_roles")
+	                                    .append("localField", "user.role.name")
+	                                    .append("foreignField", "name")
+	                                    .append("as", "roleObj")
+	                            ), 
+	                   new Document()
+	                            .append("$unwind", new Document()
+	                                    .append("path", "$roleObj")
+	                            ), 
+	                    new Document()
+	                            .append("$project", new Document()
+	                                    .append("_id", 0.0)
+	                                    .append("memberCode", 1.0)
+	                                    .append("memberName", 1.0)
+	                                    .append("brokerCode", "$code")
+	                                    .append("brokerName", "$name")
+	                                    .append("fullName", "$user.fullName")
+	                                    .append("email", "$user.email")
+	                                    .append("phoneNumber", "$user.phoneNumber")
+	                                    .append("commodities", 1.0)
+	                                    .append("userFunctions", new Document()
+	                                            .append("$concatArrays", Arrays.asList(
+	                                                    "$user.functions.code"
+	                                                )
+	                                            )
+	                                    )
+	                                    .append("roleFunctions", new Document()
+	                                            .append("$concatArrays", Arrays.asList(
+	                                                    "$roleObj.functions.code"
+	                                                )
+	                                            )
+	                                    )
+	                            )
+	            );
+				
+				UserFunctionResult result = null;
+				try (MongoCursor<Document> cur = collection.aggregate(pipeline).iterator()) {
+
+					while (cur.hasNext()) {
+						result = mongoTemplate.getConverter().read(UserFunctionResult.class, cur.next());
+						if (result.getUserFunctions() != null)
+							userFunctions = result.getUserFunctions();
+						if (result.getRoleFunctions() != null)
+							roleFunctions.addAll(result.getRoleFunctions());
+					}
+				}
+
+				allFunctions.addAll(userFunctions);
+				allFunctions.addAll(roleFunctions);
+				if (result != null) {
+					userInfo.setMemberCode(result.getMemberCode());
+					userInfo.setMemberName(result.getMemberName());
+					userInfo.setFullName(result.getFullName());
+					userInfo.setEmail(result.getEmail());
+					userInfo.setPhoneNumber(result.getPhoneNumber());
+					userInfo.setCommodities(result.getCommodities());
+				}
+				userInfo.setFunctions(allFunctions);
+			} else if (Utility.isNotNull(userInfo.getCollaboratorCode())) {
+				MongoCollection<Document> collection = database.getCollection("brokers");
+				
+				List<? extends Bson> pipeline = Arrays.asList(
+	                    new Document()
+	                            .append("$match", new Document()
+	                                    .append("user.username", userInfo.getUsername())
+	                            ), 
+	                    new Document()
+	                            .append("$lookup", new Document()
+	                                    .append("from", "system_roles")
+	                                    .append("localField", "user.role.name")
+	                                    .append("foreignField", "name")
+	                                    .append("as", "roleObj")
+	                            ), 
+	                    new Document().append("$unwind", new Document().append("path", "$roleObj")),
+	                    new Document()
+	                            .append("$project", new Document()
+	                                    .append("_id", 0.0)
+	                                    .append("memberCode", 1.0)
+	                                    .append("memberName", 1.0)
+	                                    .append("brokerCode", 1.0)
+	                                    .append("brokerName", 1.0)
+	                                    .append("collaboratorCode", "$code")
+	                                    .append("collaboratorName", "$name")
+	                                    .append("fullName", "$user.fullName")
+	                                    .append("email", "$user.email")
+	                                    .append("phoneNumber", "$user.phoneNumber")
+	                                    .append("commodities", 1.0)
+	                                    .append("userFunctions", new Document()
+	                                            .append("$concatArrays", Arrays.asList(
+	                                                    "$user.functions.code"
+	                                                )
+	                                            )
+	                                    )
+	                                    .append("roleFunctions", new Document()
+	                                            .append("$concatArrays", Arrays.asList(
+	                                                    "$roleObj.functions.code"
+	                                                )
+	                                            )
+	                                    )
+	                            )
+	            );
+				
+				UserFunctionResult result = null;
+				try (MongoCursor<Document> cur = collection.aggregate(pipeline).iterator()) {
+
+					while (cur.hasNext()) {
+						result = mongoTemplate.getConverter().read(UserFunctionResult.class, cur.next());
+						if (result.getUserFunctions() != null)
+							userFunctions = result.getUserFunctions();
+						if (result.getRoleFunctions() != null)
+							roleFunctions.addAll(result.getRoleFunctions());
+					}
+				}
+
+				allFunctions.addAll(userFunctions);
+				allFunctions.addAll(roleFunctions);
+				if (result != null) {
+					userInfo.setMemberCode(result.getMemberCode());
+					userInfo.setMemberName(result.getMemberName());
+					userInfo.setFullName(result.getFullName());
+					userInfo.setEmail(result.getEmail());
+					userInfo.setPhoneNumber(result.getPhoneNumber());
+					userInfo.setCommodities(result.getCommodities());
+				}
+				userInfo.setFunctions(allFunctions);
 			}
-			userInfo.setFunctions(allFunctions);
+			
 		} catch (Exception e) {
 			AMLogger.logError(className, methodName, refId, e);
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);

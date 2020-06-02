@@ -1,6 +1,11 @@
 package com.newgen.am.dto;
 
+import java.io.Serializable;
 import java.util.List;
+
+import javax.validation.Valid;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.Size;
 
 import com.newgen.am.model.Commodity;
 import com.newgen.am.model.Company;
@@ -9,59 +14,76 @@ import com.newgen.am.model.Individual;
 import com.newgen.am.model.InvestorAccount;
 import com.newgen.am.model.InvestorUser;
 import com.newgen.am.model.MarginRatioAlert;
+import com.newgen.am.model.RiskParameters;
 import com.newgen.am.model.UserRole;
+import com.newgen.am.validation.FormatGroup;
+import com.newgen.am.validation.LengthGroup;
+import com.newgen.am.validation.ValidInvestorCode;
+import com.newgen.am.validation.ValidNumber;
+import com.newgen.am.validation.ValidUpdateStringField;
 
-public class InvestorDTO {
+public class InvestorDTO implements Serializable {
+	private static final long serialVersionUID = 1L;
 	private String _id;
-    private String memberId;
-    private String brokerId;
-    private String collaboratorId;
-    private String memberCode;
+	@NotEmpty(message = "Required.")
+    @ValidNumber(groups = FormatGroup.class)
+    @Size(min = 3, max = 3, message = "Invalid format.", groups = LengthGroup.class)
+	private String memberCode;
+	@NotEmpty(message = "Required.")
+    @Size(min = 1, max = 200, message = "Invalid format.", groups = LengthGroup.class)
     private String memberName;
+	@ValidUpdateStringField
+    @ValidNumber(groups = FormatGroup.class)
+    @Size(min = 8, max = 8, message = "Invalid format.", groups = LengthGroup.class)
     private String brokerCode;
+	@ValidUpdateStringField
+    @Size(min = 1, max = 200, message = "Invalid format.", groups = LengthGroup.class)
     private String brokerName;
+	@ValidUpdateStringField
+	@ValidNumber(groups = FormatGroup.class)
+    @Size(min = 6, max = 6, message = "Invalid format.", groups = LengthGroup.class)
     private String collaboratorCode;
+	@ValidUpdateStringField
+    @Size(min = 1, max = 200, message = "Invalid format.", groups = LengthGroup.class)
     private String collaboratorName;
+    @NotEmpty(message = "Required.")
+    @ValidInvestorCode(groups = FormatGroup.class)
     private String investorCode;
+    @NotEmpty(message = "Required.")
+    @Size(min = 1, max = 200, message = "Invalid format.", groups = LengthGroup.class)
     private String investorName;
-    private String status;
+    @Size(max = 200, message = "Invalid format.", groups = LengthGroup.class)
     private String note;
+    @NotEmpty(message = "Required.")
+    @Size(max = 20, message = "Invalid format.", groups = LengthGroup.class)
+    private String status;
+    @NotEmpty(message = "Required.")
+    @Size(max = 20, message = "Invalid format.", groups = LengthGroup.class)
     private String type;
+    private long createdDate;
+    @Valid
     private Company company;
+    @Valid
     private Individual individual;
     private Contact contact;
-    private InvestorAccount account;
+    private MarginInfoDTO account;
     private List<InvestorUser> users;
     private UserRole role;
     private int orderLimit;
-    private List<Commodity> commodities;
-    private MarginRatioAlert marginRatioAlert;
+    private int defaultPositionLimit;
+    private long defaultCommodityFee;
     private double marginMultiplier;
     private long generalFee;
     private long otherFee;
+    private MarginRatioAlert marginRatioAlert;
+    private RiskParameters riskParameters;
+    private List<Commodity> commodities;
+    
 	public String get_id() {
 		return _id;
 	}
 	public void set_id(String _id) {
 		this._id = _id;
-	}
-	public String getMemberId() {
-		return memberId;
-	}
-	public void setMemberId(String memberId) {
-		this.memberId = memberId;
-	}
-	public String getBrokerId() {
-		return brokerId;
-	}
-	public void setBrokerId(String brokerId) {
-		this.brokerId = brokerId;
-	}
-	public String getCollaboratorId() {
-		return collaboratorId;
-	}
-	public void setCollaboratorId(String collaboratorId) {
-		this.collaboratorId = collaboratorId;
 	}
 	public String getMemberCode() {
 		return memberCode;
@@ -147,10 +169,10 @@ public class InvestorDTO {
 	public void setContact(Contact contact) {
 		this.contact = contact;
 	}
-	public InvestorAccount getAccount() {
+	public MarginInfoDTO getAccount() {
 		return account;
 	}
-	public void setAccount(InvestorAccount account) {
+	public void setAccount(MarginInfoDTO account) {
 		this.account = account;
 	}
 	public List<InvestorUser> getUsers() {
@@ -200,6 +222,30 @@ public class InvestorDTO {
 	}
 	public void setOtherFee(long otherFee) {
 		this.otherFee = otherFee;
+	}
+	public int getDefaultPositionLimit() {
+		return defaultPositionLimit;
+	}
+	public void setDefaultPositionLimit(int defaultPositionLimit) {
+		this.defaultPositionLimit = defaultPositionLimit;
+	}
+	public long getDefaultCommodityFee() {
+		return defaultCommodityFee;
+	}
+	public void setDefaultCommodityFee(long defaultCommodityFee) {
+		this.defaultCommodityFee = defaultCommodityFee;
+	}
+	public RiskParameters getRiskParameters() {
+		return riskParameters;
+	}
+	public void setRiskParameters(RiskParameters riskParameters) {
+		this.riskParameters = riskParameters;
+	}
+	public long getCreatedDate() {
+		return createdDate;
+	}
+	public void setCreatedDate(long createdDate) {
+		this.createdDate = createdDate;
 	}
     
 }

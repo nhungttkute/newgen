@@ -8,6 +8,7 @@ import com.newgen.am.common.ErrorMessage;
 import com.newgen.am.common.Utility;
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.lang.SerializationUtils;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.newgen.am.dto.LoginUserDataInputDTO;
 import com.newgen.am.dto.ResponseObj;
 import com.newgen.am.exception.CustomException;
+import com.newgen.am.dto.AdminResponseObj;
 import com.newgen.am.dto.DataObj;
 import com.newgen.am.dto.ListUserDTO;
 import com.newgen.am.dto.LoginInvestorUserOutputDTO;
@@ -54,7 +56,11 @@ public class LoginInvestorUserController {
         response.setData(new DataObj());
         response.getData().setUser(loginUserDto);
         
-        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+        ResponseObj logResponse = (ResponseObj) SerializationUtils.clone(response);
+        if (logResponse != null && logResponse.getData() != null) {
+        	logResponse.getData().setLayout("");
+        }
+        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(logResponse));
         return response;
     }
 

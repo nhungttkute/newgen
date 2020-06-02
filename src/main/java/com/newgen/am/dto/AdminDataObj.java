@@ -5,20 +5,21 @@
  */
 package com.newgen.am.dto;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.newgen.am.model.Commodity;
-import com.newgen.am.model.RoleFunction;
-import com.newgen.am.model.SystemFunction;
-import com.newgen.am.model.WatchList;
+import java.io.Serializable;
 import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.newgen.am.model.RoleFunction;
+import com.newgen.am.model.WatchList;
 
 /**
  *
  * @author nhungtt
  */
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-public class AdminDataObj {
-    private LoginAdminUserOutputDTO user;
+public class AdminDataObj implements Serializable {
+	private static final long serialVersionUID = 1L;
+	private LoginAdminUserOutputDTO user;
     private String accessToken;
     private List<WatchList> watchLists;
     private String layout;
@@ -43,11 +44,13 @@ public class AdminDataObj {
     private List<UserDTO> memberUsers;
     private List<RoleDTO> memberRoles;
     private List<RoleFunction> memberFunctions;
+    private MemberCommoditiesDTO memberCommodities;
     
     // response for broker
     private List<BrokerDTO> brokers;
     private BrokerDTO broker;
     private UserDTO brokerUser;
+    private BrokerCommoditiesDTO brokerCommodities;
     
     // response for collaborator
     private List<CollaboratorDTO> collaborators;
@@ -57,9 +60,24 @@ public class AdminDataObj {
     // response for common list
     private List<ListElementDTO> memberList;
     private List<ListElementDTO> brokerList;
+    private List<ListElementDTO> collaboratorList;
+    private List<ListElementDTO> investorList;
+    
+    private List<NewsUserInfo> adminUserList;
+    private List<NewsUserInfo> memberUserList;
+    private List<NewsUserInfo> brokerUserList;
+    private List<NewsUserInfo> collaboratorUserList;
+    private List<NewsUserInfo> investorUserList;
     
     // response for investor
     private List<String> investorCodes;
+    private List<InvestorDTO> investors;
+    private InvestorDTO investor;
+    private UserDTO investorUser;
+    private List<UserDTO> investorUsers;
+    @JsonInclude(JsonInclude.Include.NON_DEFAULT)
+    private long withdrawableAmount;
+    private List<AccountStatusDTO> accountStatusInfos;
 
     public LoginAdminUserOutputDTO getUser() {
         return user;
@@ -292,5 +310,124 @@ public class AdminDataObj {
 	public void setBrokerList(List<ListElementDTO> brokerList) {
 		this.brokerList = brokerList;
 	}
-    
+
+	public MemberCommoditiesDTO getMemberCommodities() {
+		return memberCommodities;
+	}
+
+	public void setMemberCommodities(MemberCommoditiesDTO memberCommodities) {
+		this.memberCommodities = memberCommodities;
+	}
+
+	public BrokerCommoditiesDTO getBrokerCommodities() {
+		return brokerCommodities;
+	}
+
+	public void setBrokerCommodities(BrokerCommoditiesDTO brokerCommodities) {
+		this.brokerCommodities = brokerCommodities;
+	}
+
+	public List<InvestorDTO> getInvestors() {
+		return investors;
+	}
+
+	public void setInvestors(List<InvestorDTO> investors) {
+		this.investors = investors;
+	}
+
+	public InvestorDTO getInvestor() {
+		return investor;
+	}
+
+	public void setInvestor(InvestorDTO investor) {
+		this.investor = investor;
+	}
+
+	public UserDTO getInvestorUser() {
+		return investorUser;
+	}
+
+	public void setInvestorUser(UserDTO investorUser) {
+		this.investorUser = investorUser;
+	}
+
+	public List<UserDTO> getInvestorUsers() {
+		return investorUsers;
+	}
+
+	public void setInvestorUsers(List<UserDTO> investorUsers) {
+		this.investorUsers = investorUsers;
+	}
+
+	public List<ListElementDTO> getCollaboratorList() {
+		return collaboratorList;
+	}
+
+	public void setCollaboratorList(List<ListElementDTO> collaboratorList) {
+		this.collaboratorList = collaboratorList;
+	}
+
+	public List<ListElementDTO> getInvestorList() {
+		return investorList;
+	}
+
+	public void setInvestorList(List<ListElementDTO> investorList) {
+		this.investorList = investorList;
+	}
+
+	public List<NewsUserInfo> getMemberUserList() {
+		return memberUserList;
+	}
+
+	public void setMemberUserList(List<NewsUserInfo> memberUserList) {
+		this.memberUserList = memberUserList;
+	}
+
+	public List<NewsUserInfo> getBrokerUserList() {
+		return brokerUserList;
+	}
+
+	public void setBrokerUserList(List<NewsUserInfo> brokerUserList) {
+		this.brokerUserList = brokerUserList;
+	}
+
+	public List<NewsUserInfo> getCollaboratorUserList() {
+		return collaboratorUserList;
+	}
+
+	public void setCollaboratorUserList(List<NewsUserInfo> collaboratorUserList) {
+		this.collaboratorUserList = collaboratorUserList;
+	}
+
+	public List<NewsUserInfo> getInvestorUserList() {
+		return investorUserList;
+	}
+
+	public void setInvestorUserList(List<NewsUserInfo> investorUserList) {
+		this.investorUserList = investorUserList;
+	}
+
+	public List<NewsUserInfo> getAdminUserList() {
+		return adminUserList;
+	}
+
+	public void setAdminUserList(List<NewsUserInfo> adminUserList) {
+		this.adminUserList = adminUserList;
+	}
+
+	public long getWithdrawableAmount() {
+		return withdrawableAmount;
+	}
+
+	public void setWithdrawableAmount(long withdrawableAmount) {
+		this.withdrawableAmount = withdrawableAmount;
+	}
+
+	public List<AccountStatusDTO> getAccountStatusInfos() {
+		return accountStatusInfos;
+	}
+
+	public void setAccountStatusInfos(List<AccountStatusDTO> accountStatusInfos) {
+		this.accountStatusInfos = accountStatusInfos;
+	}
 }

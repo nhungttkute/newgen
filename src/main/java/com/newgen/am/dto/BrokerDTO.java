@@ -7,7 +7,6 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Size;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.newgen.am.model.BrokerUser;
 import com.newgen.am.model.Company;
 import com.newgen.am.model.Contact;
@@ -18,7 +17,6 @@ import com.newgen.am.validation.FormatGroup;
 import com.newgen.am.validation.LengthGroup;
 import com.newgen.am.validation.ValidNumber;
 
-@JsonInclude(JsonInclude.Include.NON_DEFAULT)
 public class BrokerDTO implements Serializable {
 	/**
 	 * 
@@ -36,7 +34,7 @@ public class BrokerDTO implements Serializable {
     @NotEmpty(message = "Required.")
     @Size(min = 1, max = 200, message = "Invalid format.", groups = LengthGroup.class)
     private String name;
-    @Size(min = 1, max = 200, message = "Invalid format.", groups = LengthGroup.class)
+    @Size(max = 200, message = "Invalid format.", groups = LengthGroup.class)
     private String note;
     @NotEmpty(message = "Required.")
     @Size(min = 1, max = 20, message = "Invalid format.", groups = LengthGroup.class)

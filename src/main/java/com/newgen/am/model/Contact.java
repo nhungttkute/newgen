@@ -5,12 +5,15 @@
  */
 package com.newgen.am.model;
 
+import java.io.Serializable;
+
 /**
  *
  * @author nhungtt
  */
-public class Contact {
-    private String fullName;
+public class Contact implements Serializable {
+	private static final long serialVersionUID = 1L;
+	private String fullName;
     private String phoneNumber;
     private String email;
 

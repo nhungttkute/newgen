@@ -7,6 +7,8 @@ package com.newgen.am.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.newgen.am.model.WatchList;
+
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -14,8 +16,9 @@ import java.util.List;
  * @author nhungtt
  */
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-public class LoginAdminUserOutputDTO {
-    private String id;
+public class LoginAdminUserOutputDTO implements Serializable {
+	private static final long serialVersionUID = 1L;
+	private String id;
     private String username;
     private String fullName;
     private String phoneNumber;

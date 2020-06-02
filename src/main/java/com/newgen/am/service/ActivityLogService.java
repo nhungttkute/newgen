@@ -125,6 +125,41 @@ public class ActivityLogService {
     public static final String ACTIVITY_CREATE_COLLABORATOR_FUNCTIONS = "Gán quyền riêng cho MG";
     public static final String ACTIVITY_CREATE_COLLABORATOR_FUNCTIONS_DESC = "Gán quyền riêng cho CTV MG %s - mã phê duyệt %s";
     
+    public static final String ACTIVITY_CREATE_INVESTOR = "Tạo thông tin TKGD";
+    public static final String ACTIVITY_CREATE_INVESTOR_DESC = "Tạo thông tin TKGD %s - mã phê duyệt %s";
+    public static final String ACTIVITY_CREATE_INVESTOR_USER = "Tạo đăng nhập TKGD";
+    public static final String ACTIVITY_CREATE_INVESTOR_USER_DESC = "Tạo đăng nhập TKGD %s";
+    public static final String ACTIVITY_UPDATE_INVESTOR = "Cập nhật thông tin TKGD";
+    public static final String ACTIVITY_UPDATE_INVESTOR_DESC = "Cập nhật thông tin TKGD %s - mã phê duyệt %s";
+    public static final String ACTIVITY_CREATE_INVESTOR_USER2 = "Tạo đăng nhập thứ 2 trở lên cho TKGD";
+    public static final String ACTIVITY_CREATE_INVESTOR_USER2_DESC = "Tạo đăng nhập %s cho TKGD %s - mã phê duyệt %s";
+    public static final String ACTIVITY_CREATE_INVESTOR_DEFAULT_SETTING = "Thiết lập hạn mức, phí HH mặc định TKGD";
+    public static final String ACTIVITY_CREATE_INVESTOR_DEFAULT_SETTING_DESC = "Thiết lập hạn mức, phí HH mặc định TKGD %s";
+    public static final String ACTIVITY_CREATE_INVESTOR_COMMODITIES_ASSIGN = "Gán hàng hóa, phí HH, hạn mức HH cho TKGD";
+    public static final String ACTIVITY_CREATE_INVESTOR_COMMODITIES_ASSIGN_DESC = "Gán hàng hóa, phí HH, hạn mức HH cho TKGD %s";
+    public static final String ACTIVITY_CREATE_INVESTOR_RISK_ORDER_LOCK = "Thiết lập chức năng khoá giao dịch cho TKGD";
+    public static final String ACTIVITY_CREATE_INVESTOR_RISK_ORDER_LOCK_DESC = "Thiết lập chức năng khoá giao dịch cho TKGD %s - mã phê duyệt %s";
+    public static final String ACTIVITY_CREATE_INVESTOR_RISK_NEW_POSITION_ORDER_LOCK = "Thiết lập chức năng chặn giao dịch một chiều cho TKGD";
+    public static final String ACTIVITY_CREATE_INVESTOR_RISK_NEW_POSITION_ORDER_LOCK_DESC = "Thiết lập chức năng chặn giao dịch một chiều cho TKGD %s - mã phê duyệt %s";
+    public static final String ACTIVITY_CREATE_INVESTOR_MARGIN_MULTIPLIER = "Thiết lập hệ số ký quỹ cho TKGD";
+    public static final String ACTIVITY_CREATE_INVESTOR_MARGIN_MULTIPLIER_DESC = "Thiết lập hệ số ký quỹ cho TKGD %s";
+    public static final String ACTIVITY_CREATE_INVESTOR_MARGIN_RATIO = "Thiết lập tỷ lệ ký quỹ cho TKGD";
+    public static final String ACTIVITY_CREATE_INVESTOR_MARGIN_RATIO_DESC = "Thiết lập tỷ lệ ký quỹ cho TKGD %s";
+    public static final String ACTIVITY_CREATE_INVESTOR_GENERAL_FEE = "Thiết lập thuế/phí cho TKGD";
+    public static final String ACTIVITY_CREATE_INVESTOR_GENERAL_FEE_DESC = "Thiết lập thuế/phí cho TKGD %s";
+    public static final String ACTIVITY_CREATE_INVESTOR_OTHER_FEE = "Thiết lập phí khác cho TKGD";
+    public static final String ACTIVITY_CREATE_INVESTOR_OTHER_FEE_DESC = "Thiết lập phí khác cho TKGD %s";
+    public static final String ACTIVITY_INVESTOR_BROKER_CHANGE = "Chuyển TKGD sang MG mới";
+    public static final String ACTIVITY_INVESTOR_BROKER_CHANGE_DESC = "Chuyển TKGD %s sang MG mới %s - mã phê duyệt %s";
+    public static final String ACTIVITY_INVESTOR_COLLABORATOR_CHANGE = "Chuyển TKGD sang CTV MG mới";
+    public static final String ACTIVITY_INVESTOR_COLLABORATOR_CHANGE_DESC = "Chuyển TKGD %s sang CTV MG mới %s - mã phê duyệt %s";
+    public static final String ACTIVITY_CREATE_INVESTOR_DEPOSIT_MONEY = "Nộp ký quỹ TKGD";
+    public static final String ACTIVITY_CREATE_INVESTOR_DEPOSIT_MONEY_DESC = "Nộp ký quỹ TKGD %s - mã phê duyệt %s";
+    public static final String ACTIVITY_CREATE_INVESTOR_WITHDRAWAL_MONEY = "Rút ký quỹ TKGD";
+    public static final String ACTIVITY_CREATE_INVESTOR_WITHDRAWAL_MONEY_DESC = "Rút ký quỹ TKGD %s - mã phê duyệt %s";
+    public static final String ACTIVITY_UPDATE_MARGIN_INFO = "Cập nhật Lãi suất dư thừa/thiếu hụt ký quỹ";
+    public static final String ACTIVITY_UPDATE_MARGIN_INFO_DESC = "Cập nhật Lãi suất dư thừa/thiếu hụt ký quỹ cho TKGD %s";
+    
     @Autowired
     private RedisMessagePublisher redisMessagePublisher;
     

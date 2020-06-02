@@ -20,6 +20,7 @@ public class ApprovalConstant {
     public static final String DEPARTMENT_USER_UPDATE = "DepartmentService.updateDepartmentUser";
     public static final String DEPARTMENT_USER_ROLES_CREATE = "DepartmentService.saveDepartmentUserRoles";
     public static final String DEPARTMENT_USER_FUNCTIONS_CREATE = "DepartmentService.saveDepartmentUserFunctions";
+    public static final String DEPARTMENT_CHANGE_USER_DEPT = "DepartmentService.changeUserDepartment";
     
     public static final String SYSTEM_ROLE_CREATE = "SystemRoleService.createSystemRole";
     public static final String SYSTEM_ROLE_UPDATE = "SystemRoleService.updateSystemRole";
@@ -56,4 +57,14 @@ public class ApprovalConstant {
     public static final String COLLABORATOR_CREATE = "CollaboratorService.createCollaborator";
     public static final String COLLABORATOR_UPDATE = "CollaboratorService.createCollaborator";
     public static final String COLLABORATOR_FUNCTIONS_CREATE = "CollaboratorService.createCollaborator";
+    
+    public static final String INVESTOR_CREATE = "InvestorService.createInvestor";
+    public static final String INVESTOR_UPDATE = "InvestorService.updateInvestor";
+    public static final String INVESTOR_USER_CREATE = "InvestorService.createInvestorUser";
+    public static final String INVESTOR_RISK_NEW_POSITION_LOCK_SET = "InvestorService.setInvestorNewPositionOrderLock";
+    public static final String INVESTOR_RISK_ORDER_LOCK_SET = "InvestorService.setInvestorOrderLock";
+    public static final String INVESTOR_DEPOSIT_MONEY = "InvestorService.implDepositMargin";
+    public static final String INVESTOR_WITHDRAW_MONEY = "InvestorService.implWithdrawMargin";
+    public static final String INVESTOR_CHANGE_BROKER = "InvestorService.changeBroker";
+    public static final String INVESTOR_CHANGE_COLLABORATOR = "InvestorService.changeCollaborator";
 }

@@ -6,6 +6,7 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang.SerializationUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -31,9 +32,11 @@ import com.newgen.am.dto.CommoditiesDTO;
 import com.newgen.am.dto.CommodityFeesDTO;
 import com.newgen.am.dto.FunctionsDTO;
 import com.newgen.am.dto.GeneralFeeDTO;
+import com.newgen.am.dto.ListElementDTO;
 import com.newgen.am.dto.MarginMultiplierDTO;
 import com.newgen.am.dto.MarginRatioAlertDTO;
 import com.newgen.am.dto.MemberCSV;
+import com.newgen.am.dto.MemberCommoditiesDTO;
 import com.newgen.am.dto.MemberDTO;
 import com.newgen.am.dto.OtherFeeDTO;
 import com.newgen.am.dto.RiskParametersDTO;
@@ -168,8 +171,15 @@ public class MemberController {
 			response.setStatus(Constant.RESPONSE_ERROR);
 			response.setErrMsg(ErrorMessage.RESULT_NOT_FOUND);
 		}
-
-		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+		
+		AdminResponseObj logResponse = (AdminResponseObj) SerializationUtils.clone(response);
+		if (logResponse.getData().getMember() != null && logResponse.getData().getMember().getCompany() != null && logResponse.getData().getMember().getCompany().getDelegate() != null) {
+			logResponse.getData().getMember().getCompany().getDelegate().setScannedBackIdCard("");
+			logResponse.getData().getMember().getCompany().getDelegate().setScannedFrontIdCard("");
+			logResponse.getData().getMember().getCompany().getDelegate().setScannedSignature("");
+		}
+		
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(logResponse));
 		return response;
 	}
 	
@@ -595,15 +605,49 @@ public class MemberController {
 				String.format("REQUEST_API: [GET]/admin/members/%s/commodities", memberCode));
 		
 		AdminResponseObj response = new AdminResponseObj();
-		MemberDTO memberDto = memberService.getMemberCommodities(memberCode, refId);
+		MemberCommoditiesDTO memberDto = memberService.getMemberCommodities(memberCode, refId);
 		if (memberDto != null) {
 			response.setStatus(Constant.RESPONSE_OK);
 			response.setData(new AdminDataObj());
-			response.getData().setMember(memberDto);
+			response.getData().setMemberCommodities(memberDto);
 		} else {
 			response.setStatus(Constant.RESPONSE_ERROR);
 			response.setErrMsg(ErrorMessage.RESULT_NOT_FOUND);
 		}
+
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+		return response;
+	}
+	
+	@GetMapping("/admin/members/{memberCode}/brokerList")
+	public AdminResponseObj getMemberBrokerList(HttpServletRequest request, @PathVariable String memberCode) {
+		String methodName = "getMemberBrokerList";
+		long refId = System.currentTimeMillis();
+		AMLogger.logMessage(className, methodName, refId,
+				String.format("REQUEST_API: [GET]/admin/members/%s/brokerList", memberCode));
+
+		List<ListElementDTO> brokerList = memberService.getMemberBrokerList(request, memberCode, refId);
+		AdminResponseObj response = new AdminResponseObj();
+		response.setStatus(Constant.RESPONSE_OK);
+        response.setData(new AdminDataObj());
+        response.getData().setBrokerList(brokerList);
+
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+		return response;
+	}
+	
+	@GetMapping("/admin/members/{memberCode}/collaboratorList")
+	public AdminResponseObj getMemberCollaboratorList(HttpServletRequest request, @PathVariable String memberCode) {
+		String methodName = "getMemberCollaboratorList";
+		long refId = System.currentTimeMillis();
+		AMLogger.logMessage(className, methodName, refId,
+				String.format("REQUEST_API: [GET]/admin/members/%s/collaboratorList", memberCode));
+
+		List<ListElementDTO> collaboratorList = memberService.getMemberCollaboratorList(request, memberCode, refId);
+		AdminResponseObj response = new AdminResponseObj();
+		response.setStatus(Constant.RESPONSE_OK);
+        response.setData(new AdminDataObj());
+        response.getData().setCollaboratorList(collaboratorList);
 
 		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
 		return response;

@@ -1,34 +1,19 @@
 package com.newgen.am.dto;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-
-@JsonInclude(JsonInclude.Include.NON_NULL)
-public class ListElementDTO {
+public class MarginTransactionDTO {
 	private String memberCode;
 	private String brokerCode;
 	private String collaboratorCode;
 	private String investorCode;
-	private String investorName;
-	private String code;
-	private String name;
+	private String transactionType;
+	private long amount;
+	private String note;
 	
 	public String getMemberCode() {
 		return memberCode;
 	}
 	public void setMemberCode(String memberCode) {
 		this.memberCode = memberCode;
-	}
-	public String getCode() {
-		return code;
-	}
-	public void setCode(String code) {
-		this.code = code;
-	}
-	public String getName() {
-		return name;
-	}
-	public void setName(String name) {
-		this.name = name;
 	}
 	public String getBrokerCode() {
 		return brokerCode;
@@ -48,10 +33,23 @@ public class ListElementDTO {
 	public void setInvestorCode(String investorCode) {
 		this.investorCode = investorCode;
 	}
-	public String getInvestorName() {
-		return investorName;
+	public String getTransactionType() {
+		return transactionType;
 	}
-	public void setInvestorName(String investorName) {
-		this.investorName = investorName;
+	public void setTransactionType(String transactionType) {
+		this.transactionType = transactionType;
 	}
+	public long getAmount() {
+		return amount;
+	}
+	public void setAmount(long amount) {
+		this.amount = amount;
+	}
+	public String getNote() {
+		return note;
+	}
+	public void setNote(String note) {
+		this.note = note;
+	}
+	
 }

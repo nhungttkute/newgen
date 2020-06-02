@@ -8,11 +8,11 @@ import javax.validation.constraints.Size;
 import com.newgen.am.validation.LengthGroup;
 import com.newgen.am.validation.ValidUpdateStringField;
 
-public class UpdateBrokerDTO implements Serializable {
+public class UpdateInvestorDTO implements Serializable {
 	private static final long serialVersionUID = 1L;
 	@ValidUpdateStringField
     @Size(max = 200, message = "Invalid format.", groups = LengthGroup.class)
-    private String name;
+    private String investorName;
 	@Size(max = 200, message = "Invalid format.", groups = LengthGroup.class)
     private String note;
     @ValidUpdateStringField
@@ -22,12 +22,15 @@ public class UpdateBrokerDTO implements Serializable {
     private UpdateCompanyDTO company;
     @Valid
     private UpdateIndividualDTO individual;
+    private int orderLimit;
+    private int defaultPositionLimit;
+    private long defaultCommodityFee;
     
-	public String getName() {
-		return name;
+	public String getInvestorName() {
+		return investorName;
 	}
-	public void setName(String name) {
-		this.name = name;
+	public void setInvestorName(String investorName) {
+		this.investorName = investorName;
 	}
 	public String getNote() {
 		return note;
@@ -52,5 +55,23 @@ public class UpdateBrokerDTO implements Serializable {
 	}
 	public void setIndividual(UpdateIndividualDTO individual) {
 		this.individual = individual;
+	}
+	public int getOrderLimit() {
+		return orderLimit;
+	}
+	public void setOrderLimit(int orderLimit) {
+		this.orderLimit = orderLimit;
+	}
+	public int getDefaultPositionLimit() {
+		return defaultPositionLimit;
+	}
+	public void setDefaultPositionLimit(int defaultPositionLimit) {
+		this.defaultPositionLimit = defaultPositionLimit;
+	}
+	public long getDefaultCommodityFee() {
+		return defaultCommodityFee;
+	}
+	public void setDefaultCommodityFee(long defaultCommodityFee) {
+		this.defaultCommodityFee = defaultCommodityFee;
 	}
 }

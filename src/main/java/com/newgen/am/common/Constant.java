@@ -10,8 +10,8 @@ package com.newgen.am.common;
  * @author nhungtt
  */
 public class Constant {
-//    public static final String CONFIG_DIR = "/opt/account-management/settings/properties/";
-    public static final String CONFIG_DIR = "C:/u01/apps/AM/settings/properties/";
+    public static final String CONFIG_DIR = "/opt/account-management/settings/properties/";
+//    public static final String CONFIG_DIR = "C:/u01/apps/AM/settings/properties/";
     
     public static final String DATE_TIME_PATTERN = "dd/MM/yyyy HH:mm:ss";
     
@@ -74,6 +74,8 @@ public class Constant {
     public static final String CSV_MEMBER_ROLES = "member_roles.csv";
     public static final String CSV_BROKERS = "brokers.csv";
     public static final String CSV_COLLABORATORS = "collaborators.csv";
+    public static final String CSV_INVESTORS = "investors.csv";
+    public static final String CSV_INVESTOR_USERS = "investor_users.csv";
     
     public static final String POSITION_LIMITED = "LIMITED";
     public static final String POSITION_INHERITED = "INHERITED";
@@ -94,4 +96,16 @@ public class Constant {
     
     public static final String BROKER_TYPE_INDIVIDUAL = "INDIVIDUAL";
     public static final String BROKER_TYPE_COMPANY = "COMPANY";
+    
+    public static final String INVESTOR_DEFAULT_ROLE = "TKGD";
+    public static final String INVESTOR_USER_PREFIX = "TKGD_";
+    
+    public static final String INVESTOR_TYPE_INNER_TRADING_COMPANY = "P";
+    public static final String INVESTOR_TYPE_LOCAL_INDIVIDUAL = "C";
+    public static final String INVESTOR_TYPE_LOCAL_COMPANY = "E";
+    public static final String INVESTOR_TYPE_FOREIGN_INDIVIDUAL = "F";
+    public static final String INVESTOR_TYPE_FOREIGN_COMPANY = "I";
+    
+    public static final String MARGIN_TRANS_TYPE_DEPOSIT = "DEPOSIT";
+    public static final String MARGIN_TRANS_TYPE_WITHDRAW = "WITHDRAW";
 }

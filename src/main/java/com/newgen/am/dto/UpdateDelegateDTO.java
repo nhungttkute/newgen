@@ -15,40 +15,40 @@ import com.newgen.am.validation.ValidUpdateStringField;
 
 public class UpdateDelegateDTO {
 	@ValidUpdateStringField
-	@Size(min = 1, max = 100, message = "Invalid format.", groups = LengthGroup.class)
+	@Size(max = 100, message = "Invalid format.", groups = LengthGroup.class)
     private String fullName;
 	@ValidUpdateStringField
 	@ValidDate(groups = FormatGroup.class)
     private String birthDay;
 	@ValidUpdateStringField
 	@ValidNumber(groups = FormatGroup.class)
-	@Size(min = 1, max = 20, groups = LengthGroup.class)
+	@Size(max = 20, groups = LengthGroup.class)
 	@UniqueIdentityCard(groups = UniqueGroup.class)
     private String identityCard;
 	@ValidUpdateStringField
 	@ValidDate(groups = FormatGroup.class)
     private String idCreatedDate;
 	@ValidUpdateStringField
-	@Size(min = 1, max = 100, message = "Invalid format.", groups = LengthGroup.class)
+	@Size(max = 100, message = "Invalid format.", groups = LengthGroup.class)
     private String idCreatedLocation;
 	@ValidUpdateStringField
 	@Email(message = "Invalid format.", groups = FormatGroup.class)
-	@Size(min = 1, max = 50, message = "Invalid format.", groups = LengthGroup.class)
+	@Size(max = 50, message = "Invalid format.", groups = LengthGroup.class)
     private String email;
 	@ValidUpdateStringField
     @ValidPhoneNumber(groups = FormatGroup.class)
     private String phoneNumber;
 	@ValidUpdateStringField
-	@Size(min = 1, max = 300, message = "Invalid format.", groups = LengthGroup.class)
+	@Size(max = 300, message = "Invalid format.", groups = LengthGroup.class)
     private String address;
 	@ValidUpdateStringField
-	@Size(min = 1, max = 134000, message = "Invalid format.", groups = LengthGroup.class)
+	@Size(max = 134000, message = "Invalid format.", groups = LengthGroup.class)
     private String scannedFrontIdCard; //image data
 	@ValidUpdateStringField
-	@Size(min = 1, max = 134000, message = "Invalid format.", groups = LengthGroup.class)
+	@Size(max = 134000, message = "Invalid format.", groups = LengthGroup.class)
     private String scannedBackIdCard; //image data
 	@ValidUpdateStringField
-	@Size(min = 1, max = 134000, message = "Invalid format.", groups = LengthGroup.class)
+	@Size(max = 134000, message = "Invalid format.", groups = LengthGroup.class)
     private String scannedSignature; //image data
 	public String getFullName() {
 		return fullName;

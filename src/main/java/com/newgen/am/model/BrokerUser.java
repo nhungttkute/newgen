@@ -7,8 +7,6 @@ package com.newgen.am.model;
 
 import java.util.List;
 
-import org.springframework.data.annotation.Transient;
-
 /**
  *
  * @author nhungtt

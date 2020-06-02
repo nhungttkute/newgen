@@ -17,6 +17,7 @@ import com.newgen.am.common.ErrorMessage;
 import com.newgen.am.dto.AdminDataObj;
 import com.newgen.am.dto.AdminResponseObj;
 import com.newgen.am.dto.ListElementDTO;
+import com.newgen.am.dto.NewsUserInfo;
 import com.newgen.am.model.RoleFunction;
 import com.newgen.am.service.CommonService;
 
@@ -28,7 +29,6 @@ public class CommonController {
 	private CommonService commonSerivce;
 	
 	@GetMapping("/admin/memberList")
-//	@PreAuthorize("hasAuthority('clientManagement.memberManagement.memberRoleManagement.memberRoleFunctionsAssign.create')")
 	public AdminResponseObj getMemberList(HttpServletRequest request) {
 		String methodName = "getMemberList";
 		long refId = System.currentTimeMillis();
@@ -37,21 +37,15 @@ public class CommonController {
 
 		List<ListElementDTO> memberList = commonSerivce.getMemberList(request, refId);
 		AdminResponseObj response = new AdminResponseObj();
-		if (memberList != null && memberList.size() > 0) {
-            response.setStatus(Constant.RESPONSE_OK);
-            response.setData(new AdminDataObj());
-            response.getData().setMemberList(memberList);
-        } else {
-            response.setStatus(Constant.RESPONSE_ERROR);
-            response.setErrMsg(ErrorMessage.RESULT_NOT_FOUND);
-        }
+		response.setStatus(Constant.RESPONSE_OK);
+        response.setData(new AdminDataObj());
+        response.getData().setMemberList(memberList);
 
 		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
 		return response;
 	}
 	
 	@GetMapping("/admin/brokerList")
-//	@PreAuthorize("hasAuthority('clientManagement.memberManagement.memberRoleManagement.memberRoleFunctionsAssign.create')")
 	public AdminResponseObj getBrokerList(HttpServletRequest request) {
 		String methodName = "getBrokerList";
 		long refId = System.currentTimeMillis();
@@ -60,14 +54,128 @@ public class CommonController {
 
 		List<ListElementDTO> brokerList = commonSerivce.getBrokerList(request, refId);
 		AdminResponseObj response = new AdminResponseObj();
-		if (brokerList != null && brokerList.size() > 0) {
-            response.setStatus(Constant.RESPONSE_OK);
-            response.setData(new AdminDataObj());
-            response.getData().setBrokerList(brokerList);
-        } else {
-            response.setStatus(Constant.RESPONSE_ERROR);
-            response.setErrMsg(ErrorMessage.RESULT_NOT_FOUND);
-        }
+		response.setStatus(Constant.RESPONSE_OK);
+        response.setData(new AdminDataObj());
+        response.getData().setBrokerList(brokerList);
+
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+		return response;
+	}
+	
+	@GetMapping("/admin/collaboratorList")
+	public AdminResponseObj getCollaboratorList(HttpServletRequest request) {
+		String methodName = "getCollaboratorList";
+		long refId = System.currentTimeMillis();
+		AMLogger.logMessage(className, methodName, refId,
+				String.format("REQUEST_API: [GET]/admin/collaboratorList"));
+
+		List<ListElementDTO> collaboratorList = commonSerivce.getCollaboratorList(request, refId);
+		AdminResponseObj response = new AdminResponseObj();
+		response.setStatus(Constant.RESPONSE_OK);
+        response.setData(new AdminDataObj());
+        response.getData().setCollaboratorList(collaboratorList);
+
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+		return response;
+	}
+	
+	@GetMapping("/admin/investorList")
+	public AdminResponseObj getInvestorList(HttpServletRequest request) {
+		String methodName = "getInvestorList";
+		long refId = System.currentTimeMillis();
+		AMLogger.logMessage(className, methodName, refId,
+				String.format("REQUEST_API: [GET]/admin/investorList"));
+
+		List<ListElementDTO> investorList = commonSerivce.getInvestorList(request, refId);
+		AdminResponseObj response = new AdminResponseObj();
+		response.setStatus(Constant.RESPONSE_OK);
+        response.setData(new AdminDataObj());
+        response.getData().setInvestorList(investorList);
+
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+		return response;
+	}
+	
+	@GetMapping("/admin/adminUserList")
+	public AdminResponseObj getAdminUserList(HttpServletRequest request) {
+		String methodName = "getAdminUserList";
+		long refId = System.currentTimeMillis();
+		AMLogger.logMessage(className, methodName, refId,
+				String.format("REQUEST_API: [GET]/admin/adminUserList"));
+
+		List<NewsUserInfo> userList = commonSerivce.getAdminUserList(refId);
+		AdminResponseObj response = new AdminResponseObj();
+		response.setStatus(Constant.RESPONSE_OK);
+        response.setData(new AdminDataObj());
+        response.getData().setAdminUserList(userList);
+
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+		return response;
+	}
+	
+	@GetMapping("/admin/memberUserList")
+	public AdminResponseObj getMemberUserList(HttpServletRequest request) {
+		String methodName = "getMemberUserList";
+		long refId = System.currentTimeMillis();
+		AMLogger.logMessage(className, methodName, refId,
+				String.format("REQUEST_API: [GET]/admin/memberUserList"));
+
+		List<NewsUserInfo> userList = commonSerivce.getMemberUserList(refId);
+		AdminResponseObj response = new AdminResponseObj();
+		response.setStatus(Constant.RESPONSE_OK);
+        response.setData(new AdminDataObj());
+        response.getData().setMemberUserList(userList);
+
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+		return response;
+	}
+	
+	@GetMapping("/admin/brokerUserList")
+	public AdminResponseObj getBrokerUserList(HttpServletRequest request) {
+		String methodName = "getBrokerUserList";
+		long refId = System.currentTimeMillis();
+		AMLogger.logMessage(className, methodName, refId,
+				String.format("REQUEST_API: [GET]/admin/brokerUserList"));
+
+		List<NewsUserInfo> userList = commonSerivce.getBrokerUserList(refId);
+		AdminResponseObj response = new AdminResponseObj();
+		response.setStatus(Constant.RESPONSE_OK);
+        response.setData(new AdminDataObj());
+        response.getData().setBrokerUserList(userList);
+
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+		return response;
+	}
+	
+	@GetMapping("/admin/collaboratorUserList")
+	public AdminResponseObj getCollaboratorUserList(HttpServletRequest request) {
+		String methodName = "getCollaboratorUserList";
+		long refId = System.currentTimeMillis();
+		AMLogger.logMessage(className, methodName, refId,
+				String.format("REQUEST_API: [GET]/admin/collaboratorUserList"));
+
+		List<NewsUserInfo> userList = commonSerivce.getCollaboratorUserList(refId);
+		AdminResponseObj response = new AdminResponseObj();
+		response.setStatus(Constant.RESPONSE_OK);
+        response.setData(new AdminDataObj());
+        response.getData().setCollaboratorUserList(userList);
+
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+		return response;
+	}
+	
+	@GetMapping("/admin/investorUserList")
+	public AdminResponseObj getInvestorUserList(HttpServletRequest request) {
+		String methodName = "getInvestorUserList";
+		long refId = System.currentTimeMillis();
+		AMLogger.logMessage(className, methodName, refId,
+				String.format("REQUEST_API: [GET]/admin/investorUserList"));
+
+		List<NewsUserInfo> userList = commonSerivce.getInvestorUserList(refId);
+		AdminResponseObj response = new AdminResponseObj();
+		response.setStatus(Constant.RESPONSE_OK);
+        response.setData(new AdminDataObj());
+        response.getData().setInvestorUserList(userList);
 
 		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
 		return response;

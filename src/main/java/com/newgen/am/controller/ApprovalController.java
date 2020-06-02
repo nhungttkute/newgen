@@ -5,20 +5,20 @@
  */
 package com.newgen.am.controller;
 
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+
 import com.google.gson.Gson;
 import com.newgen.am.common.AMLogger;
 import com.newgen.am.common.Constant;
-import com.newgen.am.common.ErrorMessage;
 import com.newgen.am.dto.AdminResponseObj;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 
 /**
  *
  * @author nhungtt
  */
 public class ApprovalController {
-    private String className = "PendingApprovalController";
+    private String className = "ApprovalController";
     
     @PostMapping("/admin/pendingApprovals/{approvalId}")
     public AdminResponseObj processPendingApproval(@PathVariable Long approvalId) {

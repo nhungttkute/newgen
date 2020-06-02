@@ -17,15 +17,15 @@ import com.newgen.am.validation.ValidUpdateStringField;
 
 public class UpdateCompanyDTO {
 	@ValidUpdateStringField
-	@Size(min = 1, max = 200, message = "Invalid format.", groups = LengthGroup.class)
+	@Size(max = 200, message = "Invalid format.", groups = LengthGroup.class)
     private String name;
 	@ValidUpdateStringField
 	@ValidNumber(groups = FormatGroup.class)
-	@Size(min = 1, max = 20, message = "Invalid format.", groups = LengthGroup.class)
+	@Size(max = 20, message = "Invalid format.", groups = LengthGroup.class)
 	@UniqueTaxCode(groups = UniqueGroup.class)
     private String taxCode;
 	@ValidUpdateStringField
-	@Size(min = 1, max = 300, message = "Invalid format.", groups = LengthGroup.class)
+	@Size(max = 300, message = "Invalid format.", groups = LengthGroup.class)
     private String address;
 	@ValidUpdateStringField
 	@ValidPhoneNumber(groups = FormatGroup.class)
@@ -34,7 +34,7 @@ public class UpdateCompanyDTO {
     private String fax;
 	@ValidUpdateStringField
     @Email(message = "Invalid format.", groups = FormatGroup.class)
-	@Size(min = 1, max = 50, message = "Invalid format.", groups = LengthGroup.class)
+	@Size(max = 50, message = "Invalid format.", groups = LengthGroup.class)
     private String email;
     @Valid
     private UpdateDelegateDTO delegate;

@@ -43,12 +43,15 @@ import com.newgen.am.dto.EmailDTO;
 import com.newgen.am.dto.FunctionsDTO;
 import com.newgen.am.dto.GeneralFeeDTO;
 import com.newgen.am.dto.InvestorDTO;
+import com.newgen.am.dto.ListElementDTO;
 import com.newgen.am.dto.MarginMultiplierDTO;
 import com.newgen.am.dto.MarginRatioAlertDTO;
 import com.newgen.am.dto.MemberCSV;
+import com.newgen.am.dto.MemberCommoditiesDTO;
 import com.newgen.am.dto.MemberDTO;
 import com.newgen.am.dto.OtherFeeDTO;
 import com.newgen.am.dto.RiskParametersDTO;
+import com.newgen.am.dto.RoleFunctionsDTO;
 import com.newgen.am.dto.UpdateMemberDTO;
 import com.newgen.am.dto.UpdateUserDTO;
 import com.newgen.am.dto.UserCSV;
@@ -469,7 +472,7 @@ public class MemberService {
 			boolean isUserUpdated = false;
 			
 			if (Utility.isNotNull(memberDto.getName())) updateMember.append("name", memberDto.getName());
-			if (Utility.isNotNull(memberDto.getStatus())) updateMember.append("status", memberDto.getName());
+			if (Utility.isNotNull(memberDto.getStatus())) updateMember.append("status", memberDto.getStatus());
 			if (Utility.isNotNull(memberDto.getNote())) {
 				updateMember.append("note", memberDto.getNote());
 				updateMember.append("users.$.note", memberDto.getNote());
@@ -650,58 +653,53 @@ public class MemberService {
 	public void createMemberFunctions(HttpServletRequest request, String memberCode, FunctionsDTO memberDto,
 			long refId) {
 		String methodName = "createMemberFunctions";
-		if (Utility.isNotNull(memberDto.getFunctions()) && memberDto.getFunctions().size() > 0) {
-			try {
-				// get redis user info
-				UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
-				// insert data to pending_approvals
-				String approvalId = insertMemberFunctionsAssignPA(userInfo, memberCode, memberDto, refId);
-				// send activity log
-				activityLogService.sendActivityLog(userInfo, request,
-						ActivityLogService.ACTIVITY_CREATE_MEMBER_FUNCTIONS,
-						ActivityLogService.ACTIVITY_CREATE_MEMBER_FUNCTIONS_DESC, String.valueOf(memberCode),
-						approvalId);
+		try {
+			// get redis user info
+			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
+			// insert data to pending_approvals
+			String approvalId = insertMemberFunctionsAssignPA(userInfo, memberCode, memberDto, refId);
+			// send activity log
+			activityLogService.sendActivityLog(userInfo, request,
+					ActivityLogService.ACTIVITY_CREATE_MEMBER_FUNCTIONS,
+					ActivityLogService.ACTIVITY_CREATE_MEMBER_FUNCTIONS_DESC, String.valueOf(memberCode),
+					approvalId);
 
-				if (!memberRepository.existsMemberByCode(memberCode)) {
-					throw new CustomException(ErrorMessage.RESULT_NOT_FOUND, HttpStatus.OK);
-				}
-				
-				List<Document> functions = new ArrayList<Document>();
-				for (RoleFunction function : memberDto.getFunctions()) {
-					Document func = new Document();
-					func.append("code", function.getCode());
-					func.append("name", function.getName());
-					functions.add(func);
-				}
-				MongoDatabase database = MongoDBConnection.getMongoDatabase();
-				MongoCollection<Document> collection = database.getCollection("members");
-				
-				BasicDBObject query = new BasicDBObject();
-				query.append("code", memberCode);
-				query.append("users.username", Constant.MEMBER_MASTER_USER_PREFIX + memberCode);
-				
-				BasicDBObject updateMember = new BasicDBObject();
-				updateMember.append("functions", functions);
-				updateMember.append("users.$.functions", functions);
-				updateMember.append("lastModifiedUser", Utility.getCurrentUsername());
-				updateMember.append("lastModifiedDate", System.currentTimeMillis());
-				updateMember.append("users.$.lastModifiedUser", Utility.getCurrentUsername());
-				updateMember.append("users.$.lastModifiedDate", System.currentTimeMillis());
-				
-				
-				BasicDBObject update = new BasicDBObject();
-				update.append("$set", updateMember);
-				
-				collection.updateOne(query, update);
-			} catch (CustomException e) {
-				throw e;
-			} catch (Exception e) {
-				AMLogger.logError(className, methodName, refId, e);
-				throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+			if (!memberRepository.existsMemberByCode(memberCode)) {
+				throw new CustomException(ErrorMessage.RESULT_NOT_FOUND, HttpStatus.OK);
 			}
-		} else {
-			AMLogger.logMessage(className, methodName, refId, "Invalid input data");
-			throw new CustomException(ErrorMessage.INVALID_REQUEST, HttpStatus.BAD_REQUEST);
+			
+			List<Document> functions = new ArrayList<Document>();
+			for (RoleFunction function : memberDto.getFunctions()) {
+				Document func = new Document();
+				func.append("code", function.getCode());
+				func.append("name", function.getName());
+				functions.add(func);
+			}
+			MongoDatabase database = MongoDBConnection.getMongoDatabase();
+			MongoCollection<Document> collection = database.getCollection("members");
+			
+			BasicDBObject query = new BasicDBObject();
+			query.append("code", memberCode);
+			query.append("users.username", Constant.MEMBER_MASTER_USER_PREFIX + memberCode);
+			
+			BasicDBObject updateMember = new BasicDBObject();
+			updateMember.append("functions", functions);
+			updateMember.append("users.$.functions", functions);
+			updateMember.append("lastModifiedUser", Utility.getCurrentUsername());
+			updateMember.append("lastModifiedDate", System.currentTimeMillis());
+			updateMember.append("users.$.lastModifiedUser", Utility.getCurrentUsername());
+			updateMember.append("users.$.lastModifiedDate", System.currentTimeMillis());
+			
+			
+			BasicDBObject update = new BasicDBObject();
+			update.append("$set", updateMember);
+			
+			collection.updateOne(query, update);
+		} catch (CustomException e) {
+			throw e;
+		} catch (Exception e) {
+			AMLogger.logError(className, methodName, refId, e);
+			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 	
@@ -742,58 +740,53 @@ public class MemberService {
 
 	public void createMemberCommodities(HttpServletRequest request, String memberCode, CommoditiesDTO memberDto, long refId) {
 		String methodName = "createMemberCommodities";
-		if (Utility.isNotNull(memberDto.getCommodities()) && memberDto.getCommodities().size() > 0) {
-			try {
-				// get redis user info
-				UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
-				// insert data to pending_approvals
-				String approvalId = insertMemberCommoditiesAssignPA(userInfo, memberCode, memberDto, refId);
-				// send activity log
-				activityLogService.sendActivityLog(userInfo, request,
-						ActivityLogService.ACTIVITY_CREATE_MEMBER_COMMODITIES_ASSIGN,
-						ActivityLogService.ACTIVITY_CREATE_MEMBER_COMMODITIES_ASSIGN_DESC, memberCode,
-						approvalId);
+		try {
+			// get redis user info
+			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
+			// insert data to pending_approvals
+			String approvalId = insertMemberCommoditiesAssignPA(userInfo, memberCode, memberDto, refId);
+			// send activity log
+			activityLogService.sendActivityLog(userInfo, request,
+					ActivityLogService.ACTIVITY_CREATE_MEMBER_COMMODITIES_ASSIGN,
+					ActivityLogService.ACTIVITY_CREATE_MEMBER_COMMODITIES_ASSIGN_DESC, memberCode,
+					approvalId);
 
-				if (!memberRepository.existsMemberByCode(memberCode)) {
-					throw new CustomException(ErrorMessage.RESULT_NOT_FOUND, HttpStatus.OK);
-				}
-				
-				List<Document> commodities = new ArrayList<Document>();
-				
-				for (Commodity comm : memberDto.getCommodities()) {
-					Document commDoc = new Document();
-					commDoc.append("commodityCode", comm.getCommodityCode());
-					commDoc.append("commodityName", comm.getCommodityName());
-					commDoc.append("commodityFee", comm.getCommodityFee());
-					commDoc.append("positionLimitType", comm.getPositionLimitType());
-					commDoc.append("positionLimit", comm.getPositionLimit());
-					commDoc.append("currency", Constant.CURRENCY_VND);
-					commodities.add(commDoc);
-				}
-				
-				Document query = new Document();
-				query.append("code", memberCode);
-				
-				Document updateMember = new Document();
-				updateMember.append("commodities", commodities);
-				updateMember.append("lastModifiedUser", Utility.getCurrentUsername());
-				updateMember.append("lastModifiedDate", System.currentTimeMillis());
-				
-				Document update = new Document();
-				update.append("$set", updateMember);
-				
-				MongoDatabase database = MongoDBConnection.getMongoDatabase();
-				MongoCollection<Document> collection = database.getCollection("members");
-				collection.updateOne(query, update);
-			} catch (CustomException e) {
-				throw e;
-			} catch (Exception e) {
-				AMLogger.logError(className, methodName, refId, e);
-				throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+			if (!memberRepository.existsMemberByCode(memberCode)) {
+				throw new CustomException(ErrorMessage.RESULT_NOT_FOUND, HttpStatus.OK);
 			}
-		} else {
-			AMLogger.logMessage(className, methodName, refId, "Invalid input data");
-			throw new CustomException(ErrorMessage.INVALID_REQUEST, HttpStatus.BAD_REQUEST);
+			
+			List<Document> commodities = new ArrayList<Document>();
+			
+			for (Commodity comm : memberDto.getCommodities()) {
+				Document commDoc = new Document();
+				commDoc.append("commodityCode", comm.getCommodityCode());
+				commDoc.append("commodityName", comm.getCommodityName());
+				commDoc.append("commodityFee", comm.getCommodityFee());
+				commDoc.append("positionLimitType", comm.getPositionLimitType());
+				commDoc.append("positionLimit", comm.getPositionLimit());
+				commDoc.append("currency", Constant.CURRENCY_VND);
+				commodities.add(commDoc);
+			}
+			
+			Document query = new Document();
+			query.append("code", memberCode);
+			
+			Document updateMember = new Document();
+			updateMember.append("commodities", commodities);
+			updateMember.append("lastModifiedUser", Utility.getCurrentUsername());
+			updateMember.append("lastModifiedDate", System.currentTimeMillis());
+			
+			Document update = new Document();
+			update.append("$set", updateMember);
+			
+			MongoDatabase database = MongoDBConnection.getMongoDatabase();
+			MongoCollection<Document> collection = database.getCollection("members");
+			collection.updateOne(query, update);
+		} catch (CustomException e) {
+			throw e;
+		} catch (Exception e) {
+			AMLogger.logError(className, methodName, refId, e);
+			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 	
@@ -883,29 +876,31 @@ public class MemberService {
 		            
 		            Document resultDoc = collection.find(query).projection(projection).first();
 		            MemberDTO memberComm = mongoTemplate.getConverter().read(MemberDTO.class, resultDoc);
-		            for (Commodity comm : memberComm.getCommodities()) {
-		            	Document newComm = new Document();
-		            	newComm.append("commodityCode", comm.getCommodityCode());
-		            	newComm.append("commodityName", comm.getCommodityCode());
-		            	newComm.append("currency", Constant.CURRENCY_VND);
-		            	if (memberDto.getDefaultCommodityFee() > 0) {
-		            		newComm.append("commodityFee", memberDto.getDefaultCommodityFee());
-		            	} else {
-		            		newComm.append("commodityFee", comm.getCommodityFee());
-		            	}
-		            	if (Constant.POSITION_INHERITED.equalsIgnoreCase(comm.getPositionLimitType())) {
-		            		if (memberDto.getDefaultPositionLimit() > 0) {
-		            			newComm.append("positionLimitType", Constant.POSITION_INHERITED);
-		            			newComm.append("positionLimit", memberDto.getDefaultPositionLimit());
-		            		} else {
-		            			newComm.append("positionLimitType", Constant.POSITION_INHERITED);
+		            if (memberComm != null && memberComm.getCommodities() != null) {
+		            	for (Commodity comm : memberComm.getCommodities()) {
+			            	Document newComm = new Document();
+			            	newComm.append("commodityCode", comm.getCommodityCode());
+			            	newComm.append("commodityName", comm.getCommodityCode());
+			            	newComm.append("currency", Constant.CURRENCY_VND);
+			            	if (memberDto.getDefaultCommodityFee() > 0) {
+			            		newComm.append("commodityFee", memberDto.getDefaultCommodityFee());
+			            	} else {
+			            		newComm.append("commodityFee", comm.getCommodityFee());
+			            	}
+			            	if (Constant.POSITION_INHERITED.equalsIgnoreCase(comm.getPositionLimitType())) {
+			            		if (memberDto.getDefaultPositionLimit() > 0) {
+			            			newComm.append("positionLimitType", Constant.POSITION_INHERITED);
+			            			newComm.append("positionLimit", memberDto.getDefaultPositionLimit());
+			            		} else {
+			            			newComm.append("positionLimitType", Constant.POSITION_INHERITED);
+			            			newComm.append("positionLimit", comm.getPositionLimit());
+			            		}
+			            	} else {
+			            		newComm.append("positionLimitType", comm.getPositionLimitType());
 		            			newComm.append("positionLimit", comm.getPositionLimit());
-		            		}
-		            	} else {
-		            		newComm.append("positionLimitType", comm.getPositionLimitType());
-	            			newComm.append("positionLimit", comm.getPositionLimit());
-		            	}
-		            	newCommodities.add(newComm);
+			            	}
+			            	newCommodities.add(newComm);
+			            }
 		            }
 		            
 		            updateDocument.append("commodities", newCommodities);
@@ -1595,8 +1590,14 @@ public class MemberService {
 			Document memberQuery = new Document();
 			memberQuery.append("code", memberCode);
 			
+			boolean isValidRequest = true;
+			
 			List<Document> commFees = new ArrayList<Document>();
 			for (CommodityFee commFee : memberDto.getCommodityFees()) {
+				if (! (commFee.getBrokerCommodityFee() > 0)) {
+					isValidRequest = false;
+					break;
+				}
 				Document commFeeDoc = new Document();
 				commFeeDoc.append("commodityCode", commFee.getCommodityCode());
 				commFeeDoc.append("commodityName", commFee.getCommodityName());
@@ -1604,6 +1605,11 @@ public class MemberService {
 				commFeeDoc.append("investorCommodityFee", commFee.getInvestorCommodityFee());
 				commFees.add(commFeeDoc);
 			}
+			
+			if (!isValidRequest) {
+				throw new CustomException(ErrorMessage.INVALID_REQUEST, HttpStatus.BAD_REQUEST);
+			}
+			
 			memberCollection.updateOne(memberQuery, Updates.set("commodityFees", commFees));
 			
 			// save commodityFees for broker
@@ -1726,8 +1732,13 @@ public class MemberService {
 			Document memberQuery = new Document();
 			memberQuery.append("code", memberCode);
 			
+			boolean isValidRequest = true;
 			List<Document> commFees = new ArrayList<Document>();
 			for (CommodityFee commFee : memberDto.getCommodityFees()) {
+				if (! (commFee.getInvestorCommodityFee() > 0)) {
+					isValidRequest = false;
+					break;
+				}
 				Document commFeeDoc = new Document();
 				commFeeDoc.append("commodityCode", commFee.getCommodityCode());
 				commFeeDoc.append("commodityName", commFee.getCommodityName());
@@ -1735,6 +1746,11 @@ public class MemberService {
 				commFeeDoc.append("investorCommodityFee", commFee.getInvestorCommodityFee());
 				commFees.add(commFeeDoc);
 			}
+			
+			if (!isValidRequest) {
+				throw new CustomException(ErrorMessage.INVALID_REQUEST, HttpStatus.BAD_REQUEST);
+			}
+			
 			memberCollection.updateOne(memberQuery, Updates.set("commodityFees", commFees));
 			
 			// save commodityFees for investors
@@ -1852,6 +1868,12 @@ public class MemberService {
                             ), 
                     new Document()
                             .append("$match", searchCriteria.getQuery()), 
+                    new Document()
+                            .append("$match", new Document()
+                                    .append("users.username", new Document()
+                                            .append("$ne", Constant.MEMBER_MASTER_USER_PREFIX + memberCode)
+                                    )
+                            ), 
                     new Document()
                             .append("$sort", searchCriteria.getSort()), 
                     new Document()
@@ -2001,24 +2023,24 @@ public class MemberService {
 				MongoDatabase database = MongoDBConnection.getMongoDatabase();
 				MongoCollection<Document> collection = database.getCollection("members");
 
-				Document newDeptUser = new Document();
-				newDeptUser.append("_id", new ObjectId());
-				newDeptUser.append("username", memberUserDto.getUsername());
-				newDeptUser.append("fullName", memberUserDto.getFullName());
-				newDeptUser.append("email", memberUserDto.getEmail());
-				newDeptUser.append("phoneNumber", memberUserDto.getPhoneNumber());
-				newDeptUser.append("status", Constant.STATUS_ACTIVE);
-				newDeptUser.append("note", memberUserDto.getNote());
-				newDeptUser.append("isPasswordExpiryCheck", memberUserDto.getIsPasswordExpiryCheck());
-				newDeptUser.append("passwordExpiryDays", memberUserDto.getPasswordExpiryDays());
-				newDeptUser.append("expiryAlertDays", memberUserDto.getExpiryAlertDays());
-				newDeptUser.append("createdUser", Utility.getCurrentUsername());
-				newDeptUser.append("createdDate", System.currentTimeMillis());
+				Document newUser = new Document();
+				newUser.append("_id", new ObjectId());
+				newUser.append("username", memberUserDto.getUsername());
+				newUser.append("fullName", memberUserDto.getFullName());
+				newUser.append("email", memberUserDto.getEmail());
+				newUser.append("phoneNumber", memberUserDto.getPhoneNumber());
+				newUser.append("status", Constant.STATUS_ACTIVE);
+				newUser.append("note", memberUserDto.getNote());
+				newUser.append("isPasswordExpiryCheck", memberUserDto.getIsPasswordExpiryCheck());
+				newUser.append("passwordExpiryDays", memberUserDto.getPasswordExpiryDays());
+				newUser.append("expiryAlertDays", memberUserDto.getExpiryAlertDays());
+				newUser.append("createdUser", Utility.getCurrentUsername());
+				newUser.append("createdDate", System.currentTimeMillis());
 
 				BasicDBObject query = new BasicDBObject();
 				query.append("code", memberCode);
 
-				collection.updateOne(query, Updates.addToSet("users", newDeptUser));
+				collection.updateOne(query, Updates.addToSet("users", newUser));
 
 				// insert loginAdminUser
 				String password = Utility.generateRandomPassword();
@@ -2202,55 +2224,50 @@ public class MemberService {
 	public void saveMemberUserRoles(HttpServletRequest request, String memberCode, String username,
 			UserRolesDTO userDto, long refId) {
 		String methodName = "saveMemberUserRoles";
-		if (Utility.isNotNull(userDto.getRoles()) && userDto.getRoles().size() > 0) {
-			try {
-				if (!memberRepository.existsMemberByCode(memberCode)) {
-					throw new CustomException(ErrorMessage.RESULT_NOT_FOUND, HttpStatus.OK);
-				}
-				
-				// get redis user info
-				UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
-				// insert data to pending_approvals
-				String approvalId = insertMemberUserRoleCreatePA(userInfo, memberCode, username, userDto, refId);
-				// send activity log
-				activityLogService.sendActivityLog2(userInfo, request,
-						ActivityLogService.ACTIVITY_CREATE_MEMBER_USER_ROLES,
-						ActivityLogService.ACTIVITY_CREATE_MEMBER_USER_ROLES_DESC, username, memberCode,
-						approvalId);
-
-				MongoDatabase database = MongoDBConnection.getMongoDatabase();
-				MongoCollection<Document> collection = database.getCollection("members");
-				
-				List<Document> roles = new ArrayList<Document>();
-				for (UserRole role : userDto.getRoles()) {
-					Document roleDoc = new Document();
-					roleDoc.append("name", role.getName());
-					roleDoc.append("description", role.getDescription());
-					roleDoc.append("status", role.getStatus());
-					roles.add(roleDoc);
-				}
-				BasicDBObject query = new BasicDBObject();
-				query.append("code", memberCode);
-				query.append("users", new BasicDBObject("$elemMatch", new BasicDBObject("username", username)));
-				
-				BasicDBObject newDocument = new BasicDBObject();
-				newDocument.append("users.$.roles", roles);
-				newDocument.append("users.$.lastModifiedUser", Utility.getCurrentUsername());
-				newDocument.append("users.$.lastModifiedDate", System.currentTimeMillis());
-				
-				BasicDBObject update = new BasicDBObject();
-				update.append("$set", newDocument);
-				
-				collection.updateOne(query, update);
-			} catch (CustomException e) {
-				throw e;
-			} catch (Exception e) {
-				AMLogger.logError(className, methodName, refId, e);
-				throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+		try {
+			if (!memberRepository.existsMemberByCode(memberCode)) {
+				throw new CustomException(ErrorMessage.RESULT_NOT_FOUND, HttpStatus.OK);
 			}
-		} else {
-			AMLogger.logMessage(className, methodName, refId, "Invalid input data");
-			throw new CustomException(ErrorMessage.INVALID_REQUEST, HttpStatus.BAD_REQUEST);
+			
+			// get redis user info
+			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
+			// insert data to pending_approvals
+			String approvalId = insertMemberUserRoleCreatePA(userInfo, memberCode, username, userDto, refId);
+			// send activity log
+			activityLogService.sendActivityLog2(userInfo, request,
+					ActivityLogService.ACTIVITY_CREATE_MEMBER_USER_ROLES,
+					ActivityLogService.ACTIVITY_CREATE_MEMBER_USER_ROLES_DESC, username, memberCode,
+					approvalId);
+
+			MongoDatabase database = MongoDBConnection.getMongoDatabase();
+			MongoCollection<Document> collection = database.getCollection("members");
+			
+			List<Document> roles = new ArrayList<Document>();
+			for (UserRole role : userDto.getRoles()) {
+				Document roleDoc = new Document();
+				roleDoc.append("name", role.getName());
+				roleDoc.append("description", role.getDescription());
+				roleDoc.append("status", role.getStatus());
+				roles.add(roleDoc);
+			}
+			BasicDBObject query = new BasicDBObject();
+			query.append("code", memberCode);
+			query.append("users", new BasicDBObject("$elemMatch", new BasicDBObject("username", username)));
+			
+			BasicDBObject newDocument = new BasicDBObject();
+			newDocument.append("users.$.roles", roles);
+			newDocument.append("users.$.lastModifiedUser", Utility.getCurrentUsername());
+			newDocument.append("users.$.lastModifiedDate", System.currentTimeMillis());
+			
+			BasicDBObject update = new BasicDBObject();
+			update.append("$set", newDocument);
+			
+			collection.updateOne(query, update);
+		} catch (CustomException e) {
+			throw e;
+		} catch (Exception e) {
+			AMLogger.logError(className, methodName, refId, e);
+			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 
@@ -2294,55 +2311,50 @@ public class MemberService {
 	public void saveMemberUserFunctions(HttpServletRequest request, String memberCode, String username,
 			FunctionsDTO userDto, long refId) {
 		String methodName = "saveMemberUserFunctions";
-		if (Utility.isNotNull(userDto.getFunctions()) && userDto.getFunctions().size() > 0) {
-			try {
-				if (!memberRepository.existsMemberByCode(memberCode)) {
-					throw new CustomException(ErrorMessage.RESULT_NOT_FOUND, HttpStatus.OK);
-				}
-				
-				// get redis user info
-				UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
-				// insert data to pending_approvals
-				String approvalId = insertMemberUserFunctionsCreatePA(userInfo, memberCode, username, userDto, refId);
-				// send activity log
-				activityLogService.sendActivityLog2(userInfo, request,
-						ActivityLogService.ACTIVITY_CREATE_MEMBER_USER_FUNCTIONS,
-						ActivityLogService.ACTIVITY_CREATE_MEMBER_USER_FUNCTIONS_DESC, username, memberCode,
-						approvalId);
-
-				MongoDatabase database = MongoDBConnection.getMongoDatabase();
-				MongoCollection<Document> collection = database.getCollection("members");
-				
-				List<Document> functions = new ArrayList<Document>();
-				for (RoleFunction function : userDto.getFunctions()) {
-					Document funcDoc = new Document();
-					funcDoc.append("code", function.getCode());
-					funcDoc.append("name", function.getName());
-					functions.add(funcDoc);
-				}
-				BasicDBObject query = new BasicDBObject();
-				query.append("code", memberCode);
-				query.append("users", new BasicDBObject("$elemMatch", new BasicDBObject("username", username)));
-				
-				BasicDBObject newDocument = new BasicDBObject();
-				newDocument.append("users.$.functions", functions);
-				newDocument.append("users.$.lastModifiedUser", Utility.getCurrentUsername());
-				newDocument.append("users.$.lastModifiedDate", System.currentTimeMillis());
-				
-				BasicDBObject update = new BasicDBObject();
-				update.append("$set", newDocument);
-				
-				collection.updateOne(query, update);
-				
-			} catch (CustomException e) {
-				throw e;
-			} catch (Exception e) {
-				AMLogger.logError(className, methodName, refId, e);
-				throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+		try {
+			if (!memberRepository.existsMemberByCode(memberCode)) {
+				throw new CustomException(ErrorMessage.RESULT_NOT_FOUND, HttpStatus.OK);
 			}
-		} else {
-			AMLogger.logMessage(className, methodName, refId, "Invalid input data");
-			throw new CustomException(ErrorMessage.INVALID_REQUEST, HttpStatus.BAD_REQUEST);
+			
+			// get redis user info
+			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
+			// insert data to pending_approvals
+			String approvalId = insertMemberUserFunctionsCreatePA(userInfo, memberCode, username, userDto, refId);
+			// send activity log
+			activityLogService.sendActivityLog2(userInfo, request,
+					ActivityLogService.ACTIVITY_CREATE_MEMBER_USER_FUNCTIONS,
+					ActivityLogService.ACTIVITY_CREATE_MEMBER_USER_FUNCTIONS_DESC, username, memberCode,
+					approvalId);
+
+			MongoDatabase database = MongoDBConnection.getMongoDatabase();
+			MongoCollection<Document> collection = database.getCollection("members");
+			
+			List<Document> functions = new ArrayList<Document>();
+			for (RoleFunction function : userDto.getFunctions()) {
+				Document funcDoc = new Document();
+				funcDoc.append("code", function.getCode());
+				funcDoc.append("name", function.getName());
+				functions.add(funcDoc);
+			}
+			BasicDBObject query = new BasicDBObject();
+			query.append("code", memberCode);
+			query.append("users", new BasicDBObject("$elemMatch", new BasicDBObject("username", username)));
+			
+			BasicDBObject newDocument = new BasicDBObject();
+			newDocument.append("users.$.functions", functions);
+			newDocument.append("users.$.lastModifiedUser", Utility.getCurrentUsername());
+			newDocument.append("users.$.lastModifiedDate", System.currentTimeMillis());
+			
+			BasicDBObject update = new BasicDBObject();
+			update.append("$set", newDocument);
+			
+			collection.updateOne(query, update);
+			
+		} catch (CustomException e) {
+			throw e;
+		} catch (Exception e) {
+			AMLogger.logError(className, methodName, refId, e);
+			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 
@@ -2405,34 +2417,28 @@ public class MemberService {
                                     .append("foreignField", "name")
                                     .append("as", "roleObj")
                             ), 
+                    new Document().append("$unwind", new Document().append("path", "$roleObj")),
                     new Document()
                             .append("$project", new Document()
                                     .append("_id", 0.0)
                                     .append("roleFunctions", "$roleObj.functions")
                                     .append("specificFunctions", "$functions")
-                            ), 
-                    new Document()
-                            .append("$unwind", new Document()
-                                    .append("path", "$roleFunctions")
-                            ), 
-                    new Document()
-                            .append("$project", new Document()
-                                    .append("functions", new Document()
-                                            .append("$concatArrays", Arrays.asList(
-                                                    "$roleFunctions",
-                                                    "$specificFunctions"
-                                                )
-                                            )
-                                    )
                             )
             );
 			
 			Document result = collection.aggregate(pipeline).first();
-			MemberDTO memberDto = mongoTemplate.getConverter().read(MemberDTO.class, result);
-			if (Utility.isNull(memberDto)) {
+			RoleFunctionsDTO roleFuncsDto = mongoTemplate.getConverter().read(RoleFunctionsDTO.class, result);
+			if (Utility.isNull(roleFuncsDto)) {
 				throw new CustomException(ErrorMessage.RESULT_NOT_FOUND, HttpStatus.OK);
 			}
-			return memberDto.getFunctions();
+			List<RoleFunction> allFunctions = new ArrayList<RoleFunction>();
+			if (roleFuncsDto.getRoleFunctions() != null && roleFuncsDto.getRoleFunctions().size() > 0) {
+				allFunctions.addAll(roleFuncsDto.getRoleFunctions());
+			}
+			if (roleFuncsDto.getSpecificFunctions() != null && roleFuncsDto.getSpecificFunctions().size() > 0) {
+				allFunctions.addAll(roleFuncsDto.getSpecificFunctions());
+			}
+			return allFunctions;
 		} catch (CustomException e) {
 			throw e;
 		} catch (Exception e) {
@@ -2441,7 +2447,7 @@ public class MemberService {
 		}
 	}
 	
-	public MemberDTO getMemberCommodities(String memberCode, long refId) {
+	public MemberCommoditiesDTO getMemberCommodities(String memberCode, long refId) {
 		String methodName = "getMemberCommodities";
 		try {
 			if (!memberRepository.existsMemberByCode(memberCode)) {
@@ -2460,7 +2466,7 @@ public class MemberService {
             projection.append("commodities.commodityName", 1.0);
             
             Document result = collection.find(query).projection(projection).first();
-			MemberDTO memberDto = mongoTemplate.getConverter().read(MemberDTO.class, result);
+            MemberCommoditiesDTO memberDto = mongoTemplate.getConverter().read(MemberCommoditiesDTO.class, result);
 			return memberDto;
 		} catch (CustomException e) {
 			throw e;
@@ -2468,5 +2474,51 @@ public class MemberService {
 			AMLogger.logError(className, methodName, refId, e);
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
+	}
+	
+	public List<ListElementDTO> getMemberBrokerList(HttpServletRequest request, String memberCode, long refId) {
+		List<ListElementDTO> brokerList = new ArrayList<ListElementDTO>();
+		
+		MongoDatabase database = MongoDBConnection.getMongoDatabase();
+		MongoCollection<Document> collection = database.getCollection("brokers");
+		
+		Document query = new Document();
+		query.append("memberCode", memberCode);
+		
+		Document projection = new Document();
+		projection.append("_id", 0.0);
+		projection.append("code", 1.0);
+		projection.append("name", 1.0);
+		
+		MongoCursor<Document> cur = collection.find(query).projection(projection).iterator();
+		while (cur.hasNext()) {
+			ListElementDTO elemDto = mongoTemplate.getConverter().read(ListElementDTO.class, cur.next());
+			if (elemDto != null) brokerList.add(elemDto);
+		}
+		
+		return brokerList;
+	}
+	
+	public List<ListElementDTO> getMemberCollaboratorList(HttpServletRequest request, String memberCode, long refId) {
+		List<ListElementDTO> brokerList = new ArrayList<ListElementDTO>();
+		
+		MongoDatabase database = MongoDBConnection.getMongoDatabase();
+		MongoCollection<Document> collection = database.getCollection("collaborators");
+		
+		Document query = new Document();
+		query.append("memberCode", memberCode);
+		
+		Document projection = new Document();
+		projection.append("_id", 0.0);
+		projection.append("code", 1.0);
+		projection.append("name", 1.0);
+		
+		MongoCursor<Document> cur = collection.find(query).projection(projection).iterator();
+		while (cur.hasNext()) {
+			ListElementDTO elemDto = mongoTemplate.getConverter().read(ListElementDTO.class, cur.next());
+			if (elemDto != null) brokerList.add(elemDto);
+		}
+		
+		return brokerList;
 	}
 }

@@ -16,12 +16,12 @@ import com.newgen.am.validation.ValidUpdateStringField;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class UpdateMemberDTO {
     @ValidUpdateStringField
-    @Size(min = 1, max = 200, message = "Invalid format.", groups = LengthGroup.class)
+    @Size(max = 200, message = "Invalid format.", groups = LengthGroup.class)
     private String name;
     @ValidUpdateStringField
-    @Size(min = 1, max = 20, message = "Invalid format.", groups = LengthGroup.class)
+    @Size(max = 20, message = "Invalid format.", groups = LengthGroup.class)
     private String status;
-    @Size(min = 1, max = 200, message = "Invalid format.", groups = LengthGroup.class)
+    @Size(max = 200, message = "Invalid format.", groups = LengthGroup.class)
     private String note;
     @Valid
     private UpdateCompanyDTO company;

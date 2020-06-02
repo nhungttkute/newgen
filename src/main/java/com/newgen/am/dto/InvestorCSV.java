@@ -3,7 +3,7 @@ package com.newgen.am.dto;
 import com.opencsv.bean.CsvBindByName;
 import com.opencsv.bean.CsvBindByPosition;
 
-public class CollaboratorCSV {
+public class InvestorCSV {
 	@CsvBindByName(column = "ID")
 	@CsvBindByPosition(position = 0)
     private String _id;
@@ -19,20 +19,26 @@ public class CollaboratorCSV {
 	@CsvBindByName(column = "BROKER_NAME")
 	@CsvBindByPosition(position = 4)
     private String brokerName;
-	@CsvBindByName(column = "CODE")
+	@CsvBindByName(column = "COLLABORATOR_CODE")
 	@CsvBindByPosition(position = 5)
-    private String code;
-	@CsvBindByName(column = "NAME")
+    private String collaboratorCode;
+	@CsvBindByName(column = "COLLABORATOR_NAME")
 	@CsvBindByPosition(position = 6)
-    private String name;
-	@CsvBindByName(column = "STATUS")
+    private String collaboratorName;
+	@CsvBindByName(column = "INVESTOR_CODE")
 	@CsvBindByPosition(position = 7)
+    private String investorCode;
+	@CsvBindByName(column = "INVESTOR_NAME")
+	@CsvBindByPosition(position = 8)
+    private String investorName;
+	@CsvBindByName(column = "STATUS")
+	@CsvBindByPosition(position = 9)
     private String status;
 	@CsvBindByName(column = "NOTE")
-	@CsvBindByPosition(position = 8)
+	@CsvBindByPosition(position = 10)
     private String note;
 	@CsvBindByName(column = "CREATED_DATE")
-	@CsvBindByPosition(position = 9)
+	@CsvBindByPosition(position = 11)
 	private String createdDate;
 	public String get_id() {
 		return _id;
@@ -64,17 +70,29 @@ public class CollaboratorCSV {
 	public void setBrokerName(String brokerName) {
 		this.brokerName = brokerName;
 	}
-	public String getCode() {
-		return code;
+	public String getCollaboratorCode() {
+		return collaboratorCode;
 	}
-	public void setCode(String code) {
-		this.code = code;
+	public void setCollaboratorCode(String collaboratorCode) {
+		this.collaboratorCode = collaboratorCode;
 	}
-	public String getName() {
-		return name;
+	public String getCollaboratorName() {
+		return collaboratorName;
 	}
-	public void setName(String name) {
-		this.name = name;
+	public void setCollaboratorName(String collaboratorName) {
+		this.collaboratorName = collaboratorName;
+	}
+	public String getInvestorCode() {
+		return investorCode;
+	}
+	public void setInvestorCode(String investorCode) {
+		this.investorCode = investorCode;
+	}
+	public String getInvestorName() {
+		return investorName;
+	}
+	public void setInvestorName(String investorName) {
+		this.investorName = investorName;
 	}
 	public String getStatus() {
 		return status;
