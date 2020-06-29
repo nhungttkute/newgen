@@ -30,15 +30,15 @@ import com.newgen.am.common.ErrorMessage;
 import com.newgen.am.common.Utility;
 import com.newgen.am.dto.AdminDataObj;
 import com.newgen.am.dto.AdminResponseObj;
+import com.newgen.am.dto.ApprovalFunctionsDTO;
+import com.newgen.am.dto.ApprovalUpdateDepartmentDTO;
+import com.newgen.am.dto.ApprovalUpdateUserDTO;
+import com.newgen.am.dto.ApprovalUserRolesDTO;
 import com.newgen.am.dto.BasePagination;
 import com.newgen.am.dto.DepartmentCSV;
 import com.newgen.am.dto.DepartmentDTO;
-import com.newgen.am.dto.FunctionsDTO;
-import com.newgen.am.dto.UpdateDepartmentDTO;
-import com.newgen.am.dto.UpdateUserDTO;
 import com.newgen.am.dto.UserCSV;
 import com.newgen.am.dto.UserDTO;
-import com.newgen.am.dto.UserRolesDTO;
 import com.newgen.am.exception.CustomException;
 import com.newgen.am.service.DepartmentService;
 import com.newgen.am.validation.ValidationSequence;
@@ -125,7 +125,7 @@ public class DepartmentController {
 		AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(deptDto));
 
 		if (Utility.isNotNull(deptDto)) {
-			deptService.createDepartment(request, deptDto, refId);
+			deptService.createDepartmentPA(request, deptDto, refId);
 		} else {
 			throw new CustomException(ErrorMessage.INVALID_REQUEST, HttpStatus.BAD_REQUEST);
 		}
@@ -140,14 +140,14 @@ public class DepartmentController {
 	@PutMapping("/admin/departments/{deptId}")
 	@PreAuthorize("hasAuthority('adminUserManagement.departmentManagement.departmentInfo.update')")
 	public AdminResponseObj updateDepartment(HttpServletRequest request, @PathVariable String deptId,
-			@Validated(ValidationSequence.class) @RequestBody UpdateDepartmentDTO deptDto) {
+			@Validated(ValidationSequence.class) @RequestBody ApprovalUpdateDepartmentDTO deptDto) {
 		String methodName = "updateDepartment";
 		long refId = System.currentTimeMillis();
 		AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [PUT]/admin/deparments/" + deptId);
 		AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(deptDto));
 
 		if (Utility.isNotNull(deptDto)) {
-			deptService.updateDepartment(request, deptId, deptDto, refId);
+			deptService.updateDepartmentPA(request, deptId, deptDto, refId);
 		} else {
 			throw new CustomException(ErrorMessage.INVALID_REQUEST, HttpStatus.BAD_REQUEST);
 		}
@@ -253,7 +253,7 @@ public class DepartmentController {
 		AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [POST]/admin/departments/users");
 		AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(deptUserDto));
 
-		deptService.createDepartmentUser(request, deptId, deptUserDto, refId);
+		deptService.createDepartmentUserPA(request, deptId, deptUserDto, refId);
 
 		AdminResponseObj response = new AdminResponseObj();
 		response.setStatus(Constant.RESPONSE_OK);
@@ -265,14 +265,14 @@ public class DepartmentController {
 	@PutMapping("/admin/departments/{deptId}/users/{deptUserId}")
 	@PreAuthorize("hasAuthority('adminUserManagement.departmentManagement.loginAdminUserManagement.adminUserInfo.update')")
 	public AdminResponseObj updateDepartmentUser(HttpServletRequest request, @PathVariable String deptId,
-			@PathVariable String deptUserId, @Validated(ValidationSequence.class) @RequestBody UpdateUserDTO deptUserDto) {
+			@PathVariable String deptUserId, @Validated(ValidationSequence.class) @RequestBody ApprovalUpdateUserDTO deptUserDto) {
 		String methodName = "updateDepartmentUser";
 		long refId = System.currentTimeMillis();
 		AMLogger.logMessage(className, methodName, refId,
 				String.format("REQUEST_API: [PUT]/admin/departments/%s/users/%s", deptId, deptUserId));
 		AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(deptUserDto));
 
-		deptService.updateDepartmentUser(request, deptId, deptUserId, deptUserDto, refId);
+		deptService.updateDepartmentUserPA(request, deptId, deptUserId, deptUserDto, refId);
 
 		AdminResponseObj response = new AdminResponseObj();
 		response.setStatus(Constant.RESPONSE_OK);
@@ -307,13 +307,13 @@ public class DepartmentController {
 	@PostMapping("/admin/departments/{deptId}/users/{deptUserId}/roles")
 	@PreAuthorize("hasAuthority('adminUserManagement.departmentManagement.loginAdminUserManagement.adminUserRoleAssign.create')")
 	public AdminResponseObj saveDepartmentUserRoles(HttpServletRequest request, @PathVariable String deptId,
-			@PathVariable String deptUserId, @Validated(ValidationSequence.class) @RequestBody UserRolesDTO deptUserDto) {
+			@PathVariable String deptUserId, @Validated(ValidationSequence.class) @RequestBody ApprovalUserRolesDTO deptUserDto) {
 		String methodName = "saveDepartmentUserRoles";
 		long refId = System.currentTimeMillis();
 		AMLogger.logMessage(className, methodName, refId,
 				String.format("REQUEST_API: [POST]/admin/departments/%s/users/%s/roles", deptId, deptUserId));
 
-		deptService.saveDepartmentUserRoles(request, deptId, deptUserId, deptUserDto, refId);
+		deptService.saveDepartmentUserRolesPA(request, deptId, deptUserId, deptUserDto, refId);
 
 		AdminResponseObj response = new AdminResponseObj();
 		response.setStatus(Constant.RESPONSE_OK);
@@ -325,13 +325,13 @@ public class DepartmentController {
 	@PostMapping("/admin/departments/{deptId}/users/{deptUserId}/functions")
 	@PreAuthorize("hasAuthority('adminUserManagement.departmentManagement.loginAdminUserManagement.adminUserFunctionsAssign.create')")
 	public AdminResponseObj saveDepartmentUserFunctions(HttpServletRequest request, @PathVariable String deptId,
-			@PathVariable String deptUserId, @Validated(ValidationSequence.class) @RequestBody FunctionsDTO deptUserDto) {
+			@PathVariable String deptUserId, @Validated(ValidationSequence.class) @RequestBody ApprovalFunctionsDTO deptUserDto) {
 		String methodName = "saveDepartmentUserFunctions";
 		long refId = System.currentTimeMillis();
 		AMLogger.logMessage(className, methodName, refId,
 				String.format("REQUEST_API: [POST]/admin/departments/%s/users/%s/functions", deptId, deptUserId));
 
-		deptService.saveDepartmentUserFunctions(request, deptId, deptUserId, deptUserDto, refId);
+		deptService.saveDepartmentUserFunctionsPA(request, deptId, deptUserId, deptUserDto, refId);
 
 		AdminResponseObj response = new AdminResponseObj();
 		response.setStatus(Constant.RESPONSE_OK);
@@ -350,7 +350,7 @@ public class DepartmentController {
 				String.format("REQUEST_API: [PUT]/admin/departments/users/changeDepartment/%s/%s/%s", fromDeptId,
 						toDeptId, username));
 
-		deptService.changeUserDepartment(request, fromDeptId, toDeptId, username, refId);
+		deptService.changeUserDepartmentPA(request, fromDeptId, toDeptId, username, refId);
 
 		AdminResponseObj response = new AdminResponseObj();
 		response.setStatus(Constant.RESPONSE_OK);

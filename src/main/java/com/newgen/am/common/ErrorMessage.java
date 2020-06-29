@@ -20,4 +20,5 @@ public class ErrorMessage {
     public static final String TAX_CODE_ALREADY_EXISTED = "The tax code already existed.";
     public static final String IDENTITY_CARD_ALREADY_EXISTED = "The identity card already existed.";
     public static final String DEFAULT_ROLE_DOESNT_EXIST = "Default role doesn't exist.";
+    public static final String ACCESS_DENIED = "Access denied.";
 }

@@ -34,6 +34,8 @@ import com.newgen.am.common.MongoDBConnection;
 import com.newgen.am.common.RequestParamsParser;
 import com.newgen.am.common.SystemFunctionCode;
 import com.newgen.am.common.Utility;
+import com.newgen.am.dto.ApprovalFunctionsDTO;
+import com.newgen.am.dto.ApprovalUpdateRoleDTO;
 import com.newgen.am.dto.BasePagination;
 import com.newgen.am.dto.FunctionsDTO;
 import com.newgen.am.dto.RoleCSV;
@@ -141,8 +143,36 @@ public class SystemRoleService {
 		return systemRoleCSVs;
 	}
 
-	public void createSystemRole(HttpServletRequest request, RoleDTO sysRoleDto, long refId) {
+	public void createSystemRole(HttpServletRequest request, PendingApproval pendingApproval, long refId) {
 		String methodName = "createSystemRole";
+		
+		try {
+			RoleDTO sysRoleDto = new Gson().fromJson(pendingApproval.getPendingData().getPendingValue(), RoleDTO.class);
+			
+			// get redis user info
+			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
+			// send activity log
+			activityLogService.sendActivityLog(userInfo, request, ActivityLogService.ACTIVITY_APPROVAL_CREATE_SYS_ROLE,
+					ActivityLogService.ACTIVITY_APPROVAL_CREATE_SYS_ROLE_DESC, sysRoleDto.getName(), pendingApproval.getId());
+
+			Document newSysRole = new Document();
+			newSysRole.append("createdUser", Utility.getCurrentUsername());
+			newSysRole.append("createdDate", System.currentTimeMillis());
+			newSysRole.append("name", sysRoleDto.getName());
+			newSysRole.append("description", sysRoleDto.getDescription());
+			newSysRole.append("status", Constant.STATUS_ACTIVE);
+
+			MongoDatabase database = MongoDBConnection.getMongoDatabase();
+			MongoCollection<Document> collection = database.getCollection("system_roles");
+			collection.insertOne(newSysRole);
+		} catch (Exception e) {
+			AMLogger.logError(className, methodName, refId, e);
+			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+	
+	public void createSystemRolePA(HttpServletRequest request, RoleDTO sysRoleDto, long refId) {
+		String methodName = "createSystemRolePA";
 		boolean existedRole = false;
 		try {
 			existedRole = systemRoleRepo.existsSystemRoleByName(sysRoleDto.getName());
@@ -160,17 +190,6 @@ public class SystemRoleService {
 				// send activity log
 				activityLogService.sendActivityLog(userInfo, request, ActivityLogService.ACTIVITY_CREATE_SYS_ROLE,
 						ActivityLogService.ACTIVITY_CREATE_SYS_ROLE_DESC, sysRoleDto.getName(), approvalId);
-
-				Document newSysRole = new Document();
-				newSysRole.append("createdUser", Utility.getCurrentUsername());
-				newSysRole.append("createdDate", System.currentTimeMillis());
-				newSysRole.append("name", sysRoleDto.getName());
-				newSysRole.append("description", sysRoleDto.getDescription());
-				newSysRole.append("status", sysRoleDto.getStatus());
-
-				MongoDatabase database = MongoDBConnection.getMongoDatabase();
-				MongoCollection<Document> collection = database.getCollection("system_roles");
-				collection.insertOne(newSysRole);
 			} catch (Exception e) {
 				AMLogger.logError(className, methodName, refId, e);
 				throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -181,7 +200,7 @@ public class SystemRoleService {
 		}
 	}
 
-	public String insertSystemRoleCreatePA(UserInfoDTO userInfo, RoleDTO sysRoleDto, long refId) {
+	private String insertSystemRoleCreatePA(UserInfoDTO userInfo, RoleDTO sysRoleDto, long refId) {
 		String methodName = "insertSystemRoleCreatePA";
 		String approvalId = "";
 		try {
@@ -192,12 +211,10 @@ public class SystemRoleService {
 			pendingData.setServiceFunctionName(ApprovalConstant.SYSTEM_ROLE_CREATE);
 			pendingData.setCollectionName("system_roles");
 			pendingData.setAction(Constant.APPROVAL_ACTION_CREATE);
-			pendingData.setValue(new Gson().toJson(sysRoleDto));
+			pendingData.setPendingValue(new Gson().toJson(sysRoleDto));
 
 			PendingApproval pendingApproval = new PendingApproval();
 			pendingApproval.setApiUrl(String.format(ApprovalConstant.APPROVAL_PENDING_URL, approvalId));
-			pendingApproval.setCreatorDate(System.currentTimeMillis());
-			pendingApproval.setCreatorUser(userInfo.getUsername());
 			pendingApproval.setFunctionCode(SystemFunctionCode.APPROVAL_SYSTEM_ROLE_CREATE_CODE);
 			pendingApproval.setFunctionName(SystemFunctionCode.SYSTEM_ROLE_CREATE_NAME);
 			pendingApproval.setDescription(
@@ -213,17 +230,17 @@ public class SystemRoleService {
 		return approvalId;
 	}
 
-	public void updateSystemRole(HttpServletRequest request, String sysRoleId, UpdateRoleDTO sysRoleDto,
-			long refId) {
+	public void updateSystemRole(HttpServletRequest request, PendingApproval pendingApproval, long refId) {
 		String methodName = "updateSystemRole";
+		
 		try {
+			UpdateRoleDTO sysRoleDto = new Gson().fromJson(pendingApproval.getPendingData().getPendingValue(), UpdateRoleDTO.class);
+			
 			// get redis user info
 			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
-			// insert data to pending_approvals
-			String approvalId = insertSystemRoleUpdatePA(userInfo, sysRoleId, sysRoleDto, refId);
 			// send activity log
-			activityLogService.sendActivityLog(userInfo, request, ActivityLogService.ACTIVITY_UPDATE_SYS_ROLE,
-					ActivityLogService.ACTIVITY_UPDATE_SYS_ROLE_DESC, getRoleName(sysRoleId), approvalId);
+			activityLogService.sendActivityLog(userInfo, request, ActivityLogService.ACTIVITY_APPROVAL_UPDATE_SYS_ROLE,
+					ActivityLogService.ACTIVITY_APPROVAL_UPDATE_SYS_ROLE_DESC, getRoleName(pendingApproval.getPendingData().getQueryValue()), pendingApproval.getId());
 
 			Document updateDoc = new Document();
 			if (Utility.isNotNull(sysRoleDto.getName())) updateDoc.append("name", sysRoleDto.getName());
@@ -234,7 +251,7 @@ public class SystemRoleService {
 			updateDoc.put("lastModifiedDate", System.currentTimeMillis());
 			
 			Document query = new Document();
-			query.append("_id", new ObjectId(sysRoleId));
+			query.append("_id", new ObjectId(pendingApproval.getPendingData().getQueryValue()));
 			
 			Document update = new Document();
 			update.append("$set", updateDoc);
@@ -247,8 +264,25 @@ public class SystemRoleService {
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
+	
+	public void updateSystemRolePA(HttpServletRequest request, String sysRoleId, ApprovalUpdateRoleDTO sysRoleDto,
+			long refId) {
+		String methodName = "updateSystemRolePA";
+		try {
+			// get redis user info
+			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
+			// insert data to pending_approvals
+			String approvalId = insertSystemRoleUpdatePA(userInfo, sysRoleId, sysRoleDto, refId);
+			// send activity log
+			activityLogService.sendActivityLog(userInfo, request, ActivityLogService.ACTIVITY_UPDATE_SYS_ROLE,
+					ActivityLogService.ACTIVITY_UPDATE_SYS_ROLE_DESC, getRoleName(sysRoleId), approvalId);
+		} catch (Exception e) {
+			AMLogger.logError(className, methodName, refId, e);
+			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
 
-	public String insertSystemRoleUpdatePA(UserInfoDTO userInfo, String sysRoleId, UpdateRoleDTO sysRoleDto,
+	private String insertSystemRoleUpdatePA(UserInfoDTO userInfo, String sysRoleId, ApprovalUpdateRoleDTO sysRoleDto,
 			long refId) {
 		String methodName = "insertSystemRoleUpdatePA";
 		String approvalId = "";
@@ -262,13 +296,11 @@ public class SystemRoleService {
 			pendingData.setAction(Constant.APPROVAL_ACTION_UPDATE);
 			pendingData.setQueryField("_id");
 			pendingData.setQueryValue(sysRoleId);
-			pendingData.setValue(new Gson().toJson(sysRoleDto));
+			pendingData.setOldValue(new Gson().toJson(sysRoleDto.getOldData()));
+			pendingData.setPendingValue(new Gson().toJson(sysRoleDto.getPendingData()));
 
 			PendingApproval pendingApproval = new PendingApproval();
-			pendingApproval.setId(approvalId);
 			pendingApproval.setApiUrl(String.format(ApprovalConstant.APPROVAL_PENDING_URL, approvalId));
-			pendingApproval.setCreatorDate(System.currentTimeMillis());
-			pendingApproval.setCreatorUser(userInfo.getUsername());
 			pendingApproval.setFunctionCode(SystemFunctionCode.APPROVAL_SYSTEM_ROLE_UPDATE_CODE);
 			pendingApproval.setFunctionName(SystemFunctionCode.SYSTEM_ROLE_UPDATE_NAME);
 			pendingApproval.setDescription(
@@ -284,45 +316,65 @@ public class SystemRoleService {
 		return approvalId;
 	}
 
-	public void createSystemRoleFunctions(HttpServletRequest request, String sysRoleId, FunctionsDTO sysRoleDto,
+	public void createSystemRoleFunctions(HttpServletRequest request, PendingApproval pendingApproval,
 			long refId) {
 		String methodName = "createSystemRoleFunctions";
-		if (Utility.isNotNull(sysRoleDto.getFunctions()) && sysRoleDto.getFunctions().size() > 0) {
-			try {
-				// get redis user info
-				UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
-				// insert data to pending_approvals
-				String approvalId = insertSystemRoleFunctionsAssignPA(userInfo, sysRoleId, sysRoleDto, refId);
-				// send activity log
-				activityLogService.sendActivityLog(userInfo, request,
-						ActivityLogService.ACTIVITY_CREATE_SYS_ROLE_FUNCTIONS,
-						ActivityLogService.ACTIVITY_CREATE_SYS_ROLE_FUNCTIONS_DESC, getRoleName(sysRoleId),
-						approvalId);
+		
+		try {
+			FunctionsDTO sysRoleDto = new Gson().fromJson(pendingApproval.getPendingData().getPendingValue(), FunctionsDTO.class);
+			
+			// get redis user info
+			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
+			// send activity log
+			activityLogService.sendActivityLog(userInfo, request,
+					ActivityLogService.ACTIVITY_APPROVAL_CREATE_SYS_ROLE_FUNCTIONS,
+					ActivityLogService.ACTIVITY_APPROVAL_CREATE_SYS_ROLE_FUNCTIONS_DESC, getRoleName(pendingApproval.getPendingData().getQueryValue()),
+					pendingApproval.getId());
 
-				List<Document> functions = new ArrayList<Document>();
+			List<Document> functions = new ArrayList<Document>();
+			if (Utility.isNotNull(sysRoleDto.getFunctions()) && sysRoleDto.getFunctions().size() > 0) {
 				for (RoleFunction func : sysRoleDto.getFunctions()) {
 					Document funcDoc = new Document();
 					funcDoc.append("code", func.getCode());
 					funcDoc.append("name", func.getName());
 					functions.add(funcDoc);
 				}
-				BasicDBObject query = new BasicDBObject();
-				query.append("_id", new ObjectId(sysRoleId));
-				
-				MongoDatabase database = MongoDBConnection.getMongoDatabase();
-				MongoCollection<Document> collection = database.getCollection("system_roles");
-				collection.updateOne(query, Updates.set("functions", functions));
-			} catch (Exception e) {
-				AMLogger.logError(className, methodName, refId, e);
-				throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
 			}
-		} else {
-			AMLogger.logMessage(className, methodName, refId, "Invalid input data");
-			throw new CustomException(ErrorMessage.INVALID_REQUEST, HttpStatus.BAD_REQUEST);
+			
+			BasicDBObject query = new BasicDBObject();
+			query.append("_id", new ObjectId(pendingApproval.getPendingData().getQueryValue()));
+			
+			MongoDatabase database = MongoDBConnection.getMongoDatabase();
+			MongoCollection<Document> collection = database.getCollection("system_roles");
+			collection.updateOne(query, Updates.set("functions", functions));
+		} catch (Exception e) {
+			AMLogger.logError(className, methodName, refId, e);
+			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
+	
+	public void createSystemRoleFunctionsPA(HttpServletRequest request, String sysRoleId, ApprovalFunctionsDTO sysRoleDto,
+			long refId) {
+		String methodName = "createSystemRoleFunctionsPA";
+		
+		try {
+			// get redis user info
+			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
+			// insert data to pending_approvals
+			String approvalId = insertSystemRoleFunctionsAssignPA(userInfo, sysRoleId, sysRoleDto, refId);
+			// send activity log
+			activityLogService.sendActivityLog(userInfo, request,
+					ActivityLogService.ACTIVITY_CREATE_SYS_ROLE_FUNCTIONS,
+					ActivityLogService.ACTIVITY_CREATE_SYS_ROLE_FUNCTIONS_DESC, getRoleName(sysRoleId),
+					approvalId);
+		} catch (Exception e) {
+			AMLogger.logError(className, methodName, refId, e);
+			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		
+	}
 
-	public String insertSystemRoleFunctionsAssignPA(UserInfoDTO userInfo, String sysRoleId, FunctionsDTO sysRoleDto,
+	private String insertSystemRoleFunctionsAssignPA(UserInfoDTO userInfo, String sysRoleId, ApprovalFunctionsDTO sysRoleDto,
 			long refId) {
 		String methodName = "insertSystemRoleFunctionsAssignPA";
 		String approvalId = "";
@@ -336,12 +388,11 @@ public class SystemRoleService {
 			pendingData.setAction(Constant.APPROVAL_ACTION_UPDATE);
 			pendingData.setQueryField("_id");
 			pendingData.setQueryValue(sysRoleId);
-			pendingData.setValue(new Gson().toJson(sysRoleDto));
+			pendingData.setOldValue(new Gson().toJson(sysRoleDto.getOldData()));
+			pendingData.setPendingValue(new Gson().toJson(sysRoleDto.getPendingData()));
 
 			PendingApproval pendingApproval = new PendingApproval();
 			pendingApproval.setApiUrl(String.format(ApprovalConstant.APPROVAL_PENDING_URL, approvalId));
-			pendingApproval.setCreatorDate(System.currentTimeMillis());
-			pendingApproval.setCreatorUser(userInfo.getUsername());
 			pendingApproval.setFunctionCode(SystemFunctionCode.APPROVAL_SYSTEM_ROLE_FUNCTIONS_ASSIGN_CREATE_CODE);
 			pendingApproval.setFunctionName(SystemFunctionCode.SYSTEM_ROLE_FUNCTIONS_ASSIGN_CREATE_NAME);
 			pendingApproval.setDescription(

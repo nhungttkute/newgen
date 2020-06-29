@@ -21,7 +21,6 @@ import com.newgen.am.validation.ValidCode;
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class DepartmentDTO {
-    @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     private String _id;
     @NotEmpty(message = "Required.")
     @ValidCode(groups = FormatGroup.class)
@@ -29,9 +28,8 @@ public class DepartmentDTO {
     @NotEmpty(message = "Required.")
     @Size(min = 1, max = 100, message = "Invalid format.", groups = LengthGroup.class)
     private String name;
-    @NotEmpty(message = "Required.")
-    @Size(min = 1, max = 20, message = "Invalid format.", groups = LengthGroup.class)
     private String status;
+    @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     private long createdDate;
     @Size(max = 200, message = "Invalid format.", groups = LengthGroup.class)
     private String note;

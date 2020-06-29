@@ -21,8 +21,11 @@ import com.newgen.am.repository.LoginInvestorUserRepository;
 import com.newgen.am.security.InvestorAuthenticationProvider;
 import com.newgen.am.security.InvestorJwtTokenProvider;
 import com.newgen.am.security.InvestorUsernamePasswordAuthenticationToken;
+
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import org.bson.Document;
@@ -238,11 +241,13 @@ public class LoginInvestorUserService {
 							.append("brokerName", 1.0).append("collaboratorCode", 1.0).append("collaboratorName", 1.0)
 							.append("investorCode", 1.0).append("investorName", 1.0).append("account", 1.0).append("cqgInfo", 1.0)
 							.append("orderLimit", 1.0).append("commodities", 1.0).append("marginRatioAlert", 1.0)
-							.append("marginMultiplier", 1.0).append("otherFee", 1.0).append("functions", new Document()
-									.append("$arrayElemAt", Arrays.asList("$roleObj.functions.code", 0.0)))));
+							.append("marginMultiplier", 1.0).append("riskParameters", 1.0).append("generalFees", 1.0)
+							.append("functions", new Document().append("$arrayElemAt", Arrays.asList("$roleObj.functions.code", 0.0)))));
 
 			Document result = collection.aggregate(pipeline).first();
 			userInfoDto = mongoTemplate.getConverter().read(UserInfoDTO.class, result);
+			List<String> allFunctionsWithoutDuplicates = new ArrayList<>(new HashSet<String>(userInfoDto.getFunctions()));
+			userInfoDto.setFunctions(allFunctionsWithoutDuplicates);
 			if (userInfoDto != null) {
 				userInfoDto.setId(user.getId());
 				userInfoDto.setUsername(user.getUsername());
@@ -256,6 +261,7 @@ public class LoginInvestorUserService {
 				userInfoDto.setTheme(user.getTheme());
 				userInfoDto.setLanguage(user.getLanguage());
 				userInfoDto.setFontSize(user.getFontSize());
+				userInfoDto.setExchanges(user.getExchanges());
 			}
 		} catch (Exception e) {
 			AMLogger.logError(className, "getUserInfoDTO", refId, e);

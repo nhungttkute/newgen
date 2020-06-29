@@ -23,10 +23,11 @@ import com.newgen.am.common.MongoDBConnection;
 import com.newgen.am.common.Utility;
 import com.newgen.am.dto.BrokerDTO;
 import com.newgen.am.dto.CollaboratorDTO;
+import com.newgen.am.dto.DepartmentDTO;
 import com.newgen.am.dto.InvestorDTO;
 import com.newgen.am.dto.ListElementDTO;
 import com.newgen.am.dto.MemberDTO;
-import com.newgen.am.dto.NewsUserInfo;
+import com.newgen.am.dto.UserBaseInfo;
 import com.newgen.am.dto.UserInfoDTO;
 import com.newgen.am.exception.CustomException;
 
@@ -239,9 +240,9 @@ public class CommonService {
 		return investorList;
 	}
 	
-	public List<NewsUserInfo> getAdminUserList(long refId) {
+	public List<UserBaseInfo> getAdminUserList(long refId) {
 		String methodName = "getAdminUserList";
-		List<NewsUserInfo> userList = new ArrayList<NewsUserInfo>();
+		List<UserBaseInfo> userList = new ArrayList<UserBaseInfo>();
 		
 		try {
 			MongoDatabase database = MongoDBConnection.getMongoDatabase();
@@ -258,7 +259,7 @@ public class CommonService {
 			while (cur.hasNext()) {
 				MemberDTO memberDto = mongoTemplate.getConverter().read(MemberDTO.class, cur.next());
 				if (memberDto != null && memberDto.getUsers() != null) {
-					List<NewsUserInfo> users = modelMapper.map(memberDto.getUsers(), new TypeToken<List<NewsUserInfo>>(){}.getType());
+					List<UserBaseInfo> users = modelMapper.map(memberDto.getUsers(), new TypeToken<List<UserBaseInfo>>(){}.getType());
 					userList.addAll(users);
 				}
 			}
@@ -270,9 +271,9 @@ public class CommonService {
 		return userList;
 	}
 	
-	public List<NewsUserInfo> getMemberUserList(long refId) {
+	public List<UserBaseInfo> getMemberUserList(long refId) {
 		String methodName = "getMemberUserList";
-		List<NewsUserInfo> userList = new ArrayList<NewsUserInfo>();
+		List<UserBaseInfo> userList = new ArrayList<UserBaseInfo>();
 		
 		try {
 			MongoDatabase database = MongoDBConnection.getMongoDatabase();
@@ -289,7 +290,7 @@ public class CommonService {
 			while (cur.hasNext()) {
 				MemberDTO memberDto = mongoTemplate.getConverter().read(MemberDTO.class, cur.next());
 				if (memberDto != null && memberDto.getUsers() != null) {
-					List<NewsUserInfo> users = modelMapper.map(memberDto.getUsers(), new TypeToken<List<NewsUserInfo>>(){}.getType());
+					List<UserBaseInfo> users = modelMapper.map(memberDto.getUsers(), new TypeToken<List<UserBaseInfo>>(){}.getType());
 					userList.addAll(users);
 				}
 			}
@@ -301,9 +302,9 @@ public class CommonService {
 		return userList;
 	}
 	
-	public List<NewsUserInfo> getBrokerUserList(long refId) {
+	public List<UserBaseInfo> getBrokerUserList(long refId) {
 		String methodName = "getBrokerUserList";
-		List<NewsUserInfo> userList = new ArrayList<NewsUserInfo>();
+		List<UserBaseInfo> userList = new ArrayList<UserBaseInfo>();
 		
 		try {
 			MongoDatabase database = MongoDBConnection.getMongoDatabase();
@@ -320,7 +321,7 @@ public class CommonService {
 			while (cur.hasNext()) {
 				BrokerDTO brokerDto = mongoTemplate.getConverter().read(BrokerDTO.class, cur.next());
 				if (brokerDto != null && brokerDto.getUser() != null) {
-					NewsUserInfo user = modelMapper.map(brokerDto.getUser(), NewsUserInfo.class);
+					UserBaseInfo user = modelMapper.map(brokerDto.getUser(), UserBaseInfo.class);
 					userList.add(user);
 				}
 			}
@@ -332,9 +333,9 @@ public class CommonService {
 		return userList;
 	}
 	
-	public List<NewsUserInfo> getCollaboratorUserList(long refId) {
+	public List<UserBaseInfo> getCollaboratorUserList(long refId) {
 		String methodName = "getCollaboratorList";
-		List<NewsUserInfo> userList = new ArrayList<NewsUserInfo>();
+		List<UserBaseInfo> userList = new ArrayList<UserBaseInfo>();
 		
 		try {
 			MongoDatabase database = MongoDBConnection.getMongoDatabase();
@@ -351,7 +352,7 @@ public class CommonService {
 			while (cur.hasNext()) {
 				CollaboratorDTO collaboratorDto = mongoTemplate.getConverter().read(CollaboratorDTO.class, cur.next());
 				if (collaboratorDto != null && collaboratorDto.getUser() != null) {
-					NewsUserInfo user = modelMapper.map(collaboratorDto.getUser(), NewsUserInfo.class);
+					UserBaseInfo user = modelMapper.map(collaboratorDto.getUser(), UserBaseInfo.class);
 					userList.add(user);
 				}
 			}
@@ -363,9 +364,9 @@ public class CommonService {
 		return userList;
 	}
 	
-	public List<NewsUserInfo> getInvestorUserList(long refId) {
+	public List<UserBaseInfo> getInvestorUserList(long refId) {
 		String methodName = "getInvestorUserList";
-		List<NewsUserInfo> userList = new ArrayList<NewsUserInfo>();
+		List<UserBaseInfo> userList = new ArrayList<UserBaseInfo>();
 		
 		try {
 			MongoDatabase database = MongoDBConnection.getMongoDatabase();
@@ -382,9 +383,164 @@ public class CommonService {
 			while (cur.hasNext()) {
 				InvestorDTO investorDto = mongoTemplate.getConverter().read(InvestorDTO.class, cur.next());
 				if (investorDto != null && investorDto.getUsers() != null) {
-					List<NewsUserInfo> users = modelMapper.map(investorDto.getUsers(), new TypeToken<List<NewsUserInfo>>(){}.getType());
+					List<UserBaseInfo> users = modelMapper.map(investorDto.getUsers(), new TypeToken<List<UserBaseInfo>>(){}.getType());
 					userList.addAll(users);
 				}
+			}
+		} catch (Exception e) {
+            AMLogger.logError(className, methodName, refId, e);
+            throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+		
+		return userList;
+	}
+	
+	public List<UserBaseInfo> getUsersByDeptCode(String deptCode, long refId) {
+		String methodName = "getUsersByDeptCode";
+		List<UserBaseInfo> userList = new ArrayList<UserBaseInfo>();
+		
+		try {
+			MongoDatabase database = MongoDBConnection.getMongoDatabase();
+			MongoCollection<Document> collection = database.getCollection("departments");
+			
+			Document query = new Document();
+			query.append("code", deptCode);
+			
+	        Document projection = new Document();
+	        projection.append("_id", 0.0);
+	        projection.append("users.username", 1.0);
+	        projection.append("users.fullName", 1.0);
+	        projection.append("users.email", 1.0);
+	        projection.append("users.phoneNumber", 1.0);
+			
+			Document result = collection.find(query).projection(projection).first();
+			DepartmentDTO deptDto = mongoTemplate.getConverter().read(DepartmentDTO.class, result);
+			if (deptDto != null && deptDto.getUsers() != null) {
+				userList = modelMapper.map(deptDto.getUsers(), new TypeToken<List<UserBaseInfo>>(){}.getType());
+			}
+		} catch (Exception e) {
+            AMLogger.logError(className, methodName, refId, e);
+            throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+		
+		return userList;
+	}
+	
+	public List<UserBaseInfo> getUsersByMemberCode(String memberCode, long refId) {
+		String methodName = "getUsersByMemberCode";
+		List<UserBaseInfo> userList = new ArrayList<UserBaseInfo>();
+		
+		try {
+			MongoDatabase database = MongoDBConnection.getMongoDatabase();
+			MongoCollection<Document> collection = database.getCollection("members");
+			
+			Document query = new Document();
+			query.append("code", memberCode);
+			
+	        Document projection = new Document();
+	        projection.append("_id", 0.0);
+	        projection.append("users.username", 1.0);
+	        projection.append("users.fullName", 1.0);
+	        projection.append("users.email", 1.0);
+	        projection.append("users.phoneNumber", 1.0);
+			
+			Document result = collection.find(query).projection(projection).first();
+			MemberDTO memberDto = mongoTemplate.getConverter().read(MemberDTO.class, result);
+			if (memberDto != null && memberDto.getUsers() != null) {
+				userList = modelMapper.map(memberDto.getUsers(), new TypeToken<List<UserBaseInfo>>(){}.getType());
+			}
+		} catch (Exception e) {
+            AMLogger.logError(className, methodName, refId, e);
+            throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+		
+		return userList;
+	}
+	
+	public List<UserBaseInfo> getUsersByBrokerCode(String brokerCode, long refId) {
+		String methodName = "getUsersByBrokerCode";
+		List<UserBaseInfo> userList = new ArrayList<UserBaseInfo>();
+		
+		try {
+			MongoDatabase database = MongoDBConnection.getMongoDatabase();
+			MongoCollection<Document> collection = database.getCollection("brokers");
+			
+			Document query = new Document();
+			query.append("code", brokerCode);
+			
+	        Document projection = new Document();
+	        projection.append("_id", 0.0);
+	        projection.append("user.username", 1.0);
+	        projection.append("user.fullName", 1.0);
+	        projection.append("user.email", 1.0);
+	        projection.append("user.phoneNumber", 1.0);
+			
+			Document result = collection.find(query).projection(projection).first();
+			BrokerDTO brokerDto = mongoTemplate.getConverter().read(BrokerDTO.class, result);
+			if (brokerDto != null && brokerDto.getUser() != null) {
+				userList.add(modelMapper.map(brokerDto.getUser(), UserBaseInfo.class));
+			}
+		} catch (Exception e) {
+            AMLogger.logError(className, methodName, refId, e);
+            throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+		
+		return userList;
+	}
+	
+	public List<UserBaseInfo> getUsersByCollaboratorCode(String collaboratorCode, long refId) {
+		String methodName = "getUsersByCollaboratorCode";
+		List<UserBaseInfo> userList = new ArrayList<UserBaseInfo>();
+		
+		try {
+			MongoDatabase database = MongoDBConnection.getMongoDatabase();
+			MongoCollection<Document> collection = database.getCollection("collaborators");
+			
+			Document query = new Document();
+			query.append("code", collaboratorCode);
+			
+	        Document projection = new Document();
+	        projection.append("_id", 0.0);
+	        projection.append("user.username", 1.0);
+	        projection.append("user.fullName", 1.0);
+	        projection.append("user.email", 1.0);
+	        projection.append("user.phoneNumber", 1.0);
+			
+			Document result = collection.find(query).projection(projection).first();
+			CollaboratorDTO collaboratorDto = mongoTemplate.getConverter().read(CollaboratorDTO.class, result);
+			if (collaboratorDto != null && collaboratorDto.getUser() != null) {
+				userList.add(modelMapper.map(collaboratorDto.getUser(), UserBaseInfo.class));
+			}
+		} catch (Exception e) {
+            AMLogger.logError(className, methodName, refId, e);
+            throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+		
+		return userList;
+	}
+	
+	public List<UserBaseInfo> getUsersByInvestorCode(String investorCode, long refId) {
+		String methodName = "getUsersByInvestorCode";
+		List<UserBaseInfo> userList = new ArrayList<UserBaseInfo>();
+		
+		try {
+			MongoDatabase database = MongoDBConnection.getMongoDatabase();
+			MongoCollection<Document> collection = database.getCollection("investors");
+			
+			Document query = new Document();
+			query.append("investorCode", investorCode);
+			
+	        Document projection = new Document();
+	        projection.append("_id", 0.0);
+	        projection.append("users.username", 1.0);
+	        projection.append("users.fullName", 1.0);
+	        projection.append("users.email", 1.0);
+	        projection.append("users.phoneNumber", 1.0);
+			
+			Document result = collection.find(query).projection(projection).first();
+			InvestorDTO investorDto = mongoTemplate.getConverter().read(InvestorDTO.class, result);
+			if (investorDto != null && investorDto.getUsers() != null) {
+				userList = modelMapper.map(investorDto.getUsers(), new TypeToken<List<UserBaseInfo>>(){}.getType());
 			}
 		} catch (Exception e) {
             AMLogger.logError(className, methodName, refId, e);

@@ -7,9 +7,7 @@ package com.newgen.am.dto;
 
 import javax.validation.constraints.Size;
 
-import com.newgen.am.validation.FormatGroup;
 import com.newgen.am.validation.LengthGroup;
-import com.newgen.am.validation.ValidCode;
 import com.newgen.am.validation.ValidUpdateStringField;
 
 /**

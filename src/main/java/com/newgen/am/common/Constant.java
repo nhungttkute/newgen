@@ -36,6 +36,8 @@ public class Constant {
     public static final String ADMIN_JWT_SECRET = "ADMIN_JWT_SECRET";
     public static final String ADMIN_JWT_EXPIRATION = "ADMIN_JWT_EXPIRATION";
     
+    public static final String LOCAL_SECRET_KEY = "LOCAL_SECRET_KEY";
+    
     public static final String REDIS_HOST = "REDIS_HOST";
     public static final String REDIS_PORT = "REDIS_PORT";
     public static final String REDIS_PASSWORD = "REDIS_PASSWORD";
@@ -44,13 +46,17 @@ public class Constant {
     public static final String STATUS_ACTIVE = "ACTIVE";
     public static final String STATUS_INACTIVE = "INACTIVE";
     public static final String STATUS_PENDING = "PENDING";
+    public static final String STATUS_PENDING_ACTIVATE = "PENDING_ACTIVATE";
     
     public static final String APPROVAL_STATUS_APPROVED = "APPROVED";
     public static final String APPROVAL_STATUS_REJECTED = "REJECTED";
     public static final String APPROVAL_STATUS_PENDING = "PENDING";
+    public static final String APPROVAL_STATUS_ACTIVATED = "ACTIVATED";
+    
     
     public static final String APPROVAL_ACTION_CREATE = "create";
     public static final String APPROVAL_ACTION_UPDATE = "update";
+    public static final String APPROVAL_ACTION_ACTIVATE_INVESTOR = "activate_investor";
     
     public static final String SERVICE_CONNECTION_TIMEOUT = "SERVICE_CONNECTION_TIMEOUT";
     public static final String SERVICE_SOCKET_TIMEOUT = "SERVICE_SOCKET_TIMEOUT";
@@ -108,4 +114,19 @@ public class Constant {
     
     public static final String MARGIN_TRANS_TYPE_DEPOSIT = "DEPOSIT";
     public static final String MARGIN_TRANS_TYPE_WITHDRAW = "WITHDRAW";
+    public static final String MARGIN_TRANS_TYPE_REFUND = "REFUND";
+    
+    public static final String COMMODITIES_TYPE_ASSIGN = "assign";
+    public static final String COMMODITIES_TYPE_POSITION_LIMIT = "positionLimit";
+    public static final String COMMODITIES_TYPE_FEE = "fee";
+    
+    public static final String GENERAL_FEE_ONE_TIME = "ONE_TIME";
+    public static final String GENERAL_FEE_PER_TRANSACTION = "PER_TRANSACTION";
+    public static final String GENERAL_FEE_DAILY = "DAILY";
+    public static final String GENERAL_FEE_WEEKLY = "WEEKLY";
+    public static final String GENERAL_FEE_MONTHLY = "MONTHLY";
+    
+    public static final String EXCHANGE_PRICE_REALTIME = "REALTIME";
+    public static final String EXCHANGE_PRICE_DELAYED = "DELAYED";
+    public static final String EXCHANGE_PRICE_NONE = "NONE";
 }

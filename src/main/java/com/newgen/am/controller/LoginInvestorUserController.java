@@ -1,11 +1,8 @@
 package com.newgen.am.controller;
 
-//import com.google.gson.Gson;
-import com.google.gson.Gson;
-import com.newgen.am.common.AMLogger;
-import com.newgen.am.common.Constant;
-import com.newgen.am.common.ErrorMessage;
-import com.newgen.am.common.Utility;
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.SerializationUtils;
@@ -13,23 +10,29 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.newgen.am.dto.LoginUserDataInputDTO;
-import com.newgen.am.dto.ResponseObj;
-import com.newgen.am.exception.CustomException;
-import com.newgen.am.dto.AdminResponseObj;
+//import com.google.gson.Gson;
+import com.google.gson.Gson;
+import com.newgen.am.common.AMLogger;
+import com.newgen.am.common.Constant;
+import com.newgen.am.common.ErrorMessage;
+import com.newgen.am.common.Utility;
+import com.newgen.am.dto.ChangePasswordDTO;
 import com.newgen.am.dto.DataObj;
 import com.newgen.am.dto.ListUserDTO;
 import com.newgen.am.dto.LoginInvestorUserOutputDTO;
+import com.newgen.am.dto.LoginUserDataInputDTO;
+import com.newgen.am.dto.ResponseObj;
+import com.newgen.am.exception.CustomException;
 import com.newgen.am.model.LoginInvestorUser;
 import com.newgen.am.service.LoginInvestorUserService;
-import java.util.ArrayList;
-import java.util.List;
+import com.newgen.am.validation.ValidationSequence;
 
 @RestController
 public class LoginInvestorUserController {
@@ -190,7 +193,7 @@ public class LoginInvestorUserController {
     }
 
     @PostMapping("/users/{userId}/password")
-    public ResponseObj changePassword(HttpServletRequest request, @PathVariable String userId, @RequestBody LoginUserDataInputDTO input) {
+    public ResponseObj changePassword(HttpServletRequest request, @PathVariable String userId, @Validated(ValidationSequence.class) @RequestBody ChangePasswordDTO input) {
         String methodName = "changePassword";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, "REQUEST_API: " + String.format("[POST]/users/%s/password", userId));

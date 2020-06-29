@@ -8,7 +8,7 @@ import javax.validation.constraints.NotNull;
 import com.newgen.am.model.RoleFunction;
 
 public class FunctionsDTO {
-	@NotNull(message = "Required.")
+//	@NotNull(message = "Required.")
     @Valid
 	private List<RoleFunction> functions;
 

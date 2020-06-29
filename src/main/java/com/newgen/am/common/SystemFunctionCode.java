@@ -15,15 +15,15 @@ public class SystemFunctionCode {
     public static final String DEPARTMENT_INFO_CREATE_NAME = "Tạo thông tin phòng ban";
     public static final String APPROVAL_DEPARTMENT_INFO_UPDATE_CODE = "approval.adminUserManagement.departmentManagement.departmentInfo.update";
     public static final String DEPARTMENT_INFO_UPDATE_NAME = "Cập nhật thông tin phòng ban";
-    public static final String APPROVAL_ADMIN_USER_CREATE_CODE = "approval.adminUserManagement.loginAdminUserManagement.adminUserInfo.create";
+    public static final String APPROVAL_ADMIN_USER_CREATE_CODE = "approval.adminUserManagement.departmentManagement.loginAdminUserManagement.adminUserInfo.create";
     public static final String ADMIN_USER_CREATE_NAME = "Tạo thông tin người dùng đăng nhập admin";
-    public static final String APPROVAL_ADMIN_USER_UPDATE_CODE = "approval.adminUserManagement.loginAdminUserManagement.adminUserInfo.update";
+    public static final String APPROVAL_ADMIN_USER_UPDATE_CODE = "approval.adminUserManagement.departmentManagement.loginAdminUserManagement.adminUserInfo.update";
     public static final String ADMIN_USER_UPDATE_NAME = "Cập nhật thông tin người dùng đăng nhập admin";
-    public static final String APPROVAL_ADMIN_USER_ROLE_ASSIGN_CREATE_CODE = "approval.adminUserManagement.loginAdminUserManagement.adminUserRoleAssign.create";
+    public static final String APPROVAL_ADMIN_USER_ROLE_ASSIGN_CREATE_CODE = "approval.adminUserManagement.departmentManagement.loginAdminUserManagement.adminUserRoleAssign.create";
     public static final String ADMIN_USER_ROLE_ASSIGN_CREATE_NAME = "Gán nhóm quyền mặc định cho người dùng đăng nhập admin";
-    public static final String APPROVAL_ADMIN_USER_FUNCTIONS_ASSIGN_CREATE_CODE = "approval.adminUserManagement.loginAdminUserManagement.adminUserFunctionsAssign.create";
+    public static final String APPROVAL_ADMIN_USER_FUNCTIONS_ASSIGN_CREATE_CODE = "approval.adminUserManagement.departmentManagement.loginAdminUserManagement.adminUserFunctionsAssign.create";
     public static final String ADMIN_USER_FUNCTIONS_ASSIGN_CREATE_NAME = "Gán quyền riêng cho người dùng đăng nhập admin";
-    public static final String APPROVAL_ADMIN_USER_DEPT_CHANGE_UPDATE_CODE = "approval.adminUserManagement.loginAdminUserManagement.adminUserDeptChange.update";
+    public static final String APPROVAL_ADMIN_USER_DEPT_CHANGE_UPDATE_CODE = "approval.adminUserManagement.departmentManagement.loginAdminUserManagement.adminUserDeptChange.update";
     public static final String ADMIN_USER_DEPT_CHANGE_UPDATE_NAME = "Chuyển phòng ban người dùng admin";
     
     public static final String APPROVAL_SYSTEM_ROLE_CREATE_CODE = "approval.adminUserManagement.roleManagement.roleInfo.create";
@@ -61,8 +61,10 @@ public class SystemFunctionCode {
     public static final String MEMBER_GENERAL_FEE_BULK_CREATE_NAME = "Thiết lập thuế/phí đồng loạt cho TKGD theo TVKD";
     public static final String APPROVAL_MEMBER_OTHER_FEE_BULK_CREATE_CODE = "approval.clientManagement.memberManagement.investorOtherFeeBulkConfig.create";
     public static final String MEMBER_OTHER_FEE_BULK_CREATE_NAME = "Thiết lập phí khác cho đồng loạt các TKGD theo TVKD";
-    public static final String APPROVAL_MEMBER_COMMODITIES_FEE_BULK_CREATE_CODE = "approval.clientManagement.memberManagement.memberCommoditiesFeeBulkConfig.create";
-    public static final String MEMBER_COMMODITIES_FEE_BULK_CREATE_NAME = "Thiết lập phí hàng hóa đồng loạt cho MG/TKGD theo TVKD";
+    public static final String APPROVAL_MEMBER_INVESTOR_COMMODITIES_FEE_BULK_CREATE_CODE = "approval.clientManagement.memberManagement.investorCommoditiesFeeBulkConfig.create";
+    public static final String MEMBER_INVESTOR_COMMODITIES_FEE_BULK_CREATE_NAME = "Thiết lập phí hàng hóa đồng loạt cho TKGD theo TVKD";
+    public static final String APPROVAL_MEMBER_BROKER_COMMODITIES_FEE_BULK_CREATE_CODE = "approval.clientManagement.memberManagement.brokerCommoditiesFeeBulkConfig.create";
+    public static final String MEMBER_BROKER_COMMODITIES_FEE_BULK_CREATE_NAME = "Thiết lập phí hàng hóa đồng loạt cho MG theo TVKD";
     public static final String APPROVAL_MEMBER_USER_CREATE_CODE = "approval.clientManagement.memberManagement.memberUserManagement.memberUserInfo.create";
     public static final String MEMBER_USER_CREATE_NAME = "Tạo thông tin người dùng đăng nhập của TVKD";
     public static final String MEMBER_USER_CREATE_DESC = "Tạo thông tin người dùng đăng nhập %s của TVKD %s";
@@ -84,6 +86,9 @@ public class SystemFunctionCode {
     public static final String APPROVAL_MEMBER_ROLE_FUNCTIONS_ASSIGN_CREATE_CODE = "approval.clientManagement.memberManagement.memberRoleManagement.memberRoleFunctionsAssign.create";
     public static final String MEMBER_ROLE_FUNCTIONS_ASSIGN_CREATE_NAME = "Gán quyền cho nhóm quyền của TVKD";
     public static final String MEMBER_ROLE_FUNCTIONS_ASSIGN_CREATE_DESC = "Gán quyền cho nhóm quyền %s của TVKD %s";
+    public static final String APPROVAL_MEMBER_MOVE_ALL_INVESTORS_CODE = "approval.clientManagement.memberManagement.allInvestorsNewMember.transfer";
+    public static final String MEMBER_MOVE_ALL_INVESTORS_NAME = "Chuyển toàn bộ TKGD sang TVKD mới";
+    public static final String MEMBER_MOVE_ALL_INVESTORS_DESC = "Chuyển toàn bộ TKGD từ TVKD %s sang TVKD %s";
     
     public static final String APPROVAL_BROKER_CREATE_CODE = "approval.clientManagement.brokerManagement.brokerInfo.create";
     public static final String BROKER_CREATE_NAME = "Tạo thông tin MG";
@@ -120,6 +125,16 @@ public class SystemFunctionCode {
     public static final String INVESTOR_MARGIN_DEPOSIT_NAME = "Nộp ký quỹ TKGD";
     public static final String APPROVAL_INVESTOR_MARGIN_WITHDRAWAL_CODE = "approval.clientManagement.marginDepositWithdrawalManagement.investorMarginWithdrawal.create";
     public static final String INVESTOR_MARGIN_WITHDRAWAL_NAME = "Rút ký quỹ TKGD";
+    public static final String APPROVAL_REFUND_INVESTOR_MARGIN_DEPOSIT_CODE = "approval.clientManagement.marginDepositWithdrawalManagement.investorMarginDeposit.refund";
+    public static final String REFUND_INVESTOR_MARGIN_DEPOSIT_NAME = "Hoàn trả nộp ký quỹ TKGD";
+    
+    public static final String INVESTOR_ACTIVATE_CODE = "clientManagement.investorManagement.investorAccount.activate";
+    public static final String INVESTOR_ACTIVATE_NAME = "Kích hoạt TKGD";
+    
+    public static final String APPROVAL_USER_EXCHANGE_SETTING_CREATE = "approval.exchangeSetting.create";
+    public static final String USER_EXCHANGE_SETTING_CREATE_NAME = "Kích hoạt giá cho đăng nhập";
+    public static final String APPROAL_USER_EXCHANGE_SETTING_UPDATE = "approval.exchangeSetting.update";
+    public static final String USER_EXCHANGE_SETTING_UPDATE_NAME = "Cập nhật kích hoạt giá cho đăng nhập";
     
     public static String getApprovalDescription(String name, String value) {
         return (name + " " + value);

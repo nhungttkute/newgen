@@ -10,6 +10,7 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.newgen.am.model.RoleFunction;
+import com.newgen.am.model.InvestorMarginTransaction;
 import com.newgen.am.model.WatchList;
 
 /**
@@ -28,6 +29,7 @@ public class AdminDataObj implements Serializable {
     @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     private int fontSize;
     private List<LoginAdminUsersDTO> adminUsers;
+    private List<String> functions;
     
     // response for department
     private List<DepartmentDTO> departments;
@@ -63,11 +65,11 @@ public class AdminDataObj implements Serializable {
     private List<ListElementDTO> collaboratorList;
     private List<ListElementDTO> investorList;
     
-    private List<NewsUserInfo> adminUserList;
-    private List<NewsUserInfo> memberUserList;
-    private List<NewsUserInfo> brokerUserList;
-    private List<NewsUserInfo> collaboratorUserList;
-    private List<NewsUserInfo> investorUserList;
+    private List<UserBaseInfo> adminUserList;
+    private List<UserBaseInfo> memberUserList;
+    private List<UserBaseInfo> brokerUserList;
+    private List<UserBaseInfo> collaboratorUserList;
+    private List<UserBaseInfo> investorUserList;
     
     // response for investor
     private List<String> investorCodes;
@@ -78,6 +80,10 @@ public class AdminDataObj implements Serializable {
     @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     private long withdrawableAmount;
     private List<AccountStatusDTO> accountStatusInfos;
+    private List<InvestorMarginTransaction> investorMarginTransactions;
+    
+    private List<ExchangeSettingDTO> exchangeSettings;
+    private ExchangeSettingDTO exchangeSetting;
 
     public LoginAdminUserOutputDTO getUser() {
         return user;
@@ -375,43 +381,43 @@ public class AdminDataObj implements Serializable {
 		this.investorList = investorList;
 	}
 
-	public List<NewsUserInfo> getMemberUserList() {
+	public List<UserBaseInfo> getMemberUserList() {
 		return memberUserList;
 	}
 
-	public void setMemberUserList(List<NewsUserInfo> memberUserList) {
+	public void setMemberUserList(List<UserBaseInfo> memberUserList) {
 		this.memberUserList = memberUserList;
 	}
 
-	public List<NewsUserInfo> getBrokerUserList() {
+	public List<UserBaseInfo> getBrokerUserList() {
 		return brokerUserList;
 	}
 
-	public void setBrokerUserList(List<NewsUserInfo> brokerUserList) {
+	public void setBrokerUserList(List<UserBaseInfo> brokerUserList) {
 		this.brokerUserList = brokerUserList;
 	}
 
-	public List<NewsUserInfo> getCollaboratorUserList() {
+	public List<UserBaseInfo> getCollaboratorUserList() {
 		return collaboratorUserList;
 	}
 
-	public void setCollaboratorUserList(List<NewsUserInfo> collaboratorUserList) {
+	public void setCollaboratorUserList(List<UserBaseInfo> collaboratorUserList) {
 		this.collaboratorUserList = collaboratorUserList;
 	}
 
-	public List<NewsUserInfo> getInvestorUserList() {
+	public List<UserBaseInfo> getInvestorUserList() {
 		return investorUserList;
 	}
 
-	public void setInvestorUserList(List<NewsUserInfo> investorUserList) {
+	public void setInvestorUserList(List<UserBaseInfo> investorUserList) {
 		this.investorUserList = investorUserList;
 	}
 
-	public List<NewsUserInfo> getAdminUserList() {
+	public List<UserBaseInfo> getAdminUserList() {
 		return adminUserList;
 	}
 
-	public void setAdminUserList(List<NewsUserInfo> adminUserList) {
+	public void setAdminUserList(List<UserBaseInfo> adminUserList) {
 		this.adminUserList = adminUserList;
 	}
 
@@ -429,5 +435,37 @@ public class AdminDataObj implements Serializable {
 
 	public void setAccountStatusInfos(List<AccountStatusDTO> accountStatusInfos) {
 		this.accountStatusInfos = accountStatusInfos;
+	}
+
+	public List<InvestorMarginTransaction> getInvestorMarginTransactions() {
+		return investorMarginTransactions;
+	}
+
+	public void setInvestorMarginTransactions(List<InvestorMarginTransaction> investorMarginTransactions) {
+		this.investorMarginTransactions = investorMarginTransactions;
+	}
+
+	public List<String> getFunctions() {
+		return functions;
+	}
+
+	public void setFunctions(List<String> functions) {
+		this.functions = functions;
+	}
+
+	public List<ExchangeSettingDTO> getExchangeSettings() {
+		return exchangeSettings;
+	}
+
+	public void setExchangeSettings(List<ExchangeSettingDTO> exchangeSettings) {
+		this.exchangeSettings = exchangeSettings;
+	}
+
+	public ExchangeSettingDTO getExchangeSetting() {
+		return exchangeSetting;
+	}
+
+	public void setExchangeSetting(ExchangeSettingDTO exchangeSetting) {
+		this.exchangeSetting = exchangeSetting;
 	}
 }

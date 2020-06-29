@@ -34,6 +34,8 @@ import com.newgen.am.common.MongoDBConnection;
 import com.newgen.am.common.RequestParamsParser;
 import com.newgen.am.common.SystemFunctionCode;
 import com.newgen.am.common.Utility;
+import com.newgen.am.dto.ApprovalFunctionsDTO;
+import com.newgen.am.dto.ApprovalUpdateBrokerDTO;
 import com.newgen.am.dto.BasePagination;
 import com.newgen.am.dto.BrokerCSV;
 import com.newgen.am.dto.BrokerCommoditiesDTO;
@@ -200,144 +202,146 @@ public class BrokerService {
 		return brokerList;
 	}
 	
-	public void createBroker(HttpServletRequest request, BrokerDTO brokerDto, long refId) {
+	public void createBroker(HttpServletRequest request, PendingApproval pendingApproval, long refId) {
 		String methodName = "createBroker";
-		boolean existedBroker= false;
 		try {
-			existedBroker = brokerRepository.existsBrokerByCode(brokerDto.getCode());
+			BrokerDTO brokerDto = new Gson().fromJson(pendingApproval.getPendingData().getPendingValue(), BrokerDTO.class);
+			
+			// generate broker code
+			String brokerCode = brokerDto.getMemberCode() + Utility.lpad5With0(dbSeqService.generateSequence(Constant.BROKER_SEQ + brokerDto.getMemberCode(), refId));
+			
+			// get redis user info
+			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
+			// send activity log
+			activityLogService.sendActivityLog(userInfo, request, ActivityLogService.ACTIVITY_APPROVAL_CREATE_BROKER,
+					ActivityLogService.ACTIVITY_APPROVAL_CREATE_BROKER_DESC, brokerCode, pendingApproval.getId());
+			
+			Document company = null;
+			Document individual = null;
+			Document contact = null;
+			
+			if (Constant.BROKER_TYPE_COMPANY.equalsIgnoreCase(brokerDto.getType())) {
+				// create Delegate document
+				Document delegate = new Document();
+				delegate.append("fullName", brokerDto.getCompany().getDelegate().getFullName());
+				delegate.append("birthDay", brokerDto.getCompany().getDelegate().getBirthDay());
+				delegate.append("identityCard", brokerDto.getCompany().getDelegate().getIdentityCard());
+				delegate.append("idCreatedDate", brokerDto.getCompany().getDelegate().getIdCreatedDate());
+				delegate.append("idCreatedLocation", brokerDto.getCompany().getDelegate().getIdCreatedLocation());
+				delegate.append("email", brokerDto.getCompany().getDelegate().getEmail());
+				delegate.append("phoneNumber", brokerDto.getCompany().getDelegate().getPhoneNumber());
+				delegate.append("address", brokerDto.getCompany().getDelegate().getAddress());
+				delegate.append("scannedFrontIdCard", brokerDto.getCompany().getDelegate().getScannedFrontIdCard());
+				delegate.append("scannedBackIdCard", brokerDto.getCompany().getDelegate().getScannedBackIdCard());
+				delegate.append("scannedSignature", brokerDto.getCompany().getDelegate().getScannedSignature());
+				
+				// create Company document
+				company = new Document();
+				company.append("name", brokerDto.getCompany().getName());
+				company.append("taxCode", brokerDto.getCompany().getTaxCode());
+				company.append("address", brokerDto.getCompany().getAddress());
+				company.append("phoneNumber", brokerDto.getCompany().getPhoneNumber());
+				company.append("fax", brokerDto.getCompany().getFax());
+				company.append("email", brokerDto.getCompany().getEmail());
+				company.append("delegate", delegate);
+				
+				// create Contact document
+				contact = new Document();
+				contact.append("fullName", brokerDto.getCompany().getDelegate().getFullName());
+				contact.append("phoneNumber", brokerDto.getCompany().getDelegate().getPhoneNumber());
+				contact.append("email", brokerDto.getCompany().getDelegate().getEmail());
+			} else if (Constant.BROKER_TYPE_INDIVIDUAL.equalsIgnoreCase(brokerDto.getType())) {
+				individual = new Document();
+				individual.append("fullName", brokerDto.getIndividual().getFullName());
+				individual.append("birthDay", brokerDto.getIndividual().getBirthDay());
+				individual.append("identityCard", brokerDto.getIndividual().getIdentityCard());
+				individual.append("idCreatedDate", brokerDto.getIndividual().getIdCreatedDate());
+				individual.append("idCreatedLocation", brokerDto.getIndividual().getIdCreatedLocation());
+				individual.append("email", brokerDto.getIndividual().getEmail());
+				individual.append("phoneNumber", brokerDto.getIndividual().getPhoneNumber());
+				individual.append("address", brokerDto.getIndividual().getAddress());
+				individual.append("scannedFrontIdCard", brokerDto.getIndividual().getScannedFrontIdCard());
+				individual.append("scannedBackIdCard", brokerDto.getIndividual().getScannedBackIdCard());
+				individual.append("scannedSignature", brokerDto.getIndividual().getScannedSignature());
+				
+				contact = new Document();
+				contact.append("fullName", brokerDto.getIndividual().getFullName());
+				contact.append("phoneNumber", brokerDto.getIndividual().getPhoneNumber());
+				contact.append("email", brokerDto.getIndividual().getEmail());
+			}
+			
+			// create default broker role
+			SystemRole defaultBrokerRole = sysRoleRepository.findByName(Constant.BROKER_DEFAULT_ROLE);
+			if (Utility.isNull(defaultBrokerRole)) {
+				throw new CustomException(ErrorMessage.DEFAULT_ROLE_DOESNT_EXIST, HttpStatus.OK);
+			}
+			
+			Document brokerRole = new Document();
+			brokerRole.append("name", defaultBrokerRole.getName());
+			brokerRole.append("description", defaultBrokerRole.getDescription());
+			
+			Document newBroker = new Document();
+			newBroker.append("createdUser", Utility.getCurrentUsername());
+			newBroker.append("createdDate", System.currentTimeMillis());
+			newBroker.append("_id", new ObjectId());
+			newBroker.append("code", brokerCode);
+			newBroker.append("name", brokerDto.getName());
+			newBroker.append("status", Constant.STATUS_ACTIVE);
+			newBroker.append("note", brokerDto.getNote());
+			newBroker.append("memberCode", brokerDto.getMemberCode());
+			newBroker.append("memberName", brokerDto.getMemberName());
+			newBroker.append("type", brokerDto.getType());
+			newBroker.append("company", company);
+			newBroker.append("individual", individual);
+			newBroker.append("contact", contact);
+			newBroker.append("role", brokerRole);
+			
+			// insert new broker
+			MongoDatabase database = MongoDBConnection.getMongoDatabase();
+			MongoCollection<Document> collection = database.getCollection("brokers");
+			collection.insertOne(newBroker);
+			
+			// insert new broker's user to login_admin_users
+			createBrokerUser(request, brokerDto, brokerCode, brokerRole, refId);
+		} catch (CustomException e) {
+			throw e;
 		} catch (Exception e) {
 			AMLogger.logError(className, methodName, refId, e);
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
-
-		if (!existedBroker) {
-			try {
-				// generate broker code
-				String brokerCode = brokerDto.getMemberCode() + Utility.lpad5With0(dbSeqService.generateSequence(Constant.BROKER_SEQ + brokerDto.getMemberCode(), refId));
-				
-				// get redis user info
-				UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
-				// insert data to pending_approvals
-				String approvalId = insertBrokerCreatePA(userInfo, brokerCode, brokerDto, refId);
-				// send activity log
-				activityLogService.sendActivityLog(userInfo, request, ActivityLogService.ACTIVITY_CREATE_BROKER,
-						ActivityLogService.ACTIVITY_CREATE_BROKER_DESC, brokerCode, approvalId);
-				
-				Document company = null;
-				Document individual = null;
-				Document contact = null;
-				String type = null;
-				
-				if (Constant.BROKER_TYPE_COMPANY.equalsIgnoreCase(brokerDto.getType())) {
-					if (Utility.isNull(brokerDto.getCompany())) {
-						throw new CustomException(ErrorMessage.INVALID_REQUEST, HttpStatus.BAD_REQUEST);
-					}
-					type = Constant.BROKER_TYPE_COMPANY;
-					
-					// create Delegate document
-					Document delegate = new Document();
-					delegate.append("fullName", brokerDto.getCompany().getDelegate().getFullName());
-					delegate.append("birthDay", brokerDto.getCompany().getDelegate().getBirthDay());
-					delegate.append("identityCard", brokerDto.getCompany().getDelegate().getIdentityCard());
-					delegate.append("idCreatedDate", brokerDto.getCompany().getDelegate().getIdCreatedDate());
-					delegate.append("idCreatedLocation", brokerDto.getCompany().getDelegate().getIdCreatedLocation());
-					delegate.append("email", brokerDto.getCompany().getDelegate().getEmail());
-					delegate.append("phoneNumber", brokerDto.getCompany().getDelegate().getPhoneNumber());
-					delegate.append("address", brokerDto.getCompany().getDelegate().getAddress());
-					delegate.append("scannedFrontIdCard", brokerDto.getCompany().getDelegate().getScannedFrontIdCard());
-					delegate.append("scannedBackIdCard", brokerDto.getCompany().getDelegate().getScannedBackIdCard());
-					delegate.append("scannedSignature", brokerDto.getCompany().getDelegate().getScannedSignature());
-					
-					// create Company document
-					company = new Document();
-					company.append("name", brokerDto.getCompany().getName());
-					company.append("taxCode", brokerDto.getCompany().getTaxCode());
-					company.append("address", brokerDto.getCompany().getAddress());
-					company.append("phoneNumber", brokerDto.getCompany().getPhoneNumber());
-					company.append("fax", brokerDto.getCompany().getFax());
-					company.append("email", brokerDto.getCompany().getEmail());
-					company.append("delegate", delegate);
-					
-					// create Contact document
-					contact = new Document();
-					contact.append("fullName", brokerDto.getCompany().getDelegate().getFullName());
-					contact.append("phoneNumber", brokerDto.getCompany().getDelegate().getPhoneNumber());
-					contact.append("email", brokerDto.getCompany().getDelegate().getEmail());
-				} else if (Constant.BROKER_TYPE_INDIVIDUAL.equalsIgnoreCase(brokerDto.getType())) {
-					if (Utility.isNull(brokerDto.getIndividual())) {
-						throw new CustomException(ErrorMessage.INVALID_REQUEST, HttpStatus.BAD_REQUEST);
-					}
-					
-					type = Constant.BROKER_TYPE_INDIVIDUAL;
-					
-					individual = new Document();
-					individual.append("fullName", brokerDto.getIndividual().getFullName());
-					individual.append("birthDay", brokerDto.getIndividual().getBirthDay());
-					individual.append("identityCard", brokerDto.getIndividual().getIdentityCard());
-					individual.append("idCreatedDate", brokerDto.getIndividual().getIdCreatedDate());
-					individual.append("idCreatedLocation", brokerDto.getIndividual().getIdCreatedLocation());
-					individual.append("email", brokerDto.getIndividual().getEmail());
-					individual.append("phoneNumber", brokerDto.getIndividual().getPhoneNumber());
-					individual.append("address", brokerDto.getIndividual().getAddress());
-					individual.append("scannedFrontIdCard", brokerDto.getIndividual().getScannedFrontIdCard());
-					individual.append("scannedBackIdCard", brokerDto.getIndividual().getScannedBackIdCard());
-					individual.append("scannedSignature", brokerDto.getIndividual().getScannedSignature());
-					
-					contact = new Document();
-					contact.append("fullName", brokerDto.getIndividual().getFullName());
-					contact.append("phoneNumber", brokerDto.getIndividual().getPhoneNumber());
-					contact.append("email", brokerDto.getIndividual().getEmail());
-				} else {
+	}
+	
+	public void createBrokerPA(HttpServletRequest request, BrokerDTO brokerDto, long refId) {
+		String methodName = "createBrokerPA";
+		try {
+			if (Constant.BROKER_TYPE_COMPANY.equalsIgnoreCase(brokerDto.getType())) {
+				if (Utility.isNull(brokerDto.getCompany())) {
 					throw new CustomException(ErrorMessage.INVALID_REQUEST, HttpStatus.BAD_REQUEST);
 				}
-				
-				
-				// create default broker role
-				SystemRole defaultBrokerRole = sysRoleRepository.findByName(Constant.BROKER_DEFAULT_ROLE);
-				if (Utility.isNull(defaultBrokerRole)) {
-					throw new CustomException(ErrorMessage.DEFAULT_ROLE_DOESNT_EXIST, HttpStatus.OK);
+			} else if (Constant.BROKER_TYPE_INDIVIDUAL.equalsIgnoreCase(brokerDto.getType())) {
+				if (Utility.isNull(brokerDto.getIndividual())) {
+					throw new CustomException(ErrorMessage.INVALID_REQUEST, HttpStatus.BAD_REQUEST);
 				}
-				
-				Document brokerRole = new Document();
-				brokerRole.append("name", defaultBrokerRole.getName());
-				brokerRole.append("description", defaultBrokerRole.getDescription());
-				
-				Document newBroker = new Document();
-				newBroker.append("createdUser", Utility.getCurrentUsername());
-				newBroker.append("createdDate", System.currentTimeMillis());
-				newBroker.append("_id", new ObjectId());
-				newBroker.append("code", brokerCode);
-				newBroker.append("name", brokerDto.getName());
-				newBroker.append("status", brokerDto.getStatus());
-				newBroker.append("note", brokerDto.getNote());
-				newBroker.append("memberCode", brokerDto.getMemberCode());
-				newBroker.append("memberName", brokerDto.getMemberName());
-				newBroker.append("type", type);
-				newBroker.append("company", company);
-				newBroker.append("individual", individual);
-				newBroker.append("contact", contact);
-				newBroker.append("role", brokerRole);
-				
-				// insert new broker
-				MongoDatabase database = MongoDBConnection.getMongoDatabase();
-				MongoCollection<Document> collection = database.getCollection("brokers");
-				collection.insertOne(newBroker);
-				
-				// insert new broker's user to login_admin_users
-				createBrokerUser(request, brokerDto, brokerCode, brokerRole, refId);
-			} catch (CustomException e) {
-				throw e;
-			} catch (Exception e) {
-				AMLogger.logError(className, methodName, refId, e);
-				throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+			} else {
+				throw new CustomException(ErrorMessage.INVALID_REQUEST, HttpStatus.BAD_REQUEST);
 			}
-		} else {
-			AMLogger.logMessage(className, methodName, refId, "This broker code already exists");
-			throw new CustomException(ErrorMessage.DOCUMENT_ALREADY_EXISTED, HttpStatus.OK);
+			
+			// get redis user info
+			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
+			// insert data to pending_approvals
+			String approvalId = insertBrokerCreatePA(userInfo, brokerDto, refId);
+			// send activity log
+			activityLogService.sendActivityLog(userInfo, request, ActivityLogService.ACTIVITY_CREATE_BROKER,
+					ActivityLogService.ACTIVITY_CREATE_BROKER_DESC, brokerDto.getName(), approvalId);
+		} catch (CustomException e) {
+			throw e;
+		} catch (Exception e) {
+			AMLogger.logError(className, methodName, refId, e);
+			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 	
-	public void createBrokerUser(HttpServletRequest request, BrokerDTO brokerDto, String brokerCode, Document brokerRole, long refId) {
+	private void createBrokerUser(HttpServletRequest request, BrokerDTO brokerDto, String brokerCode, Document brokerRole, long refId) {
 		String methodName = "createBrokerUser";
 		boolean existedUser = false;
 		String username = Constant.BROKER_USER_PREFIX + brokerCode;
@@ -350,13 +354,6 @@ public class BrokerService {
 
 		if (!existedUser) {
 			try {
-				// get redis user info
-				UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
-				// send activity log
-				activityLogService.sendActivityLog(userInfo, request,
-						ActivityLogService.ACTIVITY_CREATE_BROKER_USER,
-						ActivityLogService.ACTIVITY_CREATE_BROKER_USER_DESC, username, "");
-
 				MongoDatabase database = MongoDBConnection.getMongoDatabase();
 				MongoCollection<Document> collection = database.getCollection("brokers");
 
@@ -394,7 +391,11 @@ public class BrokerService {
 				collection.updateOne(query, Updates.set("user", brokerUser));
 
 				// insert loginAdminUser
-				UserDTO brokerUserDto = new UserDTO();
+				UserInfoDTO brokerUserDto = new UserInfoDTO();
+				brokerUserDto.setMemberCode(brokerDto.getMemberCode());
+				brokerUserDto.setMemberName(brokerDto.getMemberName());
+				brokerUserDto.setBrokerCode(brokerDto.getCode());
+				brokerUserDto.setBrokerName(brokerDto.getName());
 				brokerUserDto.setUsername(username);
 				brokerUserDto.setFullName(fullName);
 				brokerUserDto.setEmail(email);
@@ -402,7 +403,7 @@ public class BrokerService {
 				
 				String password = Utility.generateRandomPassword();
 				String pin = Utility.generateRandomPin();
-				createLoginAdminUser(brokerDto.getMemberCode(), brokerCode, brokerUserDto, password, pin, refId);
+				createLoginAdminUser(brokerUserDto, password, pin, refId);
 
 				// send email
 				sendCreateNewUserEmail(email, username, password, pin, refId);
@@ -416,7 +417,7 @@ public class BrokerService {
 		}
 	}
 	
-	private LoginAdminUser createLoginAdminUser(String memberCode, String brokerCode, UserDTO brokerUserDto, String password, String pin,
+	private LoginAdminUser createLoginAdminUser(UserInfoDTO brokerUserDto, String password, String pin,
 			long refId) {
 		String methodName = "createLoginAdminUser";
 		try {
@@ -424,8 +425,6 @@ public class BrokerService {
 			loginAdmUser.setPassword(passwordEncoder.encode(password));
 			loginAdmUser.setPin(passwordEncoder.encode(pin));
 			loginAdmUser.setStatus(Constant.STATUS_ACTIVE);
-			loginAdmUser.setMemberCode(memberCode);
-			loginAdmUser.setBrokerCode(brokerCode);
 			loginAdmUser.setCreatedUser(Utility.getCurrentUsername());
 			loginAdmUser.setCreatedDate(System.currentTimeMillis());
 			LoginAdminUser newLoginAdmUser = loginAdmUserRepo.save(loginAdmUser);
@@ -458,7 +457,7 @@ public class BrokerService {
 		}
 	}
 	
-	public String insertBrokerCreatePA(UserInfoDTO userInfo, String brokerCode, BrokerDTO brokerDto, long refId) {
+	private String insertBrokerCreatePA(UserInfoDTO userInfo, BrokerDTO brokerDto, long refId) {
 		String methodName = "insertBrokerCreatePA";
 		String approvalId = "";
 		try {
@@ -470,17 +469,14 @@ public class BrokerService {
 			pendingData.setServiceFunctionName(ApprovalConstant.BROKER_CREATE);
 			pendingData.setCollectionName("brokers");
 			pendingData.setAction(Constant.APPROVAL_ACTION_CREATE);
-			pendingData.setValue(new Gson().toJson(brokerDto));
+			pendingData.setPendingValue(new Gson().toJson(brokerDto));
 
 			PendingApproval pendingApproval = new PendingApproval();
-			pendingApproval.setId(approvalId);
 			pendingApproval.setApiUrl(String.format(ApprovalConstant.APPROVAL_PENDING_URL, approvalId));
-			pendingApproval.setCreatorDate(System.currentTimeMillis());
-			pendingApproval.setCreatorUser(userInfo.getUsername());
 			pendingApproval.setFunctionCode(SystemFunctionCode.APPROVAL_BROKER_CREATE_CODE);
 			pendingApproval.setFunctionName(SystemFunctionCode.BROKER_CREATE_NAME);
 			pendingApproval.setDescription(
-					SystemFunctionCode.getApprovalDescription(pendingApproval.getFunctionName(), brokerCode));
+					SystemFunctionCode.getApprovalDescription(pendingApproval.getFunctionName(), brokerDto.getName()));
 			pendingApproval.setStatus(Constant.APPROVAL_STATUS_PENDING);
 			pendingApproval.setNestedObjInfo(nestedObjInfo);
 			pendingApproval.setPendingData(pendingData);
@@ -492,20 +488,17 @@ public class BrokerService {
 		return approvalId;
 	}
 	
-	public void updateBroker(HttpServletRequest request, String brokerCode, UpdateBrokerDTO brokerDto, long refId) {
+	public void updateBroker(HttpServletRequest request, PendingApproval pendingApproval, long refId) {
 		String methodName = "updateBroker";
 		try {
+			String brokerCode = pendingApproval.getPendingData().getQueryValue();
+			UpdateBrokerDTO brokerDto = new Gson().fromJson(pendingApproval.getPendingData().getPendingValue(), UpdateBrokerDTO.class);
+			
 			// get redis user info
 			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
-			// insert data to pending_approvals
-			String approvalId = insertBrokerUpdatePA(userInfo, brokerCode, brokerDto, refId);
 			// send activity log
-			activityLogService.sendActivityLog(userInfo, request, ActivityLogService.ACTIVITY_UPDATE_BROKER,
-					ActivityLogService.ACTIVITY_UPDATE_BROKER_DESC, brokerCode, approvalId);
-
-			if (!brokerRepository.existsBrokerByCode(brokerCode)) {
-				throw new CustomException(ErrorMessage.RESULT_NOT_FOUND, HttpStatus.OK);
-			}
+			activityLogService.sendActivityLog(userInfo, request, ActivityLogService.ACTIVITY_APPROVAL_UPDATE_BROKER,
+					ActivityLogService.ACTIVITY_APPROVAL_UPDATE_BROKER_DESC, brokerCode, pendingApproval.getId());
 			
 			MongoDatabase database = MongoDBConnection.getMongoDatabase();
 			MongoCollection<Document> collection = database.getCollection("brokers");
@@ -615,8 +608,30 @@ public class BrokerService {
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
+	
+	public void updateBrokerPA(HttpServletRequest request, String brokerCode, ApprovalUpdateBrokerDTO brokerDto, long refId) {
+		String methodName = "updateBrokerPA";
+		try {
+			if (!brokerRepository.existsBrokerByCode(brokerCode)) {
+				throw new CustomException(ErrorMessage.RESULT_NOT_FOUND, HttpStatus.OK);
+			}
+			
+			// get redis user info
+			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
+			// insert data to pending_approvals
+			String approvalId = insertBrokerUpdatePA(userInfo, brokerCode, brokerDto, refId);
+			// send activity log
+			activityLogService.sendActivityLog(userInfo, request, ActivityLogService.ACTIVITY_UPDATE_BROKER,
+					ActivityLogService.ACTIVITY_UPDATE_BROKER_DESC, brokerCode, approvalId);
+		} catch (CustomException e) {
+			throw e;
+		} catch (Exception e) {
+			AMLogger.logError(className, methodName, refId, e);
+			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
 
-	public String insertBrokerUpdatePA(UserInfoDTO userInfo, String brokerCode, UpdateBrokerDTO brokerDto, long refId) {
+	private String insertBrokerUpdatePA(UserInfoDTO userInfo, String brokerCode, ApprovalUpdateBrokerDTO brokerDto, long refId) {
 		String methodName = "insertBrokerUpdatePA";
 		String approvalId = "";
 		try {
@@ -630,12 +645,11 @@ public class BrokerService {
 			pendingData.setQueryField("code");
 			pendingData.setQueryValue(brokerCode);
 			pendingData.setAction(Constant.APPROVAL_ACTION_UPDATE);
-			pendingData.setValue(new Gson().toJson(brokerDto));
+			pendingData.setOldValue(new Gson().toJson(brokerDto.getOldData()));
+			pendingData.setPendingValue(new Gson().toJson(brokerDto.getPendingData()));
 
 			PendingApproval pendingApproval = new PendingApproval();
 			pendingApproval.setApiUrl(String.format(ApprovalConstant.APPROVAL_PENDING_URL, approvalId));
-			pendingApproval.setCreatorDate(System.currentTimeMillis());
-			pendingApproval.setCreatorUser(userInfo.getUsername());
 			pendingApproval.setFunctionCode(SystemFunctionCode.APPROVAL_BROKER_UPDATE_CODE);
 			pendingApproval.setFunctionName(SystemFunctionCode.BROKER_UPDATE_NAME);
 			pendingApproval.setDescription(SystemFunctionCode.getApprovalDescription(pendingApproval.getFunctionName(),
@@ -712,23 +726,19 @@ public class BrokerService {
 		}
 	}
 	
-	public void createBrokerFunctions(HttpServletRequest request, String brokerCode, FunctionsDTO brokerDto,
-			long refId) {
+	public void createBrokerFunctions(HttpServletRequest request, PendingApproval pendingApproval, long refId) {
 		String methodName = "createBrokerFunctions";
 		try {
+			String brokerCode = pendingApproval.getPendingData().getQueryValue();
+			FunctionsDTO brokerDto = new Gson().fromJson(pendingApproval.getPendingData().getPendingValue(), FunctionsDTO.class);
+			
 			// get redis user info
 			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
-			// insert data to pending_approvals
-			String approvalId = insertBrokerFunctionsAssignPA(userInfo, brokerCode, brokerDto, refId);
 			// send activity log
 			activityLogService.sendActivityLog(userInfo, request,
-					ActivityLogService.ACTIVITY_CREATE_MEMBER_FUNCTIONS,
-					ActivityLogService.ACTIVITY_CREATE_MEMBER_FUNCTIONS_DESC, String.valueOf(brokerCode),
-					approvalId);
-
-			if (!brokerRepository.existsBrokerByCode(brokerCode)) {
-				throw new CustomException(ErrorMessage.RESULT_NOT_FOUND, HttpStatus.OK);
-			}
+					ActivityLogService.ACTIVITY_APPROVAL_CREATE_MEMBER_FUNCTIONS,
+					ActivityLogService.ACTIVITY_APPROVAL_CREATE_MEMBER_FUNCTIONS_DESC, brokerCode,
+					pendingApproval.getId());
 			
 			List<Document> functions = new ArrayList<Document>();
 			for (RoleFunction function : brokerDto.getFunctions()) {
@@ -764,7 +774,33 @@ public class BrokerService {
 		}
 	}
 	
-	public String insertBrokerFunctionsAssignPA(UserInfoDTO userInfo, String brokerCode, FunctionsDTO brokerDto,
+	public void createBrokerFunctionsPA(HttpServletRequest request, String brokerCode, ApprovalFunctionsDTO brokerDto,
+			long refId) {
+		String methodName = "createBrokerFunctionsPA";
+		try {
+			if (!brokerRepository.existsBrokerByCode(brokerCode)) {
+				throw new CustomException(ErrorMessage.RESULT_NOT_FOUND, HttpStatus.OK);
+			}
+			
+			// get redis user info
+			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
+			// insert data to pending_approvals
+			String approvalId = insertBrokerFunctionsAssignPA(userInfo, brokerCode, brokerDto, refId);
+			// send activity log
+			activityLogService.sendActivityLog(userInfo, request,
+					ActivityLogService.ACTIVITY_CREATE_MEMBER_FUNCTIONS,
+					ActivityLogService.ACTIVITY_CREATE_MEMBER_FUNCTIONS_DESC, String.valueOf(brokerCode),
+					approvalId);
+
+		} catch (CustomException e) {
+			throw e;
+		} catch (Exception e) {
+			AMLogger.logError(className, methodName, refId, e);
+			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+	
+	private String insertBrokerFunctionsAssignPA(UserInfoDTO userInfo, String brokerCode, ApprovalFunctionsDTO brokerDto,
 			long refId) {
 		String methodName = "insertBrokerFunctionsAssignPA";
 		String approvalId = "";
@@ -779,12 +815,11 @@ public class BrokerService {
 			pendingData.setAction(Constant.APPROVAL_ACTION_CREATE);
 			pendingData.setQueryField("code");
 			pendingData.setQueryValue(brokerCode);
-			pendingData.setValue(new Gson().toJson(brokerDto));
+			pendingData.setOldValue(new Gson().toJson(brokerDto.getOldData()));
+			pendingData.setPendingValue(new Gson().toJson(brokerDto.getPendingData()));
 
 			PendingApproval pendingApproval = new PendingApproval();
 			pendingApproval.setApiUrl(String.format(ApprovalConstant.APPROVAL_PENDING_URL, approvalId));
-			pendingApproval.setCreatorDate(System.currentTimeMillis());
-			pendingApproval.setCreatorUser(userInfo.getUsername());
 			pendingApproval.setFunctionCode(SystemFunctionCode.APPROVAL_BROKER_FUNCTIONS_ASSIGN_CREATE_CODE);
 			pendingApproval.setFunctionName(SystemFunctionCode.BROKER_FUNCTIONS_ASSIGN_CREATE_NAME);
 			pendingApproval.setDescription(

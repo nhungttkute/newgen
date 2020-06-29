@@ -1,11 +1,16 @@
 package com.newgen.am.dto;
 
+import javax.validation.constraints.NotEmpty;
+
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class NewsUserInfo {
+public class UserBaseInfo {
 	private String _id;
+	@NotEmpty(message = "Required.")
 	private String username;
+	@NotEmpty(message = "Required.")
+	private String fullName;
 	private String email;
 	private String phoneNumber;
 	public String get_id() {
@@ -19,6 +24,12 @@ public class NewsUserInfo {
 	}
 	public void setUsername(String username) {
 		this.username = username;
+	}
+	public String getFullName() {
+		return fullName;
+	}
+	public void setFullName(String fullName) {
+		this.fullName = fullName;
 	}
 	public String getEmail() {
 		return email;

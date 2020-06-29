@@ -5,13 +5,15 @@
  */
 package com.newgen.am.repository;
 
-import com.newgen.am.model.Investor;
 import org.springframework.data.mongodb.repository.MongoRepository;
+
+import com.newgen.am.model.Investor;
 
 /**
  *
  * @author nhungtt
  */
 public interface InvestorRepository  extends MongoRepository<Investor, String>{
+	Investor findByInvestorCode(String investorCode);
 	boolean existsInvestorByInvestorCode(String investorCode);
 }

@@ -48,9 +48,13 @@ public class LoginInvestorUser extends AuditModel implements Serializable {
     private int logonCounts = 0;
     private Date logonTime;
     private String memberCode;
+    private String memberName;
     private String brokerCode;
+    private String brokerName;
     private String collaboratorCode;
+    private String collaboratorName;
     private String investorCode;
+    private String investorName;
     @Field
     @Length(max = 10000)
     private String layout;
@@ -58,6 +62,7 @@ public class LoginInvestorUser extends AuditModel implements Serializable {
     private String theme;
     private int fontSize;
     private List<WatchList> watchlists;
+    private List<Exchange> exchanges;
 
     public String getId() {
 		return id;
@@ -225,6 +230,46 @@ public class LoginInvestorUser extends AuditModel implements Serializable {
 
 	public void setInvestorCode(String investorCode) {
 		this.investorCode = investorCode;
+	}
+
+	public String getMemberName() {
+		return memberName;
+	}
+
+	public void setMemberName(String memberName) {
+		this.memberName = memberName;
+	}
+
+	public String getBrokerName() {
+		return brokerName;
+	}
+
+	public void setBrokerName(String brokerName) {
+		this.brokerName = brokerName;
+	}
+
+	public String getCollaboratorName() {
+		return collaboratorName;
+	}
+
+	public void setCollaboratorName(String collaboratorName) {
+		this.collaboratorName = collaboratorName;
+	}
+
+	public String getInvestorName() {
+		return investorName;
+	}
+
+	public void setInvestorName(String investorName) {
+		this.investorName = investorName;
+	}
+
+	public List<Exchange> getExchanges() {
+		return exchanges;
+	}
+
+	public void setExchanges(List<Exchange> exchanges) {
+		this.exchanges = exchanges;
 	}
     
 }

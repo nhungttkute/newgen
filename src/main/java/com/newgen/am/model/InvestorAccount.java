@@ -14,8 +14,6 @@ public class InvestorAccount extends AuditModel {
     private String currency;
     private double marginSurplusInterestRate;
     private double marginDeficitInterestRate;
-    private long sodBalance; // So du TKKQ dau ngay
-    private long changedAmount; // Nop rut trong phien
 	public String getCurrency() {
 		return currency;
 	}
@@ -34,17 +32,4 @@ public class InvestorAccount extends AuditModel {
 	public void setMarginDeficitInterestRate(double marginDeficitInterestRate) {
 		this.marginDeficitInterestRate = marginDeficitInterestRate;
 	}
-	public long getSodBalance() {
-		return sodBalance;
-	}
-	public void setSodBalance(long sodBalance) {
-		this.sodBalance = sodBalance;
-	}
-	public long getChangedAmount() {
-		return changedAmount;
-	}
-	public void setChangedAmount(long changedAmount) {
-		this.changedAmount = changedAmount;
-	}
-
 }

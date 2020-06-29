@@ -29,6 +29,8 @@ import com.newgen.am.common.MongoDBConnection;
 import com.newgen.am.common.RequestParamsParser;
 import com.newgen.am.common.SystemFunctionCode;
 import com.newgen.am.common.Utility;
+import com.newgen.am.dto.ApprovalFunctionsDTO;
+import com.newgen.am.dto.ApprovalUpdateRoleDTO;
 import com.newgen.am.dto.BasePagination;
 import com.newgen.am.dto.FunctionsDTO;
 import com.newgen.am.dto.RoleCSV;
@@ -168,8 +170,37 @@ public class MemberRoleService {
 		return systemRoleCSVs;
 	}
 	
-	public void createMemberRole(HttpServletRequest request, String memberCode, RoleDTO roleDto, long refId) {
-		String methodName = "createSystemRole";
+	public void createMemberRole(HttpServletRequest request, PendingApproval pendingApproval, long refId) {
+		String methodName = "createMemberRole";
+		try {
+			String memberCode = pendingApproval.getPendingData().getQueryValue();
+			RoleDTO roleDto = new Gson().fromJson(pendingApproval.getPendingData().getPendingValue(), RoleDTO.class);
+			
+			// get redis user info
+			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
+			// send activity log
+			activityLogService.sendActivityLog2(userInfo, request, ActivityLogService.ACTIVITY_APPROVAL_CREATE_MEMBER_ROLE,
+					ActivityLogService.ACTIVITY_APPROVAL_CREATE_MEMBER_ROLE_DESC, roleDto.getName(), memberCode, pendingApproval.getId());
+
+			Document memberRole = new Document();
+			memberRole.append("createdUser", Utility.getCurrentUsername());
+			memberRole.append("createdDate", System.currentTimeMillis());
+			memberRole.append("name", roleDto.getName());
+			memberRole.append("description", roleDto.getDescription());
+			memberRole.append("status", Constant.STATUS_ACTIVE);
+			memberRole.append("memberCode", memberCode);
+
+			MongoDatabase database = MongoDBConnection.getMongoDatabase();
+			MongoCollection<Document> collection = database.getCollection("member_roles");
+			collection.insertOne(memberRole);
+		} catch (Exception e) {
+			AMLogger.logError(className, methodName, refId, e);
+			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+	
+	public void createMemberRolePA(HttpServletRequest request, String memberCode, RoleDTO roleDto, long refId) {
+		String methodName = "createMemberRolePA";
 		boolean existedRole = false;
 		try {
 			existedRole = memberRoleRepo.existsMemberRoleByName(roleDto.getName());
@@ -187,18 +218,6 @@ public class MemberRoleService {
 				// send activity log
 				activityLogService.sendActivityLog2(userInfo, request, ActivityLogService.ACTIVITY_CREATE_MEMBER_ROLE,
 						ActivityLogService.ACTIVITY_CREATE_MEMBER_ROLE_DESC, roleDto.getName(), memberCode, approvalId);
-
-				Document memberRole = new Document();
-				memberRole.append("createdUser", Utility.getCurrentUsername());
-				memberRole.append("createdDate", System.currentTimeMillis());
-				memberRole.append("name", roleDto.getName());
-				memberRole.append("description", roleDto.getDescription());
-				memberRole.append("status", roleDto.getStatus());
-				memberRole.append("memberCode", memberCode);
-
-				MongoDatabase database = MongoDBConnection.getMongoDatabase();
-				MongoCollection<Document> collection = database.getCollection("member_roles");
-				collection.insertOne(memberRole);
 			} catch (Exception e) {
 				AMLogger.logError(className, methodName, refId, e);
 				throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -209,7 +228,7 @@ public class MemberRoleService {
 		}
 	}
 	
-	public String insertMemberRoleCreatePA(UserInfoDTO userInfo, String memberCode, RoleDTO roleDto, long refId) {
+	private String insertMemberRoleCreatePA(UserInfoDTO userInfo, String memberCode, RoleDTO roleDto, long refId) {
 		String methodName = "insertMemberRoleCreatePA";
 		String approvalId = "";
 		try {
@@ -222,12 +241,10 @@ public class MemberRoleService {
 			pendingData.setAction(Constant.APPROVAL_ACTION_CREATE);
 			pendingData.setQueryField("memberCode");
 			pendingData.setQueryValue(memberCode);
-			pendingData.setValue(new Gson().toJson(roleDto));
+			pendingData.setPendingValue(new Gson().toJson(roleDto));
 
 			PendingApproval pendingApproval = new PendingApproval();
 			pendingApproval.setApiUrl(String.format(ApprovalConstant.APPROVAL_PENDING_URL, approvalId));
-			pendingApproval.setCreatorDate(System.currentTimeMillis());
-			pendingApproval.setCreatorUser(userInfo.getUsername());
 			pendingApproval.setFunctionCode(SystemFunctionCode.APPROVAL_MEMBER_ROLE_CREATE_CODE);
 			pendingApproval.setFunctionName(SystemFunctionCode.MEMBER_ROLE_CREATE_NAME);
 			pendingApproval.setDescription(
@@ -243,17 +260,18 @@ public class MemberRoleService {
 		return approvalId;
 	}
 	
-	public void updateMemberRole(HttpServletRequest request, String memberCode, String roleId, UpdateRoleDTO roleDto,
-			long refId) {
+	public void updateMemberRole(HttpServletRequest request, PendingApproval pendingApproval, long refId) {
 		String methodName = "updateMemberRole";
 		try {
+			String memberCode = pendingApproval.getPendingData().getQueryValue();
+			String roleId = pendingApproval.getPendingData().getQueryValue2();
+			UpdateRoleDTO roleDto = new Gson().fromJson(pendingApproval.getPendingData().getPendingValue(), UpdateRoleDTO.class);
+			
 			// get redis user info
 			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
-			// insert data to pending_approvals
-			String approvalId = insertMemberRoleUpdatePA(userInfo, memberCode, roleId, roleDto, refId);
 			// send activity log
-			activityLogService.sendActivityLog2(userInfo, request, ActivityLogService.ACTIVITY_UPDATE_MEMBER_ROLE,
-					ActivityLogService.ACTIVITY_UPDATE_MEMBER_ROLE_DESC, getRoleName(roleId), memberCode, approvalId);
+			activityLogService.sendActivityLog2(userInfo, request, ActivityLogService.ACTIVITY_APPROVAL_UPDATE_MEMBER_ROLE,
+					ActivityLogService.ACTIVITY_APPROVAL_UPDATE_MEMBER_ROLE_DESC, getRoleName(roleId), memberCode, pendingApproval.getId());
 
 			Document updateDoc = new Document();
 			if (Utility.isNotNull(roleDto.getName())) updateDoc.append("name", roleDto.getName());
@@ -282,8 +300,27 @@ public class MemberRoleService {
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
+	
+	public void updateMemberRolePA(HttpServletRequest request, String memberCode, String roleId, ApprovalUpdateRoleDTO roleDto,
+			long refId) {
+		String methodName = "updateMemberRolePA";
+		try {
+			// get redis user info
+			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
+			// insert data to pending_approvals
+			String approvalId = insertMemberRoleUpdatePA(userInfo, memberCode, roleId, roleDto, refId);
+			// send activity log
+			activityLogService.sendActivityLog2(userInfo, request, ActivityLogService.ACTIVITY_UPDATE_MEMBER_ROLE,
+					ActivityLogService.ACTIVITY_UPDATE_MEMBER_ROLE_DESC, getRoleName(roleId), memberCode, approvalId);
+		} catch(CustomException e) {
+			throw e;
+		} catch (Exception e) {
+			AMLogger.logError(className, methodName, refId, e);
+			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
 
-	public String insertMemberRoleUpdatePA(UserInfoDTO userInfo, String memberCode, String roleId, UpdateRoleDTO roleDto,
+	private String insertMemberRoleUpdatePA(UserInfoDTO userInfo, String memberCode, String roleId, ApprovalUpdateRoleDTO roleDto,
 			long refId) {
 		String methodName = "insertMemberRoleUpdatePA";
 		String approvalId = "";
@@ -299,13 +336,11 @@ public class MemberRoleService {
 			pendingData.setQueryValue(memberCode);
 			pendingData.setQueryField2("_id");
 			pendingData.setQueryValue2(roleId);
-			pendingData.setValue(new Gson().toJson(roleDto));
+			pendingData.setOldValue(new Gson().toJson(roleDto.getOldData()));
+			pendingData.setPendingValue(new Gson().toJson(roleDto.getPendingData()));
 
 			PendingApproval pendingApproval = new PendingApproval();
-			pendingApproval.setId(approvalId);
 			pendingApproval.setApiUrl(String.format(ApprovalConstant.APPROVAL_PENDING_URL, approvalId));
-			pendingApproval.setCreatorDate(System.currentTimeMillis());
-			pendingApproval.setCreatorUser(userInfo.getUsername());
 			pendingApproval.setFunctionCode(SystemFunctionCode.APPROVAL_MEMBER_ROLE_UPDATE_CODE);
 			pendingApproval.setFunctionName(SystemFunctionCode.MEMBER_ROLE_UPDATE_NAME);
 			pendingApproval.setDescription(
@@ -321,53 +356,68 @@ public class MemberRoleService {
 		return approvalId;
 	}
 	
-	public void createMemberRoleFunctions(HttpServletRequest request, String memberCode, String roleId, FunctionsDTO functionsDto,
-			long refId) {
+	public void createMemberRoleFunctions(HttpServletRequest request, PendingApproval pendingApproval, long refId) {
 		String methodName = "createMemberRoleFunctions";
-		if (Utility.isNotNull(functionsDto.getFunctions()) && functionsDto.getFunctions().size() > 0) {
-			try {
-				// get redis user info
-				UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
-				// insert data to pending_approvals
-				String approvalId = insertMemberRoleFunctionsAssignPA(userInfo, memberCode, roleId, functionsDto, refId);
-				// send activity log
-				activityLogService.sendActivityLog(userInfo, request,
-						ActivityLogService.ACTIVITY_CREATE_SYS_ROLE_FUNCTIONS,
-						ActivityLogService.ACTIVITY_CREATE_SYS_ROLE_FUNCTIONS_DESC, getRoleName(roleId),
-						approvalId);
-				
-				List<Document> functions = new ArrayList<Document>();
-				for (RoleFunction func : functionsDto.getFunctions()) {
-					Document funcDoc = new Document();
-					funcDoc.append("code", func.getCode());
-					funcDoc.append("name", func.getName());
-					functions.add(funcDoc);
-				}
-				BasicDBObject query = new BasicDBObject();
-				query.append("_id", new ObjectId(roleId));
-				
-				BasicDBObject updateDocument = new BasicDBObject();
-				updateDocument.append("functions", functions);
-				updateDocument.append("lastModifiedUser", Utility.getCurrentUsername());
-				updateDocument.append("lastModifiedDate", System.currentTimeMillis());
-				
-				BasicDBObject update = new BasicDBObject();
-				update.append("$set", updateDocument);
-				
-				MongoDatabase database = MongoDBConnection.getMongoDatabase();
-				MongoCollection<Document> collection = database.getCollection("member_roles");
-				collection.updateOne(query, update);
-			} catch (Exception e) {
-				AMLogger.logError(className, methodName, refId, e);
-				throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+		try {
+			String memberCode = pendingApproval.getPendingData().getQueryValue();
+			String roleId = pendingApproval.getPendingData().getQueryValue2();
+			FunctionsDTO functionsDto = new Gson().fromJson(pendingApproval.getPendingData().getPendingValue(), FunctionsDTO.class);
+			
+			// get redis user info
+			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
+			// send activity log
+			activityLogService.sendActivityLog2(userInfo, request,
+					ActivityLogService.ACTIVITY_APPROVAL_CREATE_MEMBER_ROLE_FUNCTIONS,
+					ActivityLogService.ACTIVITY_APPROVAL_CREATE_MEMBER_ROLE_FUNCTIONS_DESC, getRoleName(roleId), memberCode,
+					pendingApproval.getId());
+			
+			List<Document> functions = new ArrayList<Document>();
+			for (RoleFunction func : functionsDto.getFunctions()) {
+				Document funcDoc = new Document();
+				funcDoc.append("code", func.getCode());
+				funcDoc.append("name", func.getName());
+				functions.add(funcDoc);
 			}
-		} else {
-			AMLogger.logMessage(className, methodName, refId, "Invalid input data");
-			throw new CustomException(ErrorMessage.INVALID_REQUEST, HttpStatus.BAD_REQUEST);
+			BasicDBObject query = new BasicDBObject();
+			query.append("_id", new ObjectId(roleId));
+			
+			BasicDBObject updateDocument = new BasicDBObject();
+			updateDocument.append("functions", functions);
+			updateDocument.append("lastModifiedUser", Utility.getCurrentUsername());
+			updateDocument.append("lastModifiedDate", System.currentTimeMillis());
+			
+			BasicDBObject update = new BasicDBObject();
+			update.append("$set", updateDocument);
+			
+			MongoDatabase database = MongoDBConnection.getMongoDatabase();
+			MongoCollection<Document> collection = database.getCollection("member_roles");
+			collection.updateOne(query, update);
+		} catch (Exception e) {
+			AMLogger.logError(className, methodName, refId, e);
+			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+	
+	public void createMemberRoleFunctionsPA(HttpServletRequest request, String memberCode, String roleId, ApprovalFunctionsDTO functionsDto,
+			long refId) {
+		String methodName = "createMemberRoleFunctionsPA";
+		try {
+			// get redis user info
+			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
+			// insert data to pending_approvals
+			String approvalId = insertMemberRoleFunctionsAssignPA(userInfo, memberCode, roleId, functionsDto, refId);
+			// send activity log
+			activityLogService.sendActivityLog2(userInfo, request,
+					ActivityLogService.ACTIVITY_CREATE_MEMBER_ROLE_FUNCTIONS,
+					ActivityLogService.ACTIVITY_CREATE_MEMBER_ROLE_FUNCTIONS_DESC, getRoleName(roleId), memberCode,
+					approvalId);
+		} catch (Exception e) {
+			AMLogger.logError(className, methodName, refId, e);
+			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 
-	public String insertMemberRoleFunctionsAssignPA(UserInfoDTO userInfo, String memberCode, String roleId, FunctionsDTO roleDto,
+	private String insertMemberRoleFunctionsAssignPA(UserInfoDTO userInfo, String memberCode, String roleId, ApprovalFunctionsDTO roleDto,
 			long refId) {
 		String methodName = "insertMemberRoleFunctionsAssignPA";
 		String approvalId = "";
@@ -383,12 +433,11 @@ public class MemberRoleService {
 			pendingData.setQueryValue(memberCode);
 			pendingData.setQueryField2("_id");
 			pendingData.setQueryValue2(roleId);
-			pendingData.setValue(new Gson().toJson(roleDto));
+			pendingData.setOldValue(new Gson().toJson(roleDto.getOldData()));
+			pendingData.setPendingValue(new Gson().toJson(roleDto.getPendingData()));
 
 			PendingApproval pendingApproval = new PendingApproval();
 			pendingApproval.setApiUrl(String.format(ApprovalConstant.APPROVAL_PENDING_URL, approvalId));
-			pendingApproval.setCreatorDate(System.currentTimeMillis());
-			pendingApproval.setCreatorUser(userInfo.getUsername());
 			pendingApproval.setFunctionCode(SystemFunctionCode.APPROVAL_MEMBER_ROLE_FUNCTIONS_ASSIGN_CREATE_CODE);
 			pendingApproval.setFunctionName(SystemFunctionCode.MEMBER_ROLE_FUNCTIONS_ASSIGN_CREATE_NAME);
 			pendingApproval.setDescription(

@@ -26,17 +26,13 @@ import com.newgen.am.common.ErrorMessage;
 import com.newgen.am.common.Utility;
 import com.newgen.am.dto.AdminDataObj;
 import com.newgen.am.dto.AdminResponseObj;
+import com.newgen.am.dto.ApprovalFunctionsDTO;
+import com.newgen.am.dto.ApprovalUpdateCollaboratorDTO;
 import com.newgen.am.dto.BasePagination;
-import com.newgen.am.dto.BrokerCSV;
-import com.newgen.am.dto.BrokerDTO;
 import com.newgen.am.dto.CollaboratorCSV;
 import com.newgen.am.dto.CollaboratorDTO;
-import com.newgen.am.dto.FunctionsDTO;
-import com.newgen.am.dto.UpdateBrokerDTO;
-import com.newgen.am.dto.UpdateCollaboratorDTO;
 import com.newgen.am.dto.UserDTO;
 import com.newgen.am.exception.CustomException;
-import com.newgen.am.service.BrokerService;
 import com.newgen.am.service.CollaboratorService;
 import com.newgen.am.validation.ValidationSequence;
 import com.opencsv.CSVWriter;
@@ -117,7 +113,7 @@ private String className = "CollaboratorController";
 		AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [POST]/admin/collaborators");
 		AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(collaboratorDto));
 
-		collaboratorService.createCollaborator(request, collaboratorDto, refId);
+		collaboratorService.createCollaboratorPA(request, collaboratorDto, refId);
 
 		AdminResponseObj response = new AdminResponseObj();
 		response.setStatus(Constant.RESPONSE_OK);
@@ -129,13 +125,13 @@ private String className = "CollaboratorController";
 	@PutMapping("/admin/collaborators/{collaboratorCode}")
 	@PreAuthorize("hasAuthority('clientManagement.brokerCollaboratorManagement.collaboratorInfo.update')")
 	public AdminResponseObj updateCollaborator(HttpServletRequest request, @PathVariable String collaboratorCode,
-			@Validated(ValidationSequence.class) @RequestBody UpdateCollaboratorDTO collaboratorDto) {
+			@Validated(ValidationSequence.class) @RequestBody ApprovalUpdateCollaboratorDTO collaboratorDto) {
 		String methodName = "updateCollaborator";
 		long refId = System.currentTimeMillis();
 		AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [PUT]/admin/collaborators/" + collaboratorCode);
 		AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(collaboratorDto));
 
-		collaboratorService.updateCollaborator(request, collaboratorCode, collaboratorDto, refId);
+		collaboratorService.updateCollaboratorPA(request, collaboratorCode, collaboratorDto, refId);
 
 		AdminResponseObj response = new AdminResponseObj();
 		response.setStatus(Constant.RESPONSE_OK);
@@ -197,13 +193,13 @@ private String className = "CollaboratorController";
 	
 	@PostMapping("/admin/collaborators/{collaboratorCode}/functions")
     @PreAuthorize("hasAuthority('clientManagement.brokerCollaboratorManagement.collaboratorFunctionsAssign.create')")
-    public AdminResponseObj createCollaboratorFunctions(HttpServletRequest request, @PathVariable String collaboratorCode, @Validated(ValidationSequence.class) @RequestBody FunctionsDTO collaboratorDto) {
+    public AdminResponseObj createCollaboratorFunctions(HttpServletRequest request, @PathVariable String collaboratorCode, @Validated(ValidationSequence.class) @RequestBody ApprovalFunctionsDTO collaboratorDto) {
         String methodName = "createCollaboratorFunctions";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, "REQUEST_API: " + String.format("[POST]/admin/collaborators/%s/functions", collaboratorCode));
         AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(collaboratorDto));
         
-        collaboratorService.createCollaboratorFunctions(request, collaboratorCode, collaboratorDto, refId);
+        collaboratorService.createCollaboratorFunctionsPA(request, collaboratorCode, collaboratorDto, refId);
         
         AdminResponseObj response = new AdminResponseObj();
         response.setStatus(Constant.RESPONSE_OK);

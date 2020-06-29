@@ -30,11 +30,11 @@ import com.newgen.am.common.ErrorMessage;
 import com.newgen.am.common.Utility;
 import com.newgen.am.dto.AdminDataObj;
 import com.newgen.am.dto.AdminResponseObj;
+import com.newgen.am.dto.ApprovalFunctionsDTO;
+import com.newgen.am.dto.ApprovalUpdateRoleDTO;
 import com.newgen.am.dto.BasePagination;
-import com.newgen.am.dto.FunctionsDTO;
 import com.newgen.am.dto.RoleCSV;
 import com.newgen.am.dto.RoleDTO;
-import com.newgen.am.dto.UpdateRoleDTO;
 import com.newgen.am.exception.CustomException;
 import com.newgen.am.service.SystemRoleService;
 import com.opencsv.CSVWriter;
@@ -53,7 +53,7 @@ public class SystemRoleController {
     SystemRoleService sysRoleService;
     
     @GetMapping("/admin/systemRoles")
-    @PreAuthorize("hasAuthority('adminUserManagement.roleManagement.functionList.view')")
+    @PreAuthorize("hasAuthority('adminUserManagement.roleManagement.roleList.view') or hasAuthority('adminUserManagement.departmentManagement.loginAdminUserManagement.adminRoleList.view')")
     public AdminResponseObj listSystemRoles(HttpServletRequest request) {
         String methodName = "listSystemRoles";
         long refId = System.currentTimeMillis();
@@ -82,7 +82,7 @@ public class SystemRoleController {
     }
     
     @GetMapping("/admin/systemRoles/csv")
-    @PreAuthorize("hasAuthority('adminUserManagement.roleManagement.functionList.view')")
+    @PreAuthorize("hasAuthority('adminUserManagement.roleManagement.roleList.view')")
     public void downloadSystemRolesCsv(HttpServletRequest request, HttpServletResponse response) {
         String methodName = "downloadSystemRolesCsv";
         long refId = System.currentTimeMillis();
@@ -123,7 +123,7 @@ public class SystemRoleController {
         AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [POST]/admin/systemRoles");
         AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(sysRoleDto));
         
-        sysRoleService.createSystemRole(request, sysRoleDto, refId);
+        sysRoleService.createSystemRolePA(request, sysRoleDto, refId);
         
         AdminResponseObj response = new AdminResponseObj();
         response.setStatus(Constant.RESPONSE_OK);
@@ -134,13 +134,13 @@ public class SystemRoleController {
     
     @PutMapping("/admin/systemRoles/{sysRoleId}")
     @PreAuthorize("hasAuthority('adminUserManagement.roleManagement.roleInfo.update')")
-    public AdminResponseObj updateSystemRole(HttpServletRequest request, @PathVariable String sysRoleId, @Valid @RequestBody UpdateRoleDTO sysRoleDto) {
+    public AdminResponseObj updateSystemRole(HttpServletRequest request, @PathVariable String sysRoleId, @Valid @RequestBody ApprovalUpdateRoleDTO sysRoleDto) {
         String methodName = "updateSystemRole";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [PUT]/admin/systemRoles/" + sysRoleId);
         AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(sysRoleDto));
         
-        sysRoleService.updateSystemRole(request, sysRoleId, sysRoleDto, refId);
+        sysRoleService.updateSystemRolePA(request, sysRoleId, sysRoleDto, refId);
         
         AdminResponseObj response = new AdminResponseObj();
         response.setStatus(Constant.RESPONSE_OK);
@@ -151,13 +151,13 @@ public class SystemRoleController {
     
     @PostMapping("/admin/systemRoles/{sysRoleId}/functions")
     @PreAuthorize("hasAuthority('adminUserManagement.roleManagement.roleFunctionsAssign.create')")
-    public AdminResponseObj createSystemRoleFunctions(HttpServletRequest request, @PathVariable String sysRoleId, @Valid @RequestBody FunctionsDTO sysRoleDto) {
+    public AdminResponseObj createSystemRoleFunctions(HttpServletRequest request, @PathVariable String sysRoleId, @Valid @RequestBody ApprovalFunctionsDTO sysRoleDto) {
         String methodName = "createSystemRoleFunctions";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, "REQUEST_API: " + String.format("[POST]/admin/systemRoles/%s/functions", sysRoleId));
         AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(sysRoleDto));
         
-        sysRoleService.createSystemRoleFunctions(request, sysRoleId, sysRoleDto, refId);
+        sysRoleService.createSystemRoleFunctionsPA(request, sysRoleId, sysRoleDto, refId);
         
         AdminResponseObj response = new AdminResponseObj();
         response.setStatus(Constant.RESPONSE_OK);

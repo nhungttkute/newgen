@@ -10,6 +10,7 @@ import javax.validation.constraints.Size;
 import com.newgen.am.model.Commodity;
 import com.newgen.am.model.Company;
 import com.newgen.am.model.Contact;
+import com.newgen.am.model.CqgInfo;
 import com.newgen.am.model.Individual;
 import com.newgen.am.model.InvestorAccount;
 import com.newgen.am.model.InvestorUser;
@@ -66,6 +67,7 @@ public class InvestorDTO implements Serializable {
     @Valid
     private Individual individual;
     private Contact contact;
+    private CqgInfo cqgInfo;
     private MarginInfoDTO account;
     private List<InvestorUser> users;
     private UserRole role;
@@ -246,6 +248,12 @@ public class InvestorDTO implements Serializable {
 	}
 	public void setCreatedDate(long createdDate) {
 		this.createdDate = createdDate;
+	}
+	public CqgInfo getCqgInfo() {
+		return cqgInfo;
+	}
+	public void setCqgInfo(CqgInfo cqgInfo) {
+		this.cqgInfo = cqgInfo;
 	}
     
 }

@@ -34,6 +34,8 @@ import com.newgen.am.common.MongoDBConnection;
 import com.newgen.am.common.RequestParamsParser;
 import com.newgen.am.common.SystemFunctionCode;
 import com.newgen.am.common.Utility;
+import com.newgen.am.dto.ApprovalFunctionsDTO;
+import com.newgen.am.dto.ApprovalUpdateCollaboratorDTO;
 import com.newgen.am.dto.BasePagination;
 import com.newgen.am.dto.CollaboratorCSV;
 import com.newgen.am.dto.CollaboratorDTO;
@@ -199,95 +201,100 @@ public class CollaboratorService {
 		return collaboratorList;
 	}
 	
-	public void createCollaborator(HttpServletRequest request, CollaboratorDTO collaboratorDto, long refId) {
+	public void createCollaborator(HttpServletRequest request, PendingApproval pendingApproval, long refId) {
 		String methodName = "createCollaborator";
-		boolean existedCollaborator= false;
 		try {
-			existedCollaborator = collaboratorRepo.existsCollaboratorByCode(collaboratorDto.getCode());
+			CollaboratorDTO collaboratorDto = new Gson().fromJson(pendingApproval.getPendingData().getPendingValue(), CollaboratorDTO.class);
+			
+			// generate collaborator code
+			String collaboratorCode = collaboratorDto.getMemberCode() + Utility.lpad3With0(dbSeqService.generateSequence(Constant.COLLABORATOR_SEQ + collaboratorDto.getMemberCode(), refId));
+
+			// get redis user info
+			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
+			// send activity log
+			activityLogService.sendActivityLog(userInfo, request, ActivityLogService.ACTIVITY_APPROVAL_CREATE_COLLABORATOR,
+					ActivityLogService.ACTIVITY_APPROVAL_CREATE_COLLABORATOR_DESC, collaboratorCode, pendingApproval.getId());
+			
+			// create Delegate document
+			Document delegate = new Document();
+			delegate.append("fullName", collaboratorDto.getDelegate().getFullName());
+			delegate.append("birthDay", collaboratorDto.getDelegate().getBirthDay());
+			delegate.append("identityCard", collaboratorDto.getDelegate().getIdentityCard());
+			delegate.append("idCreatedDate", collaboratorDto.getDelegate().getIdCreatedDate());
+			delegate.append("idCreatedLocation", collaboratorDto.getDelegate().getIdCreatedLocation());
+			delegate.append("email", collaboratorDto.getDelegate().getEmail());
+			delegate.append("phoneNumber", collaboratorDto.getDelegate().getPhoneNumber());
+			delegate.append("address", collaboratorDto.getDelegate().getAddress());
+			delegate.append("scannedFrontIdCard", collaboratorDto.getDelegate().getScannedFrontIdCard());
+			delegate.append("scannedBackIdCard", collaboratorDto.getDelegate().getScannedBackIdCard());
+			delegate.append("scannedSignature", collaboratorDto.getDelegate().getScannedSignature());
+			
+			// create Contact document
+			Document contact = new Document();
+			contact.append("fullName", collaboratorDto.getDelegate().getFullName());
+			contact.append("phoneNumber", collaboratorDto.getDelegate().getPhoneNumber());
+			contact.append("email", collaboratorDto.getDelegate().getEmail());
+			
+			// create default collaborator role
+			SystemRole defaultCollaboratorRole = sysRoleRepository.findByName(Constant.COLLABORATOR_DEFAULT_ROLE);
+			if (Utility.isNull(defaultCollaboratorRole)) {
+				throw new CustomException(ErrorMessage.DEFAULT_ROLE_DOESNT_EXIST, HttpStatus.OK);
+			}
+			
+			Document collaboratorRole = new Document();
+			collaboratorRole.append("name", defaultCollaboratorRole.getName());
+			collaboratorRole.append("description", defaultCollaboratorRole.getDescription());
+			
+			Document newCollaborator = new Document();
+			newCollaborator.append("createdUser", Utility.getCurrentUsername());
+			newCollaborator.append("createdDate", System.currentTimeMillis());
+			newCollaborator.append("_id", new ObjectId());
+			newCollaborator.append("code", collaboratorCode);
+			newCollaborator.append("name", collaboratorDto.getName());
+			newCollaborator.append("status", Constant.STATUS_ACTIVE);
+			newCollaborator.append("note", collaboratorDto.getNote());
+			newCollaborator.append("memberCode", collaboratorDto.getMemberCode());
+			newCollaborator.append("memberName", collaboratorDto.getMemberName());
+			newCollaborator.append("brokerCode", collaboratorDto.getBrokerCode());
+			newCollaborator.append("brokerName", collaboratorDto.getBrokerName());
+			newCollaborator.append("delegate", delegate);
+			newCollaborator.append("contact", contact);
+			newCollaborator.append("role", collaboratorRole);
+			
+			// insert new broker
+			MongoDatabase database = MongoDBConnection.getMongoDatabase();
+			MongoCollection<Document> collection = database.getCollection("collaborators");
+			collection.insertOne(newCollaborator);
+			
+			// insert new broker's user to login_admin_users
+			createCollaboratorUser(request, collaboratorDto, collaboratorCode, collaboratorRole, refId);
+		} catch (CustomException e) {
+			throw e;
 		} catch (Exception e) {
 			AMLogger.logError(className, methodName, refId, e);
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
-
-		if (!existedCollaborator) {
-			try {
-				// generate collaborator code
-				String collaboratorCode = collaboratorDto.getMemberCode() + Utility.lpad3With0(dbSeqService.generateSequence(Constant.COLLABORATOR_SEQ + collaboratorDto.getMemberCode(), refId));
-				
-				// get redis user info
-				UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
-				// insert data to pending_approvals
-				String approvalId = insertCollaboratorCreatePA(userInfo, collaboratorCode, collaboratorDto, refId);
-				// send activity log
-				activityLogService.sendActivityLog(userInfo, request, ActivityLogService.ACTIVITY_CREATE_COLLABORATOR,
-						ActivityLogService.ACTIVITY_CREATE_COLLABORATOR_DESC, collaboratorCode, approvalId);
-				
-				// create Delegate document
-				Document delegate = new Document();
-				delegate.append("fullName", collaboratorDto.getDelegate().getFullName());
-				delegate.append("birthDay", collaboratorDto.getDelegate().getBirthDay());
-				delegate.append("identityCard", collaboratorDto.getDelegate().getIdentityCard());
-				delegate.append("idCreatedDate", collaboratorDto.getDelegate().getIdCreatedDate());
-				delegate.append("idCreatedLocation", collaboratorDto.getDelegate().getIdCreatedLocation());
-				delegate.append("email", collaboratorDto.getDelegate().getEmail());
-				delegate.append("phoneNumber", collaboratorDto.getDelegate().getPhoneNumber());
-				delegate.append("address", collaboratorDto.getDelegate().getAddress());
-				delegate.append("scannedFrontIdCard", collaboratorDto.getDelegate().getScannedFrontIdCard());
-				delegate.append("scannedBackIdCard", collaboratorDto.getDelegate().getScannedBackIdCard());
-				delegate.append("scannedSignature", collaboratorDto.getDelegate().getScannedSignature());
-				
-				// create Contact document
-				Document contact = new Document();
-				contact.append("fullName", collaboratorDto.getDelegate().getFullName());
-				contact.append("phoneNumber", collaboratorDto.getDelegate().getPhoneNumber());
-				contact.append("email", collaboratorDto.getDelegate().getEmail());
-				
-				// create default collaborator role
-				SystemRole defaultCollaboratorRole = sysRoleRepository.findByName(Constant.COLLABORATOR_DEFAULT_ROLE);
-				if (Utility.isNull(defaultCollaboratorRole)) {
-					throw new CustomException(ErrorMessage.DEFAULT_ROLE_DOESNT_EXIST, HttpStatus.OK);
-				}
-				
-				Document collaboratorRole = new Document();
-				collaboratorRole.append("name", defaultCollaboratorRole.getName());
-				collaboratorRole.append("description", defaultCollaboratorRole.getDescription());
-				
-				Document newCollaborator = new Document();
-				newCollaborator.append("createdUser", Utility.getCurrentUsername());
-				newCollaborator.append("createdDate", System.currentTimeMillis());
-				newCollaborator.append("_id", new ObjectId());
-				newCollaborator.append("code", collaboratorCode);
-				newCollaborator.append("name", collaboratorDto.getName());
-				newCollaborator.append("status", collaboratorDto.getStatus());
-				newCollaborator.append("note", collaboratorDto.getNote());
-				newCollaborator.append("memberCode", collaboratorDto.getMemberCode());
-				newCollaborator.append("memberName", collaboratorDto.getMemberName());
-				newCollaborator.append("brokerCode", collaboratorDto.getBrokerCode());
-				newCollaborator.append("brokerName", collaboratorDto.getBrokerName());
-				newCollaborator.append("delegate", delegate);
-				newCollaborator.append("contact", contact);
-				newCollaborator.append("role", collaboratorRole);
-				
-				// insert new broker
-				MongoDatabase database = MongoDBConnection.getMongoDatabase();
-				MongoCollection<Document> collection = database.getCollection("collaborators");
-				collection.insertOne(newCollaborator);
-				
-				// insert new broker's user to login_admin_users
-				createCollaboratorUser(request, collaboratorDto, collaboratorCode, collaboratorRole, refId);
-			} catch (CustomException e) {
-				throw e;
-			} catch (Exception e) {
-				AMLogger.logError(className, methodName, refId, e);
-				throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
-			}
-		} else {
-			AMLogger.logMessage(className, methodName, refId, "This collaborator code already exists");
-			throw new CustomException(ErrorMessage.DOCUMENT_ALREADY_EXISTED, HttpStatus.OK);
+	}
+	
+	public void createCollaboratorPA(HttpServletRequest request, CollaboratorDTO collaboratorDto, long refId) {
+		String methodName = "createCollaboratorPA";
+		try {
+			// get redis user info
+			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
+			// insert data to pending_approvals
+			String approvalId = insertCollaboratorCreatePA(userInfo, collaboratorDto, refId);
+			// send activity log
+			activityLogService.sendActivityLog(userInfo, request, ActivityLogService.ACTIVITY_CREATE_COLLABORATOR,
+					ActivityLogService.ACTIVITY_CREATE_COLLABORATOR_DESC, collaboratorDto.getName(), approvalId);
+		} catch (CustomException e) {
+			throw e;
+		} catch (Exception e) {
+			AMLogger.logError(className, methodName, refId, e);
+			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 	
-	public void createCollaboratorUser(HttpServletRequest request, CollaboratorDTO collaboratorDto, String collaboratorCode, Document collaboratorRole, long refId) {
+	private void createCollaboratorUser(HttpServletRequest request, CollaboratorDTO collaboratorDto, String collaboratorCode, Document collaboratorRole, long refId) {
 		String methodName = "createCollaboratorUser";
 		boolean existedUser = false;
 		String username = Constant.COLLABORATOR_USER_PREFIX + collaboratorCode;
@@ -300,13 +307,6 @@ public class CollaboratorService {
 
 		if (!existedUser) {
 			try {
-				// get redis user info
-				UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
-				// send activity log
-				activityLogService.sendActivityLog(userInfo, request,
-						ActivityLogService.ACTIVITY_CREATE_COLLABORATOR_USER,
-						ActivityLogService.ACTIVITY_CREATE_COLLABORATOR_USER_DESC, username, "");
-
 				MongoDatabase database = MongoDBConnection.getMongoDatabase();
 				MongoCollection<Document> collection = database.getCollection("collaborators");
 
@@ -331,7 +331,13 @@ public class CollaboratorService {
 				collection.updateOne(query, Updates.set("user", collaboratorUser));
 
 				// insert loginAdminUser
-				UserDTO userDto = new UserDTO();
+				UserInfoDTO userDto = new UserInfoDTO();
+				userDto.setMemberCode(collaboratorDto.getMemberCode());
+				userDto.setMemberName(collaboratorDto.getMemberName());
+				userDto.setBrokerCode(collaboratorDto.getBrokerCode());
+				userDto.setBrokerName(collaboratorDto.getBrokerName());
+				userDto.setCollaboratorCode(collaboratorDto.getCode());
+				userDto.setCollaboratorName(collaboratorDto.getName());
 				userDto.setUsername(username);
 				userDto.setFullName(collaboratorDto.getDelegate().getFullName());
 				userDto.setEmail(collaboratorDto.getDelegate().getEmail());
@@ -339,7 +345,7 @@ public class CollaboratorService {
 				
 				String password = Utility.generateRandomPassword();
 				String pin = Utility.generateRandomPin();
-				createLoginAdminUser(collaboratorDto.getMemberCode(), collaboratorDto.getBrokerCode(), collaboratorCode, userDto, password, pin, refId);
+				createLoginAdminUser(userDto, password, pin, refId);
 
 				// send email
 				sendCreateNewUserEmail(collaboratorDto.getDelegate().getEmail(), username, password, pin, refId);
@@ -353,7 +359,7 @@ public class CollaboratorService {
 		}
 	}
 	
-	private LoginAdminUser createLoginAdminUser(String memberCode, String brokerCode, String collaboratorCode, UserDTO userDto, String password, String pin,
+	private LoginAdminUser createLoginAdminUser(UserInfoDTO userDto, String password, String pin,
 			long refId) {
 		String methodName = "createLoginAdminUser";
 		try {
@@ -361,9 +367,6 @@ public class CollaboratorService {
 			loginAdmUser.setPassword(passwordEncoder.encode(password));
 			loginAdmUser.setPin(passwordEncoder.encode(pin));
 			loginAdmUser.setStatus(Constant.STATUS_ACTIVE);
-			loginAdmUser.setMemberCode(memberCode);
-			loginAdmUser.setBrokerCode(brokerCode);
-			loginAdmUser.setCollaboratorCode(collaboratorCode);
 			loginAdmUser.setCreatedUser(Utility.getCurrentUsername());
 			loginAdmUser.setCreatedDate(System.currentTimeMillis());
 			LoginAdminUser newLoginAdmUser = loginAdmUserRepo.save(loginAdmUser);
@@ -396,7 +399,7 @@ public class CollaboratorService {
 		}
 	}
 	
-	public String insertCollaboratorCreatePA(UserInfoDTO userInfo, String collaboratorCode, CollaboratorDTO collaboratorDto, long refId) {
+	private String insertCollaboratorCreatePA(UserInfoDTO userInfo, CollaboratorDTO collaboratorDto, long refId) {
 		String methodName = "insertBrokerCreatePA";
 		String approvalId = "";
 		try {
@@ -408,17 +411,14 @@ public class CollaboratorService {
 			pendingData.setServiceFunctionName(ApprovalConstant.COLLABORATOR_CREATE);
 			pendingData.setCollectionName("collaborators");
 			pendingData.setAction(Constant.APPROVAL_ACTION_CREATE);
-			pendingData.setValue(new Gson().toJson(collaboratorDto));
+			pendingData.setPendingValue(new Gson().toJson(collaboratorDto));
 
 			PendingApproval pendingApproval = new PendingApproval();
-			pendingApproval.setId(approvalId);
 			pendingApproval.setApiUrl(String.format(ApprovalConstant.APPROVAL_PENDING_URL, approvalId));
-			pendingApproval.setCreatorDate(System.currentTimeMillis());
-			pendingApproval.setCreatorUser(userInfo.getUsername());
 			pendingApproval.setFunctionCode(SystemFunctionCode.APPROVAL_COLLABORATOR_CREATE_CODE);
 			pendingApproval.setFunctionName(SystemFunctionCode.COLLABORATOR_CREATE_NAME);
 			pendingApproval.setDescription(
-					SystemFunctionCode.getApprovalDescription(pendingApproval.getFunctionName(), collaboratorCode));
+					SystemFunctionCode.getApprovalDescription(pendingApproval.getFunctionName(), collaboratorDto.getName()));
 			pendingApproval.setStatus(Constant.APPROVAL_STATUS_PENDING);
 			pendingApproval.setNestedObjInfo(nestedObjInfo);
 			pendingApproval.setPendingData(pendingData);
@@ -430,21 +430,18 @@ public class CollaboratorService {
 		return approvalId;
 	}
 	
-	public void updateCollaborator(HttpServletRequest request, String collaboratorCode, UpdateCollaboratorDTO collaboratorDto, long refId) {
+	public void updateCollaborator(HttpServletRequest request, PendingApproval pendingApproval, long refId) {
 		String methodName = "updateCollaborator";
 		try {
+			String collaboratorCode = pendingApproval.getPendingData().getQueryValue();
+			UpdateCollaboratorDTO collaboratorDto = new Gson().fromJson(pendingApproval.getPendingData().getPendingValue(), UpdateCollaboratorDTO.class);
+			
 			// get redis user info
 			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
-			// insert data to pending_approvals
-			String approvalId = insertCollaboratorUpdatePA(userInfo, collaboratorCode, collaboratorDto, refId);
 			// send activity log
-			activityLogService.sendActivityLog(userInfo, request, ActivityLogService.ACTIVITY_UPDATE_COLLABORATOR,
-					ActivityLogService.ACTIVITY_UPDATE_COLLABORATOR_DESC, collaboratorCode, approvalId);
+			activityLogService.sendActivityLog(userInfo, request, ActivityLogService.ACTIVITY_APPROVAL_UPDATE_COLLABORATOR,
+					ActivityLogService.ACTIVITY_APPROVAL_UPDATE_COLLABORATOR_DESC, collaboratorCode, pendingApproval.getId());
 
-			if (!collaboratorRepo.existsCollaboratorByCode(collaboratorCode)) {
-				throw new CustomException(ErrorMessage.RESULT_NOT_FOUND, HttpStatus.OK);
-			}
-			
 			BasicDBObject collaboratorMember = new BasicDBObject();
 			boolean isUserUpdated = false;
 			
@@ -512,8 +509,30 @@ public class CollaboratorService {
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
+	
+	public void updateCollaboratorPA(HttpServletRequest request, String collaboratorCode, ApprovalUpdateCollaboratorDTO collaboratorDto, long refId) {
+		String methodName = "updateCollaboratorPA";
+		try {
+			if (!collaboratorRepo.existsCollaboratorByCode(collaboratorCode)) {
+				throw new CustomException(ErrorMessage.RESULT_NOT_FOUND, HttpStatus.OK);
+			}
+			
+			// get redis user info
+			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
+			// insert data to pending_approvals
+			String approvalId = insertCollaboratorUpdatePA(userInfo, collaboratorCode, collaboratorDto, refId);
+			// send activity log
+			activityLogService.sendActivityLog(userInfo, request, ActivityLogService.ACTIVITY_UPDATE_COLLABORATOR,
+					ActivityLogService.ACTIVITY_UPDATE_COLLABORATOR_DESC, collaboratorCode, approvalId);
+		} catch (CustomException e) {
+			throw e;
+		} catch (Exception e) {
+			AMLogger.logError(className, methodName, refId, e);
+			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
 
-	public String insertCollaboratorUpdatePA(UserInfoDTO userInfo, String collaboratorCode, UpdateCollaboratorDTO collaboratorDto, long refId) {
+	private String insertCollaboratorUpdatePA(UserInfoDTO userInfo, String collaboratorCode, ApprovalUpdateCollaboratorDTO collaboratorDto, long refId) {
 		String methodName = "insertCollaboratorUpdatePA";
 		String approvalId = "";
 		try {
@@ -527,12 +546,11 @@ public class CollaboratorService {
 			pendingData.setQueryField("code");
 			pendingData.setQueryValue(collaboratorCode);
 			pendingData.setAction(Constant.APPROVAL_ACTION_UPDATE);
-			pendingData.setValue(new Gson().toJson(collaboratorDto));
+			pendingData.setOldValue(new Gson().toJson(collaboratorDto.getOldData()));
+			pendingData.setPendingValue(new Gson().toJson(collaboratorDto.getPendingData()));
 
 			PendingApproval pendingApproval = new PendingApproval();
 			pendingApproval.setApiUrl(String.format(ApprovalConstant.APPROVAL_PENDING_URL, approvalId));
-			pendingApproval.setCreatorDate(System.currentTimeMillis());
-			pendingApproval.setCreatorUser(userInfo.getUsername());
 			pendingApproval.setFunctionCode(SystemFunctionCode.APPROVAL_COLLABORATOR_UPDATE_CODE);
 			pendingApproval.setFunctionName(SystemFunctionCode.COLLABORATOR_UPDATE_NAME);
 			pendingApproval.setDescription(SystemFunctionCode.getApprovalDescription(pendingApproval.getFunctionName(),
@@ -609,23 +627,19 @@ public class CollaboratorService {
 		}
 	}
 	
-	public void createCollaboratorFunctions(HttpServletRequest request, String collaboratorCode, FunctionsDTO collaboratorDto,
-			long refId) {
+	public void createCollaboratorFunctions(HttpServletRequest request, PendingApproval pendingApproval, long refId) {
 		String methodName = "createCollaboratorFunctions";
 		try {
+			String collaboratorCode = pendingApproval.getPendingData().getQueryValue();
+			FunctionsDTO collaboratorDto = new Gson().fromJson(pendingApproval.getPendingData().getPendingValue(), FunctionsDTO.class);
+			
 			// get redis user info
 			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
-			// insert data to pending_approvals
-			String approvalId = insertCollaboratorFunctionsAssignPA(userInfo, collaboratorCode, collaboratorDto, refId);
 			// send activity log
 			activityLogService.sendActivityLog(userInfo, request,
-					ActivityLogService.ACTIVITY_CREATE_COLLABORATOR_FUNCTIONS,
-					ActivityLogService.ACTIVITY_CREATE_COLLABORATOR_FUNCTIONS_DESC, String.valueOf(collaboratorCode),
-					approvalId);
-
-			if (!collaboratorRepo.existsCollaboratorByCode(collaboratorCode)) {
-				throw new CustomException(ErrorMessage.RESULT_NOT_FOUND, HttpStatus.OK);
-			}
+					ActivityLogService.ACTIVITY_APPROVAL_CREATE_COLLABORATOR_FUNCTIONS,
+					ActivityLogService.ACTIVITY_APPROVAL_CREATE_COLLABORATOR_FUNCTIONS_DESC, String.valueOf(collaboratorCode),
+					pendingApproval.getId());
 			
 			List<Document> functions = new ArrayList<Document>();
 			for (RoleFunction function : collaboratorDto.getFunctions()) {
@@ -661,7 +675,32 @@ public class CollaboratorService {
 		}
 	}
 	
-	public String insertCollaboratorFunctionsAssignPA(UserInfoDTO userInfo, String collaboratorCode, FunctionsDTO collaboratorDto,
+	public void createCollaboratorFunctionsPA(HttpServletRequest request, String collaboratorCode, ApprovalFunctionsDTO collaboratorDto,
+			long refId) {
+		String methodName = "createCollaboratorFunctionsPA";
+		try {
+			if (!collaboratorRepo.existsCollaboratorByCode(collaboratorCode)) {
+				throw new CustomException(ErrorMessage.RESULT_NOT_FOUND, HttpStatus.OK);
+			}
+			
+			// get redis user info
+			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
+			// insert data to pending_approvals
+			String approvalId = insertCollaboratorFunctionsAssignPA(userInfo, collaboratorCode, collaboratorDto, refId);
+			// send activity log
+			activityLogService.sendActivityLog(userInfo, request,
+					ActivityLogService.ACTIVITY_CREATE_COLLABORATOR_FUNCTIONS,
+					ActivityLogService.ACTIVITY_CREATE_COLLABORATOR_FUNCTIONS_DESC, String.valueOf(collaboratorCode),
+					approvalId);
+		} catch (CustomException e) {
+			throw e;
+		} catch (Exception e) {
+			AMLogger.logError(className, methodName, refId, e);
+			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+	
+	private String insertCollaboratorFunctionsAssignPA(UserInfoDTO userInfo, String collaboratorCode, ApprovalFunctionsDTO collaboratorDto,
 			long refId) {
 		String methodName = "insertCollaboratorFunctionsAssignPA";
 		String approvalId = "";
@@ -676,12 +715,11 @@ public class CollaboratorService {
 			pendingData.setAction(Constant.APPROVAL_ACTION_CREATE);
 			pendingData.setQueryField("code");
 			pendingData.setQueryValue(collaboratorCode);
-			pendingData.setValue(new Gson().toJson(collaboratorDto));
+			pendingData.setOldValue(new Gson().toJson(collaboratorDto.getOldData()));
+			pendingData.setPendingValue(new Gson().toJson(collaboratorDto.getPendingData()));
 
 			PendingApproval pendingApproval = new PendingApproval();
 			pendingApproval.setApiUrl(String.format(ApprovalConstant.APPROVAL_PENDING_URL, approvalId));
-			pendingApproval.setCreatorDate(System.currentTimeMillis());
-			pendingApproval.setCreatorUser(userInfo.getUsername());
 			pendingApproval.setFunctionCode(SystemFunctionCode.APPROVAL_COLLABORATOR_FUNCTIONS_ASSIGN_CREATE_CODE);
 			pendingApproval.setFunctionName(SystemFunctionCode.COLLABORATOR_FUNCTIONS_ASSIGN_CREATE_NAME);
 			pendingApproval.setDescription(

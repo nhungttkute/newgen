@@ -39,7 +39,7 @@ public class Company implements Serializable {
 	@UniqueTaxCode(groups = UniqueGroup.class)
     private String taxCode;
 	@NotEmpty(message = "Required.")
-	@Size(min = 1, max = 300, message = "Invalid format.", groups = LengthGroup.class)
+	@Size(min = 1, max = 64, message = "Invalid format.", groups = LengthGroup.class)
     private String address;
 	@NotEmpty(message = "Required.")
 	@ValidPhoneNumber(groups = FormatGroup.class)

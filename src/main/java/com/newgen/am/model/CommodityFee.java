@@ -9,12 +9,14 @@ import java.io.Serializable;
 
 import javax.validation.constraints.NotEmpty;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.newgen.am.common.Constant;
 
 /**
  *
  * @author nhungtt
  */
+@JsonInclude(JsonInclude.Include.NON_DEFAULT)
 public class CommodityFee extends AuditModel implements Serializable {
 	private static final long serialVersionUID = 1L;
 	@NotEmpty(message = "Required.")

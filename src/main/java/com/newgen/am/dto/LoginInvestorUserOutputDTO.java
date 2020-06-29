@@ -2,6 +2,7 @@ package com.newgen.am.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.newgen.am.model.Commodity;
+import com.newgen.am.model.Exchange;
 import com.newgen.am.model.WatchList;
 
 import java.io.Serializable;

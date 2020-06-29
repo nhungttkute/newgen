@@ -26,13 +26,14 @@ import com.newgen.am.common.ErrorMessage;
 import com.newgen.am.common.Utility;
 import com.newgen.am.dto.AdminDataObj;
 import com.newgen.am.dto.AdminResponseObj;
+import com.newgen.am.dto.ApprovalFunctionsDTO;
+import com.newgen.am.dto.ApprovalUpdateBrokerDTO;
 import com.newgen.am.dto.BasePagination;
 import com.newgen.am.dto.BrokerCSV;
 import com.newgen.am.dto.BrokerCommoditiesDTO;
 import com.newgen.am.dto.BrokerDTO;
 import com.newgen.am.dto.DefaultCommodityFeeDTO;
 import com.newgen.am.dto.FunctionsDTO;
-import com.newgen.am.dto.UpdateBrokerDTO;
 import com.newgen.am.dto.UserDTO;
 import com.newgen.am.exception.CustomException;
 import com.newgen.am.service.BrokerService;
@@ -115,7 +116,7 @@ public class BrokerController {
 		AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [POST]/admin/brokers");
 		AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(brokerDto));
 
-		brokerService.createBroker(request, brokerDto, refId);
+		brokerService.createBrokerPA(request, brokerDto, refId);
 
 		AdminResponseObj response = new AdminResponseObj();
 		response.setStatus(Constant.RESPONSE_OK);
@@ -127,13 +128,13 @@ public class BrokerController {
 	@PutMapping("/admin/brokers/{brokerCode}")
 	@PreAuthorize("hasAuthority('clientManagement.brokerManagement.brokerInfo.update')")
 	public AdminResponseObj updateBroker(HttpServletRequest request, @PathVariable String brokerCode,
-			@Validated(ValidationSequence.class) @RequestBody UpdateBrokerDTO brokerDto) {
+			@Validated(ValidationSequence.class) @RequestBody ApprovalUpdateBrokerDTO brokerDto) {
 		String methodName = "updateBroker";
 		long refId = System.currentTimeMillis();
 		AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [PUT]/admin/brokers/" + brokerCode);
 		AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(brokerDto));
 
-		brokerService.updateBroker(request, brokerCode, brokerDto, refId);
+		brokerService.updateBrokerPA(request, brokerCode, brokerDto, refId);
 
 		AdminResponseObj response = new AdminResponseObj();
 		response.setStatus(Constant.RESPONSE_OK);
@@ -199,13 +200,13 @@ public class BrokerController {
 	
 	@PostMapping("/admin/brokers/{brokerCode}/functions")
     @PreAuthorize("hasAuthority('approval.clientManagement.brokerManagement.brokerFunctionsAssign.create')")
-    public AdminResponseObj createBrokerFunctions(HttpServletRequest request, @PathVariable String brokerCode, @Validated(ValidationSequence.class) @RequestBody FunctionsDTO brokerDto) {
+    public AdminResponseObj createBrokerFunctions(HttpServletRequest request, @PathVariable String brokerCode, @Validated(ValidationSequence.class) @RequestBody ApprovalFunctionsDTO brokerDto) {
         String methodName = "createBrokerFunctions";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, "REQUEST_API: " + String.format("[POST]/admin/brokers/%s/functions", brokerCode));
         AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(brokerDto));
         
-        brokerService.createBrokerFunctions(request, brokerCode, brokerDto, refId);
+        brokerService.createBrokerFunctionsPA(request, brokerCode, brokerDto, refId);
         
         AdminResponseObj response = new AdminResponseObj();
         response.setStatus(Constant.RESPONSE_OK);

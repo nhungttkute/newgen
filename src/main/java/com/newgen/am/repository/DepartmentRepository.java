@@ -5,8 +5,9 @@
  */
 package com.newgen.am.repository;
 
-import com.newgen.am.model.Department;
 import org.springframework.data.mongodb.repository.MongoRepository;
+
+import com.newgen.am.model.Department;
 
 /**
  *
@@ -14,4 +15,5 @@ import org.springframework.data.mongodb.repository.MongoRepository;
  */
 public interface DepartmentRepository extends MongoRepository<Department, String>{
     boolean existsDepartmentByCode(String code);
+    Department findByCode(String code);
 }

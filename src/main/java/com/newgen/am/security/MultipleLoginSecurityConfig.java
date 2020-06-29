@@ -83,6 +83,9 @@ public class MultipleLoginSecurityConfig {
             web.ignoring().antMatchers(
                     HttpMethod.POST,
                     "/admin/users/login"
+            ).antMatchers(
+                    HttpMethod.POST,
+                    "/admin/investorInfo"
             );
         }
 

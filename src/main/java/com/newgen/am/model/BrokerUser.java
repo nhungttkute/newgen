@@ -12,6 +12,7 @@ import java.util.List;
  * @author nhungtt
  */
 public class BrokerUser extends BaseUser {
+	private static final long serialVersionUID = 1L;
 	private UserRole role;
     private List<RoleFunction> functions;
 	public UserRole getRole() {

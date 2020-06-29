@@ -13,11 +13,13 @@ public class PendingData {
     private String serviceFunctionName;
     private String collectionName;
     private String queryField;
-    private Object queryValue;
+    private String queryValue;
     private String queryField2;
-    private Object queryValue2;
+    private String queryValue2;
     private String action;
-    private String value;
+    private String appliedObject;
+    private String oldValue;
+    private String pendingValue;
 
     public String getServiceFunctionName() {
         return serviceFunctionName;
@@ -43,11 +45,11 @@ public class PendingData {
         this.queryField = queryField;
     }
 
-    public Object getQueryValue() {
+    public String getQueryValue() {
         return queryValue;
     }
 
-    public void setQueryValue(Object queryValue) {
+    public void setQueryValue(String queryValue) {
         this.queryValue = queryValue;
     }
 
@@ -59,11 +61,11 @@ public class PendingData {
         this.queryField2 = queryField2;
     }
 
-    public Object getQueryValue2() {
+    public String getQueryValue2() {
         return queryValue2;
     }
 
-    public void setQueryValue2(Object queryValue2) {
+    public void setQueryValue2(String queryValue2) {
         this.queryValue2 = queryValue2;
     }
 
@@ -75,12 +77,28 @@ public class PendingData {
         this.action = action;
     }
 
-    public String getValue() {
-        return value;
-    }
+	public String getOldValue() {
+		return oldValue;
+	}
 
-    public void setValue(String value) {
-        this.value = value;
-    }
-    
+	public void setOldValue(String oldValue) {
+		this.oldValue = oldValue;
+	}
+
+	public String getPendingValue() {
+		return pendingValue;
+	}
+
+	public void setPendingValue(String pendingValue) {
+		this.pendingValue = pendingValue;
+	}
+
+	public String getAppliedObject() {
+		return appliedObject;
+	}
+
+	public void setAppliedObject(String appliedObject) {
+		this.appliedObject = appliedObject;
+	}
+  
 }

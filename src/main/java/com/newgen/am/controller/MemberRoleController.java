@@ -25,6 +25,8 @@ import com.newgen.am.common.ErrorMessage;
 import com.newgen.am.common.Utility;
 import com.newgen.am.dto.AdminDataObj;
 import com.newgen.am.dto.AdminResponseObj;
+import com.newgen.am.dto.ApprovalFunctionsDTO;
+import com.newgen.am.dto.ApprovalUpdateRoleDTO;
 import com.newgen.am.dto.BasePagination;
 import com.newgen.am.dto.FunctionsDTO;
 import com.newgen.am.dto.RoleCSV;
@@ -45,7 +47,7 @@ private String className = "MemberRoleController";
     MemberRoleService memberRoleService;
     
     @GetMapping("/admin/members/{memberCode}/memberRoles")
-    @PreAuthorize("hasAuthority('clientManagement.memberManagement.memberRoleManagement.memberRoleList.view')")
+    @PreAuthorize("hasAuthority('clientManagement.memberManagement.memberRoleManagement.memberRoleList.view') or hasAuthority('clientManagement.memberManagement.memberUserManagement.memberUserRole.view')")
     public AdminResponseObj listMemberRoles(HttpServletRequest request, @PathVariable String memberCode) {
         String methodName = "listMemberRoles";
         long refId = System.currentTimeMillis();
@@ -115,7 +117,7 @@ private String className = "MemberRoleController";
         AMLogger.logMessage(className, methodName, refId, "REQUEST_API: " + String.format("[POST]/admin/members/%s/memberRoles", memberCode));
         AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(roleDto));
         
-        memberRoleService.createMemberRole(request, memberCode, roleDto, refId);
+        memberRoleService.createMemberRolePA(request, memberCode, roleDto, refId);
         
         AdminResponseObj response = new AdminResponseObj();
         response.setStatus(Constant.RESPONSE_OK);
@@ -126,13 +128,13 @@ private String className = "MemberRoleController";
     
     @PutMapping("/admin/members/{memberCode}/memberRoles/{roleId}")
     @PreAuthorize("hasAuthority('clientManagement.memberManagement.memberRoleManagement.memberRole.update')")
-    public AdminResponseObj updateMemberRole(HttpServletRequest request, @PathVariable String memberCode, @PathVariable String roleId, @Valid @RequestBody UpdateRoleDTO roleDto) {
+    public AdminResponseObj updateMemberRole(HttpServletRequest request, @PathVariable String memberCode, @PathVariable String roleId, @Valid @RequestBody ApprovalUpdateRoleDTO roleDto) {
         String methodName = "updateMemberRole";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, "REQUEST_API: " + String.format("[PUT]/admin/members/%s/memberRoles/%s", memberCode, roleId));
         AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(roleDto));
         
-        memberRoleService.updateMemberRole(request, memberCode, roleId, roleDto, refId);
+        memberRoleService.updateMemberRolePA(request, memberCode, roleId, roleDto, refId);
         
         AdminResponseObj response = new AdminResponseObj();
         response.setStatus(Constant.RESPONSE_OK);
@@ -143,13 +145,13 @@ private String className = "MemberRoleController";
     
     @PostMapping("/admin/members/{memberCode}/memberRoles/{roleId}/functions")
     @PreAuthorize("hasAuthority('clientManagement.memberManagement.memberRoleManagement.memberRoleFunctionsAssign.create')")
-    public AdminResponseObj createMemberRoleFunctions(HttpServletRequest request, @PathVariable String memberCode, @PathVariable String roleId, @Valid @RequestBody FunctionsDTO roleDto) {
+    public AdminResponseObj createMemberRoleFunctions(HttpServletRequest request, @PathVariable String memberCode, @PathVariable String roleId, @Valid @RequestBody ApprovalFunctionsDTO roleDto) {
         String methodName = "createMemberRoleFunctions";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, "REQUEST_API: " + String.format("[POST]/admin/members/%s/memberRoles/%s/functions", memberCode, roleId));
         AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(roleDto));
         
-        memberRoleService.createMemberRoleFunctions(request, memberCode, roleId, roleDto, refId);
+        memberRoleService.createMemberRoleFunctionsPA(request, memberCode, roleId, roleDto, refId);
         
         AdminResponseObj response = new AdminResponseObj();
         response.setStatus(Constant.RESPONSE_OK);

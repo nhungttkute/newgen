@@ -16,6 +16,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
@@ -23,6 +24,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.SerializationUtils;
+import org.apache.commons.lang.WordUtils;
 import org.bson.Document;
 import org.bson.json.JsonWriterSettings;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -118,12 +120,24 @@ public class Utility {
         String hash = DigestUtils.sha256Hex(secretKey + input);
         return hash;
     }
+    
+    public static String generateSpecialChars(int iLength) {
+    	final String alphabet = "!#$%*@";
+    	final int N = alphabet.length();
+    	Random rd = new Random();
+    	StringBuilder sb = new StringBuilder(iLength);
+    	for (int i = 0; i < iLength; i++) {
+    	    sb.append(alphabet.charAt(rd.nextInt(N)));
+    	}
+    	return sb.toString();
+    }
 
     public static String generateRandomPassword() {
         String upperCaseLetters = RandomStringUtils.random(2, 65, 90, true, true);
         String lowerCaseLetters = RandomStringUtils.random(2, 97, 122, true, true);
         String numbers = RandomStringUtils.randomNumeric(2);
-        String specialChar = RandomStringUtils.random(2, 33, 47, false, false);
+//        String specialChar = RandomStringUtils.random(2, 33, 42, false, false);
+        String specialChar = generateSpecialChars(2);
         String totalChars = RandomStringUtils.randomAlphanumeric(2);
         String combinedChars = upperCaseLetters.concat(lowerCaseLetters)
                 .concat(numbers)
@@ -148,6 +162,12 @@ public class Utility {
         if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
             return bearerToken.substring(7);
         } else return null;
+    }
+    
+    public static boolean isLocalRequest(HttpServletRequest request) {
+        String secretKey = getAccessToken(request);
+        if (ConfigLoader.getMainConfig().getString(Constant.LOCAL_SECRET_KEY).equalsIgnoreCase(secretKey)) return true;
+        return false;
     }
     
     public static Pagination getPagination(HttpServletRequest request, int count) throws Exception {
@@ -217,6 +237,7 @@ public class Utility {
         String methodName = "getRedisUserInfo";
         try {
             String key = genRedisKey(accessToken);
+            AMLogger.logMessage(className, methodName, refId, "REDIS_GET: key=" + key);
             String value = (String) template.opsForValue().get(key);
             return new Gson().fromJson(value, UserInfoDTO.class);
         } catch (Exception e) {
@@ -348,5 +369,30 @@ public class Utility {
     		flag = true;
     	}
     	return flag;
+    }
+    
+    public static String getClassName(String input) {
+    	String[] arr = input.split("_");
+    	if (arr.length > 0) {
+    		return arr[0];
+    	}
+    	return null;
+    }
+    
+    public static String getMethodName(String input) {
+    	String[] arr = input.split("_");
+    	if (arr.length > 0) {
+    		return arr[1];
+    	}
+    	return null;
+    }
+    
+    public static String getServiceName(String input) {
+    	String[] arr = input.split("\\.");
+    	if (arr.length > 0) {
+    		String str = arr[arr.length - 1];
+    		return WordUtils.uncapitalize(str);
+    	}
+    	return null;
     }
 }

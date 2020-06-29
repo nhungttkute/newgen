@@ -40,8 +40,7 @@ public class Investor extends AuditModel implements Serializable {
     private int defaultPositionLimit;
     private long defaultCommodityFee;
     private double marginMultiplier;
-    private long generalFee;
-    private long otherFee;
+    private List<GeneralFee> generalFees;
     private MarginRatioAlert marginRatioAlert;
     private RiskParameters riskParameters;
     private List<Commodity> commodities;
@@ -178,17 +177,11 @@ public class Investor extends AuditModel implements Serializable {
 	public void setMarginMultiplier(double marginMultiplier) {
 		this.marginMultiplier = marginMultiplier;
 	}
-	public long getGeneralFee() {
-		return generalFee;
+	public List<GeneralFee> getGeneralFees() {
+		return generalFees;
 	}
-	public void setGeneralFee(long generalFee) {
-		this.generalFee = generalFee;
-	}
-	public long getOtherFee() {
-		return otherFee;
-	}
-	public void setOtherFee(long otherFee) {
-		this.otherFee = otherFee;
+	public void setGeneralFees(List<GeneralFee> generalFees) {
+		this.generalFees = generalFees;
 	}
 	public MarginRatioAlert getMarginRatioAlert() {
 		return marginRatioAlert;

@@ -39,7 +39,12 @@ import com.newgen.am.common.MongoDBConnection;
 import com.newgen.am.common.RequestParamsParser;
 import com.newgen.am.common.SystemFunctionCode;
 import com.newgen.am.common.Utility;
+import com.newgen.am.dto.ApprovalFunctionsDTO;
+import com.newgen.am.dto.ApprovalUpdateDepartmentDTO;
+import com.newgen.am.dto.ApprovalUpdateUserDTO;
+import com.newgen.am.dto.ApprovalUserRolesDTO;
 import com.newgen.am.dto.BasePagination;
+import com.newgen.am.dto.ChangeDepartmentDTO;
 import com.newgen.am.dto.DepartmentCSV;
 import com.newgen.am.dto.DepartmentDTO;
 import com.newgen.am.dto.EmailDTO;
@@ -164,8 +169,37 @@ public class DepartmentService {
 		return deptCSVList;
 	}
 
-	public void createDepartment(HttpServletRequest request, DepartmentDTO deptDto, long refId) {
+	public void createDepartment(HttpServletRequest request, PendingApproval pendingApproval, long refId) {
 		String methodName = "createDeparment";
+		
+		try {
+			DepartmentDTO deptDto = new Gson().fromJson(pendingApproval.getPendingData().getPendingValue(), DepartmentDTO.class);
+			
+			// get redis user info
+			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
+			// send activity log
+			activityLogService.sendActivityLog(userInfo, request, ActivityLogService.ACTIVITY_APPROVAL_CREATE_DEPARTMENT,
+					ActivityLogService.ACTIVITY_APPROVAL_CREATE_DEPARTMENT_DESC, deptDto.getCode(), pendingApproval.getId());
+
+			Document newDept = new Document();
+			newDept.append("createdUser", Utility.getCurrentUsername());
+			newDept.append("createdDate", System.currentTimeMillis());
+			newDept.append("code", deptDto.getCode());
+			newDept.append("name", deptDto.getName());
+			newDept.append("status", Constant.STATUS_ACTIVE);
+			newDept.append("note", deptDto.getNote());
+
+			MongoDatabase database = MongoDBConnection.getMongoDatabase();
+			MongoCollection<Document> collection = database.getCollection("departments");
+			collection.insertOne(newDept);
+		} catch (Exception e) {
+			AMLogger.logError(className, methodName, refId, e);
+			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+	
+	public void createDepartmentPA(HttpServletRequest request, DepartmentDTO deptDto, long refId) {
+		String methodName = "createDepartmentPA";
 		boolean existedDept = false;
 		try {
 			existedDept = deptRepository.existsDepartmentByCode(deptDto.getCode());
@@ -183,18 +217,6 @@ public class DepartmentService {
 				// send activity log
 				activityLogService.sendActivityLog(userInfo, request, ActivityLogService.ACTIVITY_CREATE_DEPARTMENT,
 						ActivityLogService.ACTIVITY_CREATE_DEPARTMENT_DESC, deptDto.getCode(), approvalId);
-
-				Document newDept = new Document();
-				newDept.append("createdUser", Utility.getCurrentUsername());
-				newDept.append("createdDate", System.currentTimeMillis());
-				newDept.append("code", deptDto.getCode());
-				newDept.append("name", deptDto.getName());
-				newDept.append("status", deptDto.getStatus());
-				newDept.append("note", deptDto.getNote());
-
-				MongoDatabase database = MongoDBConnection.getMongoDatabase();
-				MongoCollection<Document> collection = database.getCollection("departments");
-				collection.insertOne(newDept);
 			} catch (Exception e) {
 				AMLogger.logError(className, methodName, refId, e);
 				throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -205,7 +227,7 @@ public class DepartmentService {
 		}
 	}
 
-	public String insertDepartmentCreatePA(UserInfoDTO userInfo, DepartmentDTO deptDto, long refId) {
+	private String insertDepartmentCreatePA(UserInfoDTO userInfo, DepartmentDTO deptDto, long refId) {
 		String methodName = "insertDepartmentCreatePA";
 		String approvalId = "";
 		try {
@@ -216,12 +238,10 @@ public class DepartmentService {
 			pendingData.setServiceFunctionName(ApprovalConstant.DEPARTMENT_CREATE);
 			pendingData.setCollectionName("departments");
 			pendingData.setAction(Constant.APPROVAL_ACTION_CREATE);
-			pendingData.setValue(new Gson().toJson(deptDto));
+			pendingData.setPendingValue(new Gson().toJson(deptDto));
 
 			PendingApproval pendingApproval = new PendingApproval();
 			pendingApproval.setApiUrl(String.format(ApprovalConstant.APPROVAL_PENDING_URL, approvalId));
-			pendingApproval.setCreatorDate(System.currentTimeMillis());
-			pendingApproval.setCreatorUser(userInfo.getUsername());
 			pendingApproval.setFunctionCode(SystemFunctionCode.APPROVAL_DEPARTMENT_INFO_CREATE_CODE);
 			pendingApproval.setFunctionName(SystemFunctionCode.DEPARTMENT_INFO_CREATE_NAME);
 			pendingApproval.setDescription(
@@ -343,16 +363,18 @@ public class DepartmentService {
 		}
 	}
 
-	public void updateDepartment(HttpServletRequest request, String deptId, UpdateDepartmentDTO deptDto, long refId) {
+	public void updateDepartment(HttpServletRequest request, PendingApproval pendingApproval, long refId) {
 		String methodName = "udpdateDeparment";
 		try {
+			String deptId = pendingApproval.getPendingData().getQueryValue();
+			UpdateDepartmentDTO deptDto = new Gson().fromJson(pendingApproval.getPendingData().getPendingValue(), UpdateDepartmentDTO.class);
+			
 			// get redis user info
 			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
-			// insert data to pending_approvals
-			String approvalId = insertDepartmentUpdatePA(userInfo, deptId, deptDto, refId);
+			
 			// send activity log
-			activityLogService.sendActivityLog(userInfo, request, ActivityLogService.ACTIVITY_UPDATE_DEPARTMENT,
-					ActivityLogService.ACTIVITY_UPDATE_DEPARTMENT_DESC, getDepartmentCode(deptId), approvalId);
+			activityLogService.sendActivityLog(userInfo, request, ActivityLogService.ACTIVITY_APPROVAL_UPDATE_DEPARTMENT,
+					ActivityLogService.ACTIVITY_APPROVAL_UPDATE_DEPARTMENT_DESC, getDepartmentInfo(deptId).getCode(), pendingApproval.getId());
 
 			if (!deptRepository.existsById(deptId)) {
 				throw new CustomException(ErrorMessage.RESULT_NOT_FOUND, HttpStatus.OK);
@@ -380,8 +402,24 @@ public class DepartmentService {
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
+	
+	public void updateDepartmentPA(HttpServletRequest request, String deptId, ApprovalUpdateDepartmentDTO deptDto, long refId) {
+		String methodName = "updateDepartmentPA";
+		try {
+			// get redis user info
+			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
+			// insert data to pending_approvals
+			String approvalId = insertDepartmentUpdatePA(userInfo, deptId, deptDto, refId);
+			// send activity log
+			activityLogService.sendActivityLog(userInfo, request, ActivityLogService.ACTIVITY_UPDATE_DEPARTMENT,
+					ActivityLogService.ACTIVITY_UPDATE_DEPARTMENT_DESC, getDepartmentInfo(deptId).getCode(), approvalId);
+		} catch (Exception e) {
+			AMLogger.logError(className, methodName, refId, e);
+			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
 
-	public String insertDepartmentUpdatePA(UserInfoDTO userInfo, String deptId, UpdateDepartmentDTO deptDto,
+	private String insertDepartmentUpdatePA(UserInfoDTO userInfo, String deptId, ApprovalUpdateDepartmentDTO deptDto,
 			long refId) {
 		String methodName = "insertDepartmentUpdatePA";
 		String approvalId = "";
@@ -395,16 +433,15 @@ public class DepartmentService {
 			pendingData.setQueryField("_id");
 			pendingData.setQueryValue(deptId);
 			pendingData.setAction(Constant.APPROVAL_ACTION_UPDATE);
-			pendingData.setValue(new Gson().toJson(deptDto));
+			pendingData.setOldValue(new Gson().toJson(deptDto.getOldData()));
+			pendingData.setPendingValue(new Gson().toJson(deptDto.getPendingData()));
 
 			PendingApproval pendingApproval = new PendingApproval();
 			pendingApproval.setApiUrl(String.format(ApprovalConstant.APPROVAL_PENDING_URL, approvalId));
-			pendingApproval.setCreatorDate(System.currentTimeMillis());
-			pendingApproval.setCreatorUser(userInfo.getUsername());
 			pendingApproval.setFunctionCode(SystemFunctionCode.APPROVAL_DEPARTMENT_INFO_UPDATE_CODE);
 			pendingApproval.setFunctionName(SystemFunctionCode.DEPARTMENT_INFO_UPDATE_NAME);
 			pendingApproval.setDescription(SystemFunctionCode.getApprovalDescription(pendingApproval.getFunctionName(),
-					getDepartmentCode(deptId)));
+					getDepartmentInfo(deptId).getCode()));
 			pendingApproval.setStatus(Constant.APPROVAL_STATUS_PENDING);
 			pendingApproval.setNestedObjInfo(nestedObjInfo);
 			pendingApproval.setPendingData(pendingData);
@@ -416,8 +453,58 @@ public class DepartmentService {
 		return approvalId;
 	}
 
-	public void createDepartmentUser(HttpServletRequest request, String deptId, UserDTO deptUserDto, long refId) {
+	public void createDepartmentUser(HttpServletRequest request, PendingApproval pendingApproval, long refId) {
 		String methodName = "createDepartmentUser";
+		
+		try {
+			String deptId = pendingApproval.getPendingData().getQueryValue();
+			UserDTO deptUserDto = new Gson().fromJson(pendingApproval.getPendingData().getPendingValue(), UserDTO.class);
+			
+			// get redis user info
+			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
+			// send activity log
+			activityLogService.sendActivityLog(userInfo, request,
+					ActivityLogService.ACTIVITY_APPROVAL_CREATE_DEPARTMENT_USER,
+					ActivityLogService.ACTIVITY_APPROVAL_CREATE_DEPARTMENT_USER_DESC, deptUserDto.getUsername(), pendingApproval.getId());
+
+			MongoDatabase database = MongoDBConnection.getMongoDatabase();
+			MongoCollection<Document> collection = database.getCollection("departments");
+
+			Document newDeptUser = new Document();
+			newDeptUser.append("_id", new ObjectId());
+			newDeptUser.append("username", deptUserDto.getUsername());
+			newDeptUser.append("fullName", deptUserDto.getFullName());
+			newDeptUser.append("email", deptUserDto.getEmail());
+			newDeptUser.append("phoneNumber", deptUserDto.getPhoneNumber());
+			newDeptUser.append("status", Constant.STATUS_ACTIVE);
+			newDeptUser.append("note", deptUserDto.getNote());
+			newDeptUser.append("isPasswordExpiryCheck", deptUserDto.getIsPasswordExpiryCheck());
+			newDeptUser.append("passwordExpiryDays", deptUserDto.getPasswordExpiryDays());
+			newDeptUser.append("expiryAlertDays", deptUserDto.getExpiryAlertDays());
+			newDeptUser.append("createdUser", Utility.getCurrentUsername());
+			newDeptUser.append("createdDate", System.currentTimeMillis());
+			newDeptUser.append("lastModifiedDate", System.currentTimeMillis());
+
+			BasicDBObject query = new BasicDBObject();
+			query.put("_id", new ObjectId(deptId));
+
+			collection.updateOne(query, Updates.addToSet("users", newDeptUser));
+
+			// insert loginAdminUser
+			String password = Utility.generateRandomPassword();
+			String pin = Utility.generateRandomPin();
+			LoginAdminUser newLoginAdmUser = createLoginAdminUser(deptId, deptUserDto, password, pin, refId);
+
+			// send email
+			sendCreateNewUserEmail(deptUserDto.getEmail(), newLoginAdmUser.getUsername(), password, pin, refId);
+		} catch (Exception e) {
+			AMLogger.logError(className, methodName, refId, e);
+			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+	
+	public void createDepartmentUserPA(HttpServletRequest request, String deptId, UserDTO deptUserDto, long refId) {
+		String methodName = "createDepartmentUserPA";
 		boolean existedUser = false;
 		try {
 			existedUser = loginAdmUserRepo.existsLoginAdminUserByUsername(deptUserDto.getUsername());
@@ -436,37 +523,6 @@ public class DepartmentService {
 				activityLogService.sendActivityLog(userInfo, request,
 						ActivityLogService.ACTIVITY_CREATE_DEPARTMENT_USER,
 						ActivityLogService.ACTIVITY_CREATE_DEPARTMENT_USER_DESC, deptUserDto.getUsername(), approvalId);
-
-				MongoDatabase database = MongoDBConnection.getMongoDatabase();
-				MongoCollection<Document> collection = database.getCollection("departments");
-
-				Document newDeptUser = new Document();
-				newDeptUser.append("_id", new ObjectId());
-				newDeptUser.append("username", deptUserDto.getUsername());
-				newDeptUser.append("fullName", deptUserDto.getFullName());
-				newDeptUser.append("email", deptUserDto.getEmail());
-				newDeptUser.append("phoneNumber", deptUserDto.getPhoneNumber());
-				newDeptUser.append("status", Constant.STATUS_ACTIVE);
-				newDeptUser.append("note", deptUserDto.getNote());
-				newDeptUser.append("isPasswordExpiryCheck", deptUserDto.getIsPasswordExpiryCheck());
-				newDeptUser.append("passwordExpiryDays", deptUserDto.getPasswordExpiryDays());
-				newDeptUser.append("expiryAlertDays", deptUserDto.getExpiryAlertDays());
-				newDeptUser.append("createdUser", Utility.getCurrentUsername());
-				newDeptUser.append("createdDate", System.currentTimeMillis());
-				newDeptUser.append("lastModifiedDate", System.currentTimeMillis());
-
-				BasicDBObject query = new BasicDBObject();
-				query.put("_id", new ObjectId(deptId));
-
-				collection.updateOne(query, Updates.addToSet("users", newDeptUser));
-
-				// insert loginAdminUser
-				String password = Utility.generateRandomPassword();
-				String pin = Utility.generateRandomPin();
-				LoginAdminUser newLoginAdmUser = createLoginAdminUser(deptId, deptUserDto, password, pin, refId);
-
-				// send email
-				sendCreateNewUserEmail(deptUserDto.getEmail(), newLoginAdmUser.getUsername(), password, pin, refId);
 			} catch (Exception e) {
 				AMLogger.logError(className, methodName, refId, e);
 				throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -477,7 +533,7 @@ public class DepartmentService {
 		}
 	}
 
-	public String insertDepartmentUserCreatePA(UserInfoDTO userInfo, String deptId, UserDTO deptUserDto,
+	private String insertDepartmentUserCreatePA(UserInfoDTO userInfo, String deptId, UserDTO deptUserDto,
 			long refId) {
 		String methodName = "insertDepartmentUserCreatePA";
 		String approvalId = "";
@@ -491,12 +547,10 @@ public class DepartmentService {
 			pendingData.setQueryField("_id");
 			pendingData.setQueryValue(deptId);
 			pendingData.setAction(Constant.APPROVAL_ACTION_CREATE);
-			pendingData.setValue(new Gson().toJson(deptUserDto));
+			pendingData.setPendingValue(new Gson().toJson(deptUserDto));
 
 			PendingApproval pendingApproval = new PendingApproval();
 			pendingApproval.setApiUrl(String.format(ApprovalConstant.APPROVAL_PENDING_URL, approvalId));
-			pendingApproval.setCreatorDate(System.currentTimeMillis());
-			pendingApproval.setCreatorUser(userInfo.getUsername());
 			pendingApproval.setFunctionCode(SystemFunctionCode.APPROVAL_ADMIN_USER_CREATE_CODE);
 			pendingApproval.setFunctionName(SystemFunctionCode.ADMIN_USER_CREATE_NAME);
 			pendingApproval.setDescription(SystemFunctionCode.getApprovalDescription(pendingApproval.getFunctionName(),
@@ -516,11 +570,13 @@ public class DepartmentService {
 			long refId) {
 		String methodName = "createLoginAdminUser";
 		try {
+			DepartmentDTO deptDto = getDepartmentInfo(deptId);
 			LoginAdminUser loginAdmUser = modelMapper.map(deptUserDto, LoginAdminUser.class);
 			loginAdmUser.setPassword(passwordEncoder.encode(password));
 			loginAdmUser.setPin(passwordEncoder.encode(pin));
-			loginAdmUser.setStatus(deptUserDto.getStatus());
-			loginAdmUser.setDeptCode(getDepartmentCode(deptId));
+			loginAdmUser.setStatus(Constant.STATUS_ACTIVE);
+			loginAdmUser.setDeptCode(deptDto.getCode());
+			loginAdmUser.setDeptName(deptDto.getName());
 			loginAdmUser.setCreatedUser(Utility.getCurrentUsername());
 			loginAdmUser.setCreatedDate(System.currentTimeMillis());
 			LoginAdminUser newLoginAdmUser = loginAdmUserRepo.save(loginAdmUser);
@@ -553,17 +609,18 @@ public class DepartmentService {
 		}
 	}
 
-	public void updateDepartmentUser(HttpServletRequest request, String deptId, String deptUserId,
-			UpdateUserDTO deptUserDto, long refId) {
+	public void updateDepartmentUser(HttpServletRequest request, PendingApproval pendingAprroval, long refId) {
 		String methodName = "updateDepartmentUser";
 		try {
+			String deptId = pendingAprroval.getPendingData().getQueryValue();
+			String deptUserId = pendingAprroval.getPendingData().getQueryValue2();
+			UpdateUserDTO deptUserDto = new Gson().fromJson(pendingAprroval.getPendingData().getPendingValue(), UpdateUserDTO.class);
+			
 			// get redis user info
 			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
-			// insert data to pending_approvals
-			String approvalId = insertDepartmentUserUpdatePA(userInfo, deptId, deptUserId, deptUserDto, refId);
 			// send activity log
-			activityLogService.sendActivityLog(userInfo, request, ActivityLogService.ACTIVITY_UPDATE_DEPARTMENT_USER,
-					ActivityLogService.ACTIVITY_UPDATE_DEPARTMENT_USER_DESC, String.valueOf(deptUserId), approvalId);
+			activityLogService.sendActivityLog(userInfo, request, ActivityLogService.ACTIVITY_APPROVAL_UPDATE_DEPARTMENT_USER,
+					ActivityLogService.ACTIVITY_APPROVAL_UPDATE_DEPARTMENT_USER_DESC, String.valueOf(deptUserId), pendingAprroval.getId());
 
 			MongoDatabase database = MongoDBConnection.getMongoDatabase();
 			MongoCollection<Document> collection = database.getCollection("departments");
@@ -603,9 +660,26 @@ public class DepartmentService {
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
+	
+	public void updateDepartmentUserPA(HttpServletRequest request, String deptId, String deptUserId,
+			ApprovalUpdateUserDTO deptUserDto, long refId) {
+		String methodName = "updateDepartmentUserPA";
+		try {
+			// get redis user info
+			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
+			// insert data to pending_approvals
+			String approvalId = insertDepartmentUserUpdatePA(userInfo, deptId, deptUserId, deptUserDto, refId);
+			// send activity log
+			activityLogService.sendActivityLog(userInfo, request, ActivityLogService.ACTIVITY_UPDATE_DEPARTMENT_USER,
+					ActivityLogService.ACTIVITY_UPDATE_DEPARTMENT_USER_DESC, String.valueOf(deptUserId), approvalId);
+		} catch (Exception e) {
+			AMLogger.logError(className, methodName, refId, e);
+			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
 
-	public String insertDepartmentUserUpdatePA(UserInfoDTO userInfo, String deptId, String deptUserId,
-			UpdateUserDTO deptUserDto, long refId) {
+	private String insertDepartmentUserUpdatePA(UserInfoDTO userInfo, String deptId, String deptUserId,
+			ApprovalUpdateUserDTO deptUserDto, long refId) {
 		String methodName = "insertDepartmentUserUpdatePA";
 		String approvalId = "";
 		try {
@@ -620,13 +694,12 @@ public class DepartmentService {
 			pendingData.setQueryField2("users._id");
 			pendingData.setQueryValue2(deptUserId);
 			pendingData.setAction(Constant.APPROVAL_ACTION_UPDATE);
-			pendingData.setValue(new Gson().toJson(deptUserDto));
+			pendingData.setOldValue(new Gson().toJson(deptUserDto.getOldData()));
+			pendingData.setPendingValue(new Gson().toJson(deptUserDto.getPendingData()));
 
 			String username = getDepartmentUser(deptId, deptUserId, refId).getUsername();
 			PendingApproval pendingApproval = new PendingApproval();
 			pendingApproval.setApiUrl(String.format(ApprovalConstant.APPROVAL_PENDING_URL, approvalId));
-			pendingApproval.setCreatorDate(System.currentTimeMillis());
-			pendingApproval.setCreatorUser(userInfo.getUsername());
 			pendingApproval.setFunctionCode(SystemFunctionCode.APPROVAL_ADMIN_USER_UPDATE_CODE);
 			pendingApproval.setFunctionName(SystemFunctionCode.ADMIN_USER_UPDATE_NAME);
 			pendingApproval.setDescription(
@@ -664,19 +737,20 @@ public class DepartmentService {
 		}
 	}
 
-	public void saveDepartmentUserRoles(HttpServletRequest request, String deptId, String deptUserId,
-			UserRolesDTO userDto, long refId) {
+	public void saveDepartmentUserRoles(HttpServletRequest request, PendingApproval pendingApproval, long refId) {
 		String methodName = "saveDepartmentUserRoles";
 		try {
+			String deptId = pendingApproval.getPendingData().getQueryValue();
+			String deptUserId = pendingApproval.getPendingData().getQueryValue2();
+			UserRolesDTO userDto = new Gson().fromJson(pendingApproval.getPendingData().getPendingValue(), UserRolesDTO.class);
+			
 			// get redis user info
 			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
-			// insert data to pending_approvals
-			String approvalId = insertDeptUserRoleCreatePA(userInfo, deptId, deptUserId, userDto, refId);
 			// send activity log
 			activityLogService.sendActivityLog(userInfo, request,
-					ActivityLogService.ACTIVITY_CREATE_DEPARTMENT_USER_ROLE,
-					ActivityLogService.ACTIVITY_CREATE_DEPARTMENT_USER_ROLE_DESC, String.valueOf(deptUserId),
-					approvalId);
+					ActivityLogService.ACTIVITY_APPROVAL_CREATE_DEPARTMENT_USER_ROLE,
+					ActivityLogService.ACTIVITY_APPROVAL_CREATE_DEPARTMENT_USER_ROLE_DESC, String.valueOf(deptUserId),
+					pendingApproval.getId());
 
 			MongoDatabase database = MongoDBConnection.getMongoDatabase();
 			MongoCollection<Document> collection = database.getCollection("departments");
@@ -699,9 +773,28 @@ public class DepartmentService {
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
+	
+	public void saveDepartmentUserRolesPA(HttpServletRequest request, String deptId, String deptUserId,
+			ApprovalUserRolesDTO userDto, long refId) {
+		String methodName = "saveDepartmentUserRolesPA";
+		try {
+			// get redis user info
+			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
+			// insert data to pending_approvals
+			String approvalId = insertDeptUserRoleCreatePA(userInfo, deptId, deptUserId, userDto, refId);
+			// send activity log
+			activityLogService.sendActivityLog(userInfo, request,
+					ActivityLogService.ACTIVITY_CREATE_DEPARTMENT_USER_ROLE,
+					ActivityLogService.ACTIVITY_CREATE_DEPARTMENT_USER_ROLE_DESC, String.valueOf(deptUserId),
+					approvalId);
+		} catch (Exception e) {
+			AMLogger.logError(className, methodName, refId, e);
+			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
 
-	public String insertDeptUserRoleCreatePA(UserInfoDTO userInfo, String deptId, String deptUserId,
-			UserRolesDTO deptUserDto, long refId) {
+	private String insertDeptUserRoleCreatePA(UserInfoDTO userInfo, String deptId, String deptUserId,
+			ApprovalUserRolesDTO deptUserDto, long refId) {
 		String methodName = "insertDeptUserRoleCreatePA";
 		String approvalId = "";
 		try {
@@ -716,16 +809,15 @@ public class DepartmentService {
 			pendingData.setQueryField2("users._id");
 			pendingData.setQueryValue2(deptUserId);
 			pendingData.setAction(Constant.APPROVAL_ACTION_CREATE);
-			pendingData.setValue(new Gson().toJson(deptUserDto));
+			pendingData.setOldValue(new Gson().toJson(deptUserDto.getOldData()));
+			pendingData.setPendingValue(new Gson().toJson(deptUserDto.getPendingData()));
 
 			PendingApproval pendingApproval = new PendingApproval();
 			pendingApproval.setApiUrl(String.format(ApprovalConstant.APPROVAL_PENDING_URL, approvalId));
-			pendingApproval.setCreatorDate(System.currentTimeMillis());
-			pendingApproval.setCreatorUser(userInfo.getUsername());
 			pendingApproval.setFunctionCode(SystemFunctionCode.APPROVAL_ADMIN_USER_ROLE_ASSIGN_CREATE_CODE);
 			pendingApproval.setFunctionName(SystemFunctionCode.ADMIN_USER_ROLE_ASSIGN_CREATE_NAME);
 			pendingApproval.setDescription(SystemFunctionCode.getApprovalDescription(pendingApproval.getFunctionName(),
-					userInfo.getUsername()));
+					getUsername(deptUserId)));
 			pendingApproval.setStatus(Constant.APPROVAL_STATUS_PENDING);
 			pendingApproval.setNestedObjInfo(nestedObjInfo);
 			pendingApproval.setPendingData(pendingData);
@@ -737,19 +829,21 @@ public class DepartmentService {
 		return approvalId;
 	}
 
-	public void saveDepartmentUserFunctions(HttpServletRequest request, String deptId, String deptUserId,
-			FunctionsDTO userDto, long refId) {
+	public void saveDepartmentUserFunctions(HttpServletRequest request, PendingApproval pendingApproval, long refId) {
 		String methodName = "saveDepartmentUserFunctions";
+		
 		try {
+			String deptId = pendingApproval.getPendingData().getQueryValue();
+			String deptUserId = pendingApproval.getPendingData().getQueryValue2();
+			FunctionsDTO userDto = new Gson().fromJson(pendingApproval.getPendingData().getPendingValue(), FunctionsDTO.class);
+			
 			// get redis user info
 			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
-			// insert data to pending_approvals
-			String approvalId = insertDeptUserFunctionsCreatePA(userInfo, deptId, deptUserId, userDto, refId);
 			// send activity log
 			activityLogService.sendActivityLog(userInfo, request,
 					ActivityLogService.ACTIVITY_CREATE_DEPARTMENT_USER_FUNCTIONS,
 					ActivityLogService.ACTIVITY_CREATE_DEPARTMENT_USER_FUNCTIONS_DESC, String.valueOf(deptUserId),
-					approvalId);
+					pendingApproval.getId());
 
 			MongoDatabase database = MongoDBConnection.getMongoDatabase();
 			MongoCollection<Document> collection = database.getCollection("departments");
@@ -772,9 +866,28 @@ public class DepartmentService {
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
+	
+	public void saveDepartmentUserFunctionsPA(HttpServletRequest request, String deptId, String deptUserId,
+			ApprovalFunctionsDTO userDto, long refId) {
+		String methodName = "saveDepartmentUserFunctionsPA";
+		try {
+			// get redis user info
+			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
+			// insert data to pending_approvals
+			String approvalId = insertDeptUserFunctionsCreatePA(userInfo, deptId, deptUserId, userDto, refId);
+			// send activity log
+			activityLogService.sendActivityLog(userInfo, request,
+					ActivityLogService.ACTIVITY_CREATE_DEPARTMENT_USER_FUNCTIONS,
+					ActivityLogService.ACTIVITY_CREATE_DEPARTMENT_USER_FUNCTIONS_DESC, String.valueOf(deptUserId),
+					approvalId);
+		} catch (Exception e) {
+			AMLogger.logError(className, methodName, refId, e);
+			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
 
-	public String insertDeptUserFunctionsCreatePA(UserInfoDTO userInfo, String deptId, String deptUserId,
-			FunctionsDTO deptUserDto, long refId) {
+	private String insertDeptUserFunctionsCreatePA(UserInfoDTO userInfo, String deptId, String deptUserId,
+			ApprovalFunctionsDTO deptUserDto, long refId) {
 		String methodName = "insertDeptUserFunctionsCreatePA";
 		String approvalId = "";
 		try {
@@ -789,16 +902,15 @@ public class DepartmentService {
 			pendingData.setQueryField2("users._id");
 			pendingData.setQueryValue2(deptUserId);
 			pendingData.setAction(Constant.APPROVAL_ACTION_CREATE);
-			pendingData.setValue(new Gson().toJson(deptUserDto));
+			pendingData.setOldValue(new Gson().toJson(deptUserDto.getOldData()));
+			pendingData.setPendingValue(new Gson().toJson(deptUserDto.getPendingData()));
 
 			PendingApproval pendingApproval = new PendingApproval();
 			pendingApproval.setApiUrl(String.format(ApprovalConstant.APPROVAL_PENDING_URL, approvalId));
-			pendingApproval.setCreatorDate(System.currentTimeMillis());
-			pendingApproval.setCreatorUser(userInfo.getUsername());
 			pendingApproval.setFunctionCode(SystemFunctionCode.APPROVAL_ADMIN_USER_FUNCTIONS_ASSIGN_CREATE_CODE);
 			pendingApproval.setFunctionName(SystemFunctionCode.ADMIN_USER_FUNCTIONS_ASSIGN_CREATE_NAME);
 			pendingApproval.setDescription(SystemFunctionCode.getApprovalDescription(pendingApproval.getFunctionName(),
-					userInfo.getUsername()));
+					getUsername(deptUserId)));
 			pendingApproval.setStatus(Constant.APPROVAL_STATUS_PENDING);
 			pendingApproval.setNestedObjInfo(nestedObjInfo);
 			pendingApproval.setPendingData(pendingData);
@@ -810,26 +922,23 @@ public class DepartmentService {
 		return approvalId;
 	}
 
-	public void changeUserDepartment(HttpServletRequest request, String fromDeptId, String toDeptId, String username,
-			long refId) {
+	public void changeUserDepartment(HttpServletRequest request, PendingApproval pendingApproval, long refId) {
 		String methodName = "changeUserDepartment";
-		if (!deptRepository.existsById(fromDeptId) || !deptRepository.existsById(toDeptId)) {
-			throw new CustomException(ErrorMessage.INVALID_REQUEST, HttpStatus.BAD_REQUEST);
-		}
+		String fromDeptCode = pendingApproval.getPendingData().getQueryValue();
+		String toDeptCode = pendingApproval.getPendingData().getPendingValue();
+		String username = pendingApproval.getPendingData().getQueryValue2();
 		try {
 			// get redis user info
 			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
-			// insert data to pending_approvals
-			String approvalId = insertUserDepartmentChangePA(userInfo, fromDeptId, toDeptId, username, refId);
 			// send activity log
-			activityLogService.sendActivityLog(userInfo, request, ActivityLogService.ACTIVITY_UPDATE_USER_DEPARTMENT,
-					ActivityLogService.ACTIVITY_UPDATE_USER_DEPARTMENT_DESC, username, approvalId);
+			activityLogService.sendActivityLog(userInfo, request, ActivityLogService.ACTIVITY_APPROVAL_UPDATE_USER_DEPARTMENT,
+					ActivityLogService.ACTIVITY_APPROVAL_UPDATE_USER_DEPARTMENT_DESC, username, pendingApproval.getId());
 
 			MongoDatabase database = MongoDBConnection.getMongoDatabase();
 			MongoCollection<Document> deptCollection = database.getCollection("departments");
 
 			List<? extends Bson> pipeline = Arrays.asList(
-					new Document().append("$match", new Document().append("_id", new ObjectId(fromDeptId))),
+					new Document().append("$match", new Document().append("code", fromDeptCode)),
 					new Document().append("$unwind", new Document().append("path", "$users")),
 					new Document().append("$match", new Document().append("users.username", username)),
 					new Document().append("$project", new Document().append("_id", 0.0).append("users", 1.0)),
@@ -842,14 +951,14 @@ public class DepartmentService {
 			}
 			
 			BasicDBObject deptQuery1 = new BasicDBObject();
-			deptQuery1.put("_id", new ObjectId(fromDeptId));
+			deptQuery1.put("code", fromDeptCode);
 
 			BasicDBObject fields = new BasicDBObject("users", new BasicDBObject("username", username));
 			BasicDBObject update = new BasicDBObject("$pull", fields);
 			deptCollection.findOneAndUpdate(deptQuery1, update);
 
 			BasicDBObject deptQuery2 = new BasicDBObject();
-			deptQuery2.put("_id", new ObjectId(toDeptId));
+			deptQuery2.put("code", toDeptCode);
 
 			deptCollection.updateOne(deptQuery2, Updates.addToSet("users", deptUserDoc));
 
@@ -858,7 +967,7 @@ public class DepartmentService {
 			loginAdmUserQuery.put("username", username);
 
 			BasicDBObject newLoginAdmUser = new BasicDBObject();
-			newLoginAdmUser.put("deptCode", getDepartmentCode(toDeptId));
+			newLoginAdmUser.put("deptCode", toDeptCode);
 
 			BasicDBObject updateObj = new BasicDBObject();
 			updateObj.put("$set", newLoginAdmUser);
@@ -871,29 +980,61 @@ public class DepartmentService {
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
+	
+	public void changeUserDepartmentPA(HttpServletRequest request, String fromDeptId, String toDeptId, String username,
+			long refId) {
+		String methodName = "changeUserDepartmentPA";
+		if (!deptRepository.existsById(fromDeptId) || !deptRepository.existsById(toDeptId)) {
+			throw new CustomException(ErrorMessage.INVALID_REQUEST, HttpStatus.BAD_REQUEST);
+		}
+		try {
+			// get redis user info
+			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
+			// insert data to pending_approvals
+			String approvalId = insertUserDepartmentChangePA(userInfo, fromDeptId, toDeptId, username, refId);
+			// send activity log
+			activityLogService.sendActivityLog(userInfo, request, ActivityLogService.ACTIVITY_UPDATE_USER_DEPARTMENT,
+					ActivityLogService.ACTIVITY_UPDATE_USER_DEPARTMENT_DESC, username, approvalId);
+		} catch (CustomException e) {
+			throw e;
+		} catch (Exception e) {
+			AMLogger.logError(className, methodName, refId, e);
+			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
 
-	public String insertUserDepartmentChangePA(UserInfoDTO userInfo, String fromDeptId, String toDeptId,
+	private String insertUserDepartmentChangePA(UserInfoDTO userInfo, String fromDeptId, String toDeptId,
 			String username, long refId) {
 		String methodName = "insertDeptUserFunctionsCreatePA";
 		String approvalId = "";
 		try {
+			String fromDeptCode = getDepartmentInfo(fromDeptId).getCode();
+			String toDeptCode = getDepartmentInfo(toDeptId).getCode();
+			
+			ChangeDepartmentDTO changeDeptDto = new ChangeDepartmentDTO();
+			changeDeptDto.setFromDeptCode(fromDeptCode);
+			changeDeptDto.setUsername(userInfo.getUsername());
+			changeDeptDto.setFullName(userInfo.getFullName());
+			changeDeptDto.setPhoneNumber(userInfo.getPhoneNumber());
+			changeDeptDto.setEmail(userInfo.getEmail());
+			
 			NestedObjectInfo nestedObjInfo = new NestedObjectInfo();
 			nestedObjInfo.setDeptCode(userInfo.getDeptCode());
-
+			
+			
 			PendingData pendingData = new PendingData();
 			pendingData.setServiceFunctionName(ApprovalConstant.DEPARTMENT_CHANGE_USER_DEPT);
 			pendingData.setCollectionName("departments");
-			pendingData.setQueryField("_id");
-			pendingData.setQueryValue(fromDeptId);
+			pendingData.setQueryField("code");
+			pendingData.setQueryValue(fromDeptCode);
 			pendingData.setQueryField2("users.username");
 			pendingData.setQueryValue2(username);
 			pendingData.setAction(Constant.APPROVAL_ACTION_UPDATE);
-			pendingData.setValue(toDeptId);
+			pendingData.setOldValue(new Gson().toJson(changeDeptDto));
+			pendingData.setPendingValue(toDeptCode);
 
 			PendingApproval pendingApproval = new PendingApproval();
 			pendingApproval.setApiUrl(String.format(ApprovalConstant.APPROVAL_PENDING_URL, approvalId));
-			pendingApproval.setCreatorDate(System.currentTimeMillis());
-			pendingApproval.setCreatorUser(userInfo.getUsername());
 			pendingApproval.setFunctionCode(SystemFunctionCode.APPROVAL_ADMIN_USER_DEPT_CHANGE_UPDATE_CODE);
 			pendingApproval.setFunctionName(SystemFunctionCode.ADMIN_USER_DEPT_CHANGE_UPDATE_NAME);
 			pendingApproval.setDescription(
@@ -909,7 +1050,7 @@ public class DepartmentService {
 		return approvalId;
 	}
 	
-	private String getDepartmentCode(String deptId) {
+	private DepartmentDTO getDepartmentInfo(String deptId) {
 		MongoDatabase database = MongoDBConnection.getMongoDatabase();
 		MongoCollection<Document> deptCollection = database.getCollection("departments");
 		
@@ -917,10 +1058,41 @@ public class DepartmentService {
 		query.append("_id", new ObjectId(deptId));
 		
 		Document projection = new Document();
+		projection.append("_id", 0.0);
 		projection.append("code", 1.0);
+		projection.append("name", 1.0);
 		
 		Document result = deptCollection.find(query).projection(projection).first();
-		DepartmentDTO dept = mongoTemplate.getConverter().read(DepartmentDTO.class, result);
-		return dept.getCode();
+		DepartmentDTO deptDto = mongoTemplate.getConverter().read(DepartmentDTO.class, result);
+		return deptDto;
+	}
+	
+	private String getUsername(String deptUserId) {
+		MongoDatabase database = MongoDBConnection.getMongoDatabase();
+		MongoCollection<Document> deptCollection = database.getCollection("departments");
+		
+		List<? extends Bson> pipeline = Arrays.asList(
+                new Document()
+                        .append("$match", new Document()
+                                .append("users._id", new ObjectId(deptUserId))
+                        ), 
+                new Document()
+                        .append("$unwind", new Document()
+                                .append("path", "$users")
+                        ), 
+                new Document()
+                        .append("$match", new Document()
+                                .append("users._id", new ObjectId(deptUserId))
+                        ), 
+                new Document()
+                        .append("$project", new Document()
+                                .append("_id", 0.0)
+                                .append("username", "$users.username")
+                        )
+        );
+		
+		Document result = deptCollection.aggregate(pipeline).first();
+		UserDTO userDto = mongoTemplate.getConverter().read(UserDTO.class, result);
+		return userDto.getUsername();
 	}
 }

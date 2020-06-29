@@ -17,7 +17,7 @@ import com.newgen.am.common.ErrorMessage;
 import com.newgen.am.dto.AdminDataObj;
 import com.newgen.am.dto.AdminResponseObj;
 import com.newgen.am.dto.ListElementDTO;
-import com.newgen.am.dto.NewsUserInfo;
+import com.newgen.am.dto.UserBaseInfo;
 import com.newgen.am.model.RoleFunction;
 import com.newgen.am.service.CommonService;
 
@@ -32,8 +32,7 @@ public class CommonController {
 	public AdminResponseObj getMemberList(HttpServletRequest request) {
 		String methodName = "getMemberList";
 		long refId = System.currentTimeMillis();
-		AMLogger.logMessage(className, methodName, refId,
-				String.format("REQUEST_API: [GET]/admin/memberList"));
+		AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [GET]/admin/memberList");
 
 		List<ListElementDTO> memberList = commonSerivce.getMemberList(request, refId);
 		AdminResponseObj response = new AdminResponseObj();
@@ -49,8 +48,7 @@ public class CommonController {
 	public AdminResponseObj getBrokerList(HttpServletRequest request) {
 		String methodName = "getBrokerList";
 		long refId = System.currentTimeMillis();
-		AMLogger.logMessage(className, methodName, refId,
-				String.format("REQUEST_API: [GET]/admin/brokerList"));
+		AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [GET]/admin/brokerList");
 
 		List<ListElementDTO> brokerList = commonSerivce.getBrokerList(request, refId);
 		AdminResponseObj response = new AdminResponseObj();
@@ -66,8 +64,7 @@ public class CommonController {
 	public AdminResponseObj getCollaboratorList(HttpServletRequest request) {
 		String methodName = "getCollaboratorList";
 		long refId = System.currentTimeMillis();
-		AMLogger.logMessage(className, methodName, refId,
-				String.format("REQUEST_API: [GET]/admin/collaboratorList"));
+		AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [GET]/admin/collaboratorList");
 
 		List<ListElementDTO> collaboratorList = commonSerivce.getCollaboratorList(request, refId);
 		AdminResponseObj response = new AdminResponseObj();
@@ -83,8 +80,7 @@ public class CommonController {
 	public AdminResponseObj getInvestorList(HttpServletRequest request) {
 		String methodName = "getInvestorList";
 		long refId = System.currentTimeMillis();
-		AMLogger.logMessage(className, methodName, refId,
-				String.format("REQUEST_API: [GET]/admin/investorList"));
+		AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [GET]/admin/investorList");
 
 		List<ListElementDTO> investorList = commonSerivce.getInvestorList(request, refId);
 		AdminResponseObj response = new AdminResponseObj();
@@ -100,10 +96,9 @@ public class CommonController {
 	public AdminResponseObj getAdminUserList(HttpServletRequest request) {
 		String methodName = "getAdminUserList";
 		long refId = System.currentTimeMillis();
-		AMLogger.logMessage(className, methodName, refId,
-				String.format("REQUEST_API: [GET]/admin/adminUserList"));
+		AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [GET]/admin/adminUserList");
 
-		List<NewsUserInfo> userList = commonSerivce.getAdminUserList(refId);
+		List<UserBaseInfo> userList = commonSerivce.getAdminUserList(refId);
 		AdminResponseObj response = new AdminResponseObj();
 		response.setStatus(Constant.RESPONSE_OK);
         response.setData(new AdminDataObj());
@@ -117,10 +112,9 @@ public class CommonController {
 	public AdminResponseObj getMemberUserList(HttpServletRequest request) {
 		String methodName = "getMemberUserList";
 		long refId = System.currentTimeMillis();
-		AMLogger.logMessage(className, methodName, refId,
-				String.format("REQUEST_API: [GET]/admin/memberUserList"));
+		AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [GET]/admin/memberUserList");
 
-		List<NewsUserInfo> userList = commonSerivce.getMemberUserList(refId);
+		List<UserBaseInfo> userList = commonSerivce.getMemberUserList(refId);
 		AdminResponseObj response = new AdminResponseObj();
 		response.setStatus(Constant.RESPONSE_OK);
         response.setData(new AdminDataObj());
@@ -134,10 +128,9 @@ public class CommonController {
 	public AdminResponseObj getBrokerUserList(HttpServletRequest request) {
 		String methodName = "getBrokerUserList";
 		long refId = System.currentTimeMillis();
-		AMLogger.logMessage(className, methodName, refId,
-				String.format("REQUEST_API: [GET]/admin/brokerUserList"));
+		AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [GET]/admin/brokerUserList");
 
-		List<NewsUserInfo> userList = commonSerivce.getBrokerUserList(refId);
+		List<UserBaseInfo> userList = commonSerivce.getBrokerUserList(refId);
 		AdminResponseObj response = new AdminResponseObj();
 		response.setStatus(Constant.RESPONSE_OK);
         response.setData(new AdminDataObj());
@@ -151,10 +144,9 @@ public class CommonController {
 	public AdminResponseObj getCollaboratorUserList(HttpServletRequest request) {
 		String methodName = "getCollaboratorUserList";
 		long refId = System.currentTimeMillis();
-		AMLogger.logMessage(className, methodName, refId,
-				String.format("REQUEST_API: [GET]/admin/collaboratorUserList"));
+		AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [GET]/admin/collaboratorUserList");
 
-		List<NewsUserInfo> userList = commonSerivce.getCollaboratorUserList(refId);
+		List<UserBaseInfo> userList = commonSerivce.getCollaboratorUserList(refId);
 		AdminResponseObj response = new AdminResponseObj();
 		response.setStatus(Constant.RESPONSE_OK);
         response.setData(new AdminDataObj());
@@ -168,10 +160,89 @@ public class CommonController {
 	public AdminResponseObj getInvestorUserList(HttpServletRequest request) {
 		String methodName = "getInvestorUserList";
 		long refId = System.currentTimeMillis();
-		AMLogger.logMessage(className, methodName, refId,
-				String.format("REQUEST_API: [GET]/admin/investorUserList"));
+		AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [GET]/admin/investorUserList");
 
-		List<NewsUserInfo> userList = commonSerivce.getInvestorUserList(refId);
+		List<UserBaseInfo> userList = commonSerivce.getInvestorUserList(refId);
+		AdminResponseObj response = new AdminResponseObj();
+		response.setStatus(Constant.RESPONSE_OK);
+        response.setData(new AdminDataObj());
+        response.getData().setInvestorUserList(userList);
+
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+		return response;
+	}
+	
+	@GetMapping("/admin/usersByDeptCode/{deptCode}")
+	public AdminResponseObj getUsersByDeptCode(@PathVariable String deptCode) {
+		String methodName = "getUsersByDeptCode";
+		long refId = System.currentTimeMillis();
+		AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [GET]/admin/usersByDeptCode/" + deptCode);
+
+		List<UserBaseInfo> userList = commonSerivce.getUsersByDeptCode(deptCode, refId);
+		AdminResponseObj response = new AdminResponseObj();
+		response.setStatus(Constant.RESPONSE_OK);
+        response.setData(new AdminDataObj());
+        response.getData().setAdminUserList(userList);
+
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+		return response;
+	}
+	
+	@GetMapping("/admin/usersByMemberCode/{memberCode}")
+	public AdminResponseObj getUsersByMemberCode(@PathVariable String memberCode) {
+		String methodName = "getUsersByMemberCode";
+		long refId = System.currentTimeMillis();
+		AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [GET]/admin/usersByMemberCode/" + memberCode);
+
+		List<UserBaseInfo> userList = commonSerivce.getUsersByMemberCode(memberCode, refId);
+		AdminResponseObj response = new AdminResponseObj();
+		response.setStatus(Constant.RESPONSE_OK);
+        response.setData(new AdminDataObj());
+        response.getData().setMemberUserList(userList);
+
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+		return response;
+	}
+	
+	@GetMapping("/admin/usersByBrokerCode/{brokerCode}")
+	public AdminResponseObj getUsersByBrokerCode(@PathVariable String brokerCode) {
+		String methodName = "getUsersByBrokerCode";
+		long refId = System.currentTimeMillis();
+		AMLogger.logMessage(className, methodName, refId,"REQUEST_API: [GET]/admin/usersByBrokerCode/" + brokerCode);
+
+		List<UserBaseInfo> userList = commonSerivce.getUsersByBrokerCode(brokerCode, refId);
+		AdminResponseObj response = new AdminResponseObj();
+		response.setStatus(Constant.RESPONSE_OK);
+        response.setData(new AdminDataObj());
+        response.getData().setBrokerUserList(userList);
+
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+		return response;
+	}
+	
+	@GetMapping("/admin/usersByCollaboratorCode/{collaboratorCode}")
+	public AdminResponseObj getUsersByCollaboratorCode(@PathVariable String collaboratorCode) {
+		String methodName = "getUsersByCollaboratorCode";
+		long refId = System.currentTimeMillis();
+		AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [GET]/admin/usersByCollaboratorCode/" + collaboratorCode);
+
+		List<UserBaseInfo> userList = commonSerivce.getUsersByCollaboratorCode(collaboratorCode, refId);
+		AdminResponseObj response = new AdminResponseObj();
+		response.setStatus(Constant.RESPONSE_OK);
+        response.setData(new AdminDataObj());
+        response.getData().setCollaboratorUserList(userList);
+
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+		return response;
+	}
+	
+	@GetMapping("/admin/usersByInvestorCode/{investorCode}")
+	public AdminResponseObj getUsersByInvestorCode(@PathVariable String investorCode) {
+		String methodName = "getUsersByInvestorCode";
+		long refId = System.currentTimeMillis();
+		AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [GET]/admin/usersByInvestorCode/" + investorCode);
+
+		List<UserBaseInfo> userList = commonSerivce.getUsersByInvestorCode(investorCode, refId);
 		AdminResponseObj response = new AdminResponseObj();
 		response.setStatus(Constant.RESPONSE_OK);
         response.setData(new AdminDataObj());

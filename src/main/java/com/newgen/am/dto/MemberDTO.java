@@ -12,6 +12,7 @@ import com.newgen.am.model.Commodity;
 import com.newgen.am.model.CommodityFee;
 import com.newgen.am.model.Company;
 import com.newgen.am.model.Contact;
+import com.newgen.am.model.GeneralFee;
 import com.newgen.am.model.MarginRatioAlert;
 import com.newgen.am.model.MemberUser;
 import com.newgen.am.model.RiskParameters;
@@ -29,7 +30,7 @@ public class MemberDTO implements Serializable{
     @Size(min = 3, max = 3, message = "Invalid format.", groups = LengthGroup.class)
     private String code;
     @NotEmpty(message = "Required.")
-    @Size(min = 1, max = 200, message = "Invalid format.", groups = LengthGroup.class)
+    @Size(min = 1, max = 25, message = "Invalid format.", groups = LengthGroup.class)
     private String name;
     @NotEmpty(message = "Required.")
     @Size(min = 1, max = 20, message = "Invalid format.", groups = LengthGroup.class)
@@ -47,8 +48,7 @@ public class MemberDTO implements Serializable{
     private int defaultPositionLimit;
     private long defaultCommodityFee;
     private double marginMultiplier;
-    private long generalFee;
-    private long otherFee;
+    private List<GeneralFee> generalFees;
     private MarginRatioAlert marginRatioAlert;
     private RiskParameters riskParameters;
     private List<Commodity> commodities;
@@ -146,17 +146,11 @@ public class MemberDTO implements Serializable{
 	public void setMarginMultiplier(double marginMultiplier) {
 		this.marginMultiplier = marginMultiplier;
 	}
-	public long getGeneralFee() {
-		return generalFee;
+	public List<GeneralFee> getGeneralFees() {
+		return generalFees;
 	}
-	public void setGeneralFee(long generalFee) {
-		this.generalFee = generalFee;
-	}
-	public long getOtherFee() {
-		return otherFee;
-	}
-	public void setOtherFee(long otherFee) {
-		this.otherFee = otherFee;
+	public void setGeneralFees(List<GeneralFee> generalFees) {
+		this.generalFees = generalFees;
 	}
 	public MarginRatioAlert getMarginRatioAlert() {
 		return marginRatioAlert;

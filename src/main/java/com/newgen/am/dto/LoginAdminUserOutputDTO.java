@@ -6,6 +6,8 @@
 package com.newgen.am.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.newgen.am.model.Exchange;
+import com.newgen.am.model.InvestorAccount;
 import com.newgen.am.model.WatchList;
 
 import java.io.Serializable;
@@ -20,18 +22,24 @@ public class LoginAdminUserOutputDTO implements Serializable {
 	private static final long serialVersionUID = 1L;
 	private String id;
     private String username;
+    private String status;
     private String fullName;
-    private String phoneNumber;
     private String email;
+    private String phoneNumber;
     private String accessToken;
-    @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     private long tokenExpiration;
     private Boolean logined;
     private Boolean mustChangePassword;
-    private String deptId;
+    private String memberCode;
+    private String memberName;
+    private String brokerCode;
+    private String brokerName;
+    private String collaboratorCode;
+    private String collaboratorName;
+    private String investorCode;
+    private String investorName;
     private String deptCode;
     private String deptName;
-    private String deptUserId;
     private List<WatchList> watchLists;
     private String layout;
     private String language;
@@ -176,20 +184,75 @@ public class LoginAdminUserOutputDTO implements Serializable {
 		this.id = id;
 	}
 
-	public String getDeptId() {
-		return deptId;
+	public String getStatus() {
+		return status;
 	}
 
-	public void setDeptId(String deptId) {
-		this.deptId = deptId;
+	public void setStatus(String status) {
+		this.status = status;
 	}
 
-	public String getDeptUserId() {
-		return deptUserId;
+	public String getMemberCode() {
+		return memberCode;
 	}
 
-	public void setDeptUserId(String deptUserId) {
-		this.deptUserId = deptUserId;
+	public void setMemberCode(String memberCode) {
+		this.memberCode = memberCode;
 	}
-    
+
+	public String getMemberName() {
+		return memberName;
+	}
+
+	public void setMemberName(String memberName) {
+		this.memberName = memberName;
+	}
+
+	public String getBrokerCode() {
+		return brokerCode;
+	}
+
+	public void setBrokerCode(String brokerCode) {
+		this.brokerCode = brokerCode;
+	}
+
+	public String getBrokerName() {
+		return brokerName;
+	}
+
+	public void setBrokerName(String brokerName) {
+		this.brokerName = brokerName;
+	}
+
+	public String getCollaboratorCode() {
+		return collaboratorCode;
+	}
+
+	public void setCollaboratorCode(String collaboratorCode) {
+		this.collaboratorCode = collaboratorCode;
+	}
+
+	public String getCollaboratorName() {
+		return collaboratorName;
+	}
+
+	public void setCollaboratorName(String collaboratorName) {
+		this.collaboratorName = collaboratorName;
+	}
+
+	public String getInvestorCode() {
+		return investorCode;
+	}
+
+	public void setInvestorCode(String investorCode) {
+		this.investorCode = investorCode;
+	}
+
+	public String getInvestorName() {
+		return investorName;
+	}
+
+	public void setInvestorName(String investorName) {
+		this.investorName = investorName;
+	}
 }

@@ -23,10 +23,8 @@ public class Commodity implements Serializable {
     private String commodityCode;
 	@NotEmpty(message = "Required.")
     private String commodityName;
-	@Positive
     private long commodityFee;
     private String positionLimitType;
-    @Positive
     private int positionLimit;
     private String currency;
 

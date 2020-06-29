@@ -8,8 +8,11 @@ package com.newgen.am.dto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.newgen.am.model.Commodity;
 import com.newgen.am.model.CqgInfo;
+import com.newgen.am.model.Exchange;
+import com.newgen.am.model.GeneralFee;
 import com.newgen.am.model.InvestorAccount;
 import com.newgen.am.model.MarginRatioAlert;
+import com.newgen.am.model.RiskParameters;
 import com.newgen.am.model.WatchList;
 import java.io.Serializable;
 import java.util.List;
@@ -53,8 +56,10 @@ public class UserInfoDTO implements Serializable {
     private List<Commodity> commodities;
     private MarginRatioAlert marginRatioAlert;
     private double marginMultiplier;
-    private long otherFee;
+    private List<GeneralFee> generalFees;
     private CqgInfo cqgInfo;
+    private RiskParameters riskParameters;
+    private List<Exchange> exchanges;
 
     public String getId() {
 		return id;
@@ -168,15 +173,15 @@ public class UserInfoDTO implements Serializable {
         this.marginMultiplier = marginMultiplier;
     }
 
-    public long getOtherFee() {
-        return otherFee;
-    }
+    public List<GeneralFee> getGeneralFees() {
+		return generalFees;
+	}
 
-    public void setOtherFee(long otherFee) {
-        this.otherFee = otherFee;
-    }
+	public void setGeneralFees(List<GeneralFee> generalFees) {
+		this.generalFees = generalFees;
+	}
 
-    public String getMemberName() {
+	public String getMemberName() {
         return memberName;
     }
 
@@ -318,5 +323,21 @@ public class UserInfoDTO implements Serializable {
 
 	public void setCqgInfo(CqgInfo cqgInfo) {
 		this.cqgInfo = cqgInfo;
+	}
+
+	public RiskParameters getRiskParameters() {
+		return riskParameters;
+	}
+
+	public void setRiskParameters(RiskParameters riskParameters) {
+		this.riskParameters = riskParameters;
+	}
+
+	public List<Exchange> getExchanges() {
+		return exchanges;
+	}
+
+	public void setExchanges(List<Exchange> exchanges) {
+		this.exchanges = exchanges;
 	}
 }

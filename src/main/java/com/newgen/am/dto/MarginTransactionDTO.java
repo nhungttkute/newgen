@@ -2,10 +2,15 @@ package com.newgen.am.dto;
 
 public class MarginTransactionDTO {
 	private String memberCode;
-	private String brokerCode;
-	private String collaboratorCode;
-	private String investorCode;
+    private String memberName;
+    private String brokerCode;
+    private String brokerName;
+    private String collaboratorCode;
+    private String collaboratorName;
+    private String investorCode;
+    private String investorName;
 	private String transactionType;
+	private long withdrawableAmount;
 	private long amount;
 	private String note;
 	
@@ -39,6 +44,12 @@ public class MarginTransactionDTO {
 	public void setTransactionType(String transactionType) {
 		this.transactionType = transactionType;
 	}
+	public long getWithdrawableAmount() {
+		return withdrawableAmount;
+	}
+	public void setWithdrawableAmount(long withdrawableAmount) {
+		this.withdrawableAmount = withdrawableAmount;
+	}
 	public long getAmount() {
 		return amount;
 	}
@@ -50,6 +61,30 @@ public class MarginTransactionDTO {
 	}
 	public void setNote(String note) {
 		this.note = note;
+	}
+	public String getMemberName() {
+		return memberName;
+	}
+	public void setMemberName(String memberName) {
+		this.memberName = memberName;
+	}
+	public String getBrokerName() {
+		return brokerName;
+	}
+	public void setBrokerName(String brokerName) {
+		this.brokerName = brokerName;
+	}
+	public String getCollaboratorName() {
+		return collaboratorName;
+	}
+	public void setCollaboratorName(String collaboratorName) {
+		this.collaboratorName = collaboratorName;
+	}
+	public String getInvestorName() {
+		return investorName;
+	}
+	public void setInvestorName(String investorName) {
+		this.investorName = investorName;
 	}
 	
 }

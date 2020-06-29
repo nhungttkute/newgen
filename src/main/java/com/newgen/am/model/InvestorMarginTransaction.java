@@ -18,6 +18,7 @@ public class InvestorMarginTransaction extends AuditModel implements Serializabl
     private String investorCode;
     private String investorName;
     private String transactionType;
+    private long withdrawableAmount;
     private long amount;
     private String currency;
     private String approvalUser;
@@ -82,6 +83,12 @@ public class InvestorMarginTransaction extends AuditModel implements Serializabl
 	}
 	public void setTransactionType(String transactionType) {
 		this.transactionType = transactionType;
+	}
+	public long getWithdrawableAmount() {
+		return withdrawableAmount;
+	}
+	public void setWithdrawableAmount(long withdrawableAmount) {
+		this.withdrawableAmount = withdrawableAmount;
 	}
 	public long getAmount() {
 		return amount;

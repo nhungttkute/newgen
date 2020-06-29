@@ -6,6 +6,7 @@
 package com.newgen.am.controller;
 
 import java.util.Arrays;
+import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -30,10 +31,10 @@ import com.newgen.am.common.Utility;
 import com.newgen.am.dto.AdminDataObj;
 import com.newgen.am.dto.AdminResponseObj;
 import com.newgen.am.dto.BasePagination;
+import com.newgen.am.dto.ChangePasswordDTO;
 import com.newgen.am.dto.LoginAdminUserOutputDTO;
 import com.newgen.am.dto.LoginAdminUsersDTO;
 import com.newgen.am.dto.LoginUserDataInputDTO;
-import com.newgen.am.dto.ResponseObj;
 import com.newgen.am.exception.CustomException;
 import com.newgen.am.model.LoginAdminUser;
 import com.newgen.am.service.LoginAdminUserService;
@@ -113,7 +114,7 @@ public class LoginAdminUserController {
     }
     
     @PostMapping("/admin/users/{userId}/password")
-    public AdminResponseObj changePassword(HttpServletRequest request, @PathVariable String userId, @RequestBody LoginUserDataInputDTO input) {
+    public AdminResponseObj changePassword(HttpServletRequest request, @PathVariable String userId, @Validated(ValidationSequence.class) @RequestBody ChangePasswordDTO input) {
         String methodName = "changePassword";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, "REQUEST_API: " + String.format("[POST]/admin/users/%s/password", userId));
@@ -248,6 +249,32 @@ public class LoginAdminUserController {
 				response.getData().setAdminUsers(pagination.getData());
 				response.setPagination(Utility.getPagination(request, pagination.getCount()));
 				response.setFilterList(Arrays.asList(Constant.STATUS_ACTIVE, Constant.STATUS_INACTIVE));
+			} else {
+				response.setStatus(Constant.RESPONSE_ERROR);
+				response.setErrMsg(ErrorMessage.RESULT_NOT_FOUND);
+			}
+		} catch (Exception e) {
+			AMLogger.logError(className, methodName, refId, e);
+			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+		return response;
+	}
+    
+    @GetMapping("/admin/users/functions")
+	public AdminResponseObj listUserFunctions(HttpServletRequest request) {
+		String methodName = "listAdminUsers";
+		long refId = System.currentTimeMillis();
+		AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [GET]/admin/users/functions");
+		AdminResponseObj response = new AdminResponseObj();
+		
+		try {
+			List<String> functions = loginAdmUserService.getFunctionsByUsername(Utility.getCurrentUsername());
+			if (functions != null && functions.size() > 0) {
+				response.setStatus(Constant.RESPONSE_OK);
+				response.setData(new AdminDataObj());
+				response.getData().setFunctions(functions);
 			} else {
 				response.setStatus(Constant.RESPONSE_ERROR);
 				response.setErrMsg(ErrorMessage.RESULT_NOT_FOUND);
