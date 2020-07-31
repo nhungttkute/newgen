@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.newgen.am.common.AMLogger;
+import com.newgen.am.common.Constant;
 import com.newgen.am.common.ErrorMessage;
 import com.newgen.am.common.MongoDBConnection;
 import com.newgen.am.common.Utility;
@@ -235,6 +236,8 @@ public class LoginInvestorUserService {
 					new Document().append("$lookup",
 							new Document().append("from", "system_roles").append("localField", "role.name")
 									.append("foreignField", "name").append("as", "roleObj")),
+					new Document().append("$unwind", new Document().append("path", "$roleObj")),
+					new Document().append("$match", new Document().append("roleObj.status", Constant.STATUS_ACTIVE)),
 					new Document().append("$project", new Document().append("_id", 0.0).append("fullName", "$users.fullName")
 							.append("email", "$users.email").append("phoneNumber", "$users.phoneNumber")
 							.append("memberCode", 1.0).append("memberName", 1.0).append("brokerCode", 1.0)
@@ -242,16 +245,17 @@ public class LoginInvestorUserService {
 							.append("investorCode", 1.0).append("investorName", 1.0).append("account", 1.0).append("cqgInfo", 1.0)
 							.append("orderLimit", 1.0).append("commodities", 1.0).append("marginRatioAlert", 1.0)
 							.append("marginMultiplier", 1.0).append("riskParameters", 1.0).append("generalFees", 1.0)
-							.append("functions", new Document().append("$arrayElemAt", Arrays.asList("$roleObj.functions.code", 0.0)))));
+							.append("functions", new Document().append("$concatArrays",
+									Arrays.asList("$roleObj.functions.code")))));
 
 			Document result = collection.aggregate(pipeline).first();
 			userInfoDto = mongoTemplate.getConverter().read(UserInfoDTO.class, result);
-			List<String> allFunctionsWithoutDuplicates = new ArrayList<>(new HashSet<String>(userInfoDto.getFunctions()));
-			userInfoDto.setFunctions(allFunctionsWithoutDuplicates);
 			if (userInfoDto != null) {
+				List<String> allFunctionsWithoutDuplicates = new ArrayList<>(new HashSet<String>(userInfoDto.getFunctions()));
+				userInfoDto.setFunctions(allFunctionsWithoutDuplicates);
 				userInfoDto.setId(user.getId());
 				userInfoDto.setUsername(user.getUsername());
-				userInfoDto.setStatus(user.getStatus());
+				userInfoDto.setStatus(user.getStatus().toUpperCase());
 				userInfoDto.setAccessToken(user.getAccessToken());
 				userInfoDto.setTokenExpiration(user.getTokenExpiration());
 				userInfoDto.setLogined(user.getLogined());
@@ -263,6 +267,7 @@ public class LoginInvestorUserService {
 				userInfoDto.setFontSize(user.getFontSize());
 				userInfoDto.setExchanges(user.getExchanges());
 			}
+			
 		} catch (Exception e) {
 			AMLogger.logError(className, "getUserInfoDTO", refId, e);
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);

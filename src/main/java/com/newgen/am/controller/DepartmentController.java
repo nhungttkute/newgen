@@ -99,6 +99,7 @@ public class DepartmentController {
 
 			response.setContentType("text/csv");
 			response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"");
+			response.setCharacterEncoding("UTF-8");
 
 			// create a csv writer
 			CustomMappingStrategy<DepartmentCSV> mappingStrategy = new CustomMappingStrategy<DepartmentCSV>();
@@ -223,6 +224,7 @@ public class DepartmentController {
             String filename = Constant.CSV_DEPARTMENT_USERS;
 
             response.setContentType("text/csv");
+            response.setCharacterEncoding("UTF-8");
             response.setHeader(HttpHeaders.CONTENT_DISPOSITION,
                     "attachment; filename=\"" + filename + "\"");
 

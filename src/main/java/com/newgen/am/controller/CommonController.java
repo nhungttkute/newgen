@@ -5,7 +5,6 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
@@ -13,12 +12,10 @@ import org.springframework.web.bind.annotation.RestController;
 import com.google.gson.Gson;
 import com.newgen.am.common.AMLogger;
 import com.newgen.am.common.Constant;
-import com.newgen.am.common.ErrorMessage;
 import com.newgen.am.dto.AdminDataObj;
 import com.newgen.am.dto.AdminResponseObj;
 import com.newgen.am.dto.ListElementDTO;
 import com.newgen.am.dto.UserBaseInfo;
-import com.newgen.am.model.RoleFunction;
 import com.newgen.am.service.CommonService;
 
 @RestController
@@ -27,6 +24,22 @@ public class CommonController {
 	
 	@Autowired
 	private CommonService commonSerivce;
+	
+	@GetMapping("/admin/departmentList")
+	public AdminResponseObj getDepartmentList(HttpServletRequest request) {
+		String methodName = "getDepartmentList";
+		long refId = System.currentTimeMillis();
+		AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [GET]/admin/departmentList");
+
+		List<ListElementDTO> departmentList = commonSerivce.getDeptList(refId);
+		AdminResponseObj response = new AdminResponseObj();
+		response.setStatus(Constant.RESPONSE_OK);
+        response.setData(new AdminDataObj());
+        response.getData().setDepartmentList(departmentList);
+
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+		return response;
+	}
 	
 	@GetMapping("/admin/memberList")
 	public AdminResponseObj getMemberList(HttpServletRequest request) {

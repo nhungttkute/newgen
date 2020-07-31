@@ -20,6 +20,9 @@ import com.newgen.am.model.RoleFunction;
 import com.newgen.am.model.UserRole;
 import com.newgen.am.validation.FormatGroup;
 import com.newgen.am.validation.LengthGroup;
+import com.newgen.am.validation.UniqueGroup;
+import com.newgen.am.validation.UniqueMemberCode;
+import com.newgen.am.validation.UniqueTaxCode;
 import com.newgen.am.validation.ValidNumber;
 
 public class MemberDTO implements Serializable{
@@ -28,6 +31,7 @@ public class MemberDTO implements Serializable{
     @NotEmpty(message = "Required.")
     @ValidNumber(groups = FormatGroup.class)
     @Size(min = 3, max = 3, message = "Invalid format.", groups = LengthGroup.class)
+	@UniqueMemberCode(groups = UniqueGroup.class)
     private String code;
     @NotEmpty(message = "Required.")
     @Size(min = 1, max = 25, message = "Invalid format.", groups = LengthGroup.class)

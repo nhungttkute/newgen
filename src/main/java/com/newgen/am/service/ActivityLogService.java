@@ -92,8 +92,10 @@ public class ActivityLogService {
     public static final String ACTIVITY_APPROVAL_CREATE_MEMBER_FUNCTIONS_DESC = "Phê duyệt gán quyền riêng cho TVKD %s - mã phê duyệt %s";
     public static final String ACTIVITY_CREATE_MEMBER_DEFAULT_SETTING = "Thiết lập hạn mức cho TKVD";
     public static final String ACTIVITY_CREATE_MEMBER_DEFAULT_SETTING_DESC = "Thiết lập hạn mức cho TKVD %s - mã phê duyệt %s";
-    public static final String ACTIVITY_APPROVAL_CREATE_MEMBER_DEFAULT_SETTING = "Phê duyệt thiết lập hạn mức cho TKVD";
-    public static final String ACTIVITY_APPROVAL_CREATE_MEMBER_DEFAULT_SETTING_DESC = "Phê duyệt thiết lập hạn mức cho TKVD %s - mã phê duyệt %s";
+    public static final String ACTIVITY_APPROVAL_CREATE_MEMBER_ORDER_LIMIT = "Phê duyệt thiết lập hạn mức một lần đặt lệnh cho TKVD";
+    public static final String ACTIVITY_APPROVAL_CREATE_MEMBER_ORDER_LIMIT_DESC = "Phê duyệt thiết lập hạn mức một lần đặt lệnh cho TKVD %s - mã phê duyệt %s";
+    public static final String ACTIVITY_APPROVAL_CREATE_MEMBER_DEFAULT_POSITION_LIMIT = "Phê duyệt thiết lập hạn mức chung cho TKVD";
+    public static final String ACTIVITY_APPROVAL_CREATE_MEMBER_DEFAULT_POSITION_LIMIT_DESC = "Phê duyệt thiết lập hạn mức chung cho TKVD %s - mã phê duyệt %s";
     public static final String ACTIVITY_CREATE_MEMBER_COMMODITIES_ASSIGN = "Gán hàng hóa, phí HH, hạn mức HH cho TKVD";
     public static final String ACTIVITY_CREATE_MEMBER_COMMODITIES_ASSIGN_DESC = "Gán hàng hóa, phí HH, hạn mức HH cho TKVD %s - mã phê duyệt %s";
     public static final String ACTIVITY_APPROVAL_MEMBER_COMMODITIES_ASSIGN = "Phê duyệt gán hàng hóa cho TKVD";
@@ -219,8 +221,8 @@ public class ActivityLogService {
     public static final String ACTIVITY_CREATE_INVESTOR_USER2_DESC = "Tạo đăng nhập %s cho TKGD %s - mã phê duyệt %s";
     public static final String ACTIVITY_APPROVAL_CREATE_INVESTOR_USER2 = "Phê duyệt tạo đăng nhập thứ 2 trở lên cho TKGD";
     public static final String ACTIVITY_APPROVAL_CREATE_INVESTOR_USER2_DESC = "Phê duyệt tạo đăng nhập %s cho TKGD %s - mã phê duyệt %s";
-    public static final String ACTIVITY_CREATE_INVESTOR_DEFAULT_SETTING = "Thiết lập hạn mức, phí HH mặc định TKGD";
-    public static final String ACTIVITY_CREATE_INVESTOR_DEFAULT_SETTING_DESC = "Thiết lập hạn mức, phí HH mặc định TKGD %s";
+    public static final String ACTIVITY_CREATE_INVESTOR_DEFAULT_SETTING = "Thiết lập/cập nhật hạn mức chung cho TKGD";
+    public static final String ACTIVITY_CREATE_INVESTOR_DEFAULT_SETTING_DESC = "Thiết lập/cập nhật hạn mức chung cho TKGD %s";
     public static final String ACTIVITY_APPROVAL_CREATE_INVESTOR_DEFAULT_SETTING = "Phê duyệt thiết lập hạn mức, phí HH mặc định TKGD";
     public static final String ACTIVITY_APPROVAL_CREATE_INVESTOR_DEFAULT_SETTING_DESC = "Phê duyệt thiết lập hạn mức, phí HH mặc định TKGD %s";
     public static final String ACTIVITY_CREATE_INVESTOR_COMMODITIES_ASSIGN = "Gán hàng hóa, phí HH, hạn mức HH cho TKGD";

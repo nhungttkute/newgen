@@ -9,7 +9,7 @@ public class UniqueIdentityCardValidator implements ConstraintValidator<UniqueId
 
 	@Override
 	public boolean isValid(String value, ConstraintValidatorContext context) {
-		if (value == null) return true;
+		if (value == null || value.trim().length() == 0) return true;
 		return !Utility.checkExistedIdentityCard(value);
 	}
 

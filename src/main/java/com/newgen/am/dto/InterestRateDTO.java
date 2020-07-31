@@ -2,13 +2,13 @@ package com.newgen.am.dto;
 
 import java.io.Serializable;
 
-import javax.validation.constraints.Positive;
+import org.springframework.format.annotation.NumberFormat;
 
 public class InterestRateDTO implements Serializable {
 	private static final long serialVersionUID = 1L;
-	@Positive
+	@NumberFormat
 	private double marginSurplusInterestRate;
-	@Positive
+	@NumberFormat
     private double marginDeficitInterestRate;
 	public double getMarginSurplusInterestRate() {
 		return marginSurplusInterestRate;

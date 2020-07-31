@@ -28,13 +28,10 @@ import com.newgen.am.dto.AdminResponseObj;
 import com.newgen.am.dto.ApprovalFunctionsDTO;
 import com.newgen.am.dto.ApprovalUpdateRoleDTO;
 import com.newgen.am.dto.BasePagination;
-import com.newgen.am.dto.FunctionsDTO;
 import com.newgen.am.dto.RoleCSV;
 import com.newgen.am.dto.RoleDTO;
-import com.newgen.am.dto.UpdateRoleDTO;
 import com.newgen.am.exception.CustomException;
 import com.newgen.am.service.MemberRoleService;
-import com.newgen.am.service.SystemRoleService;
 import com.opencsv.CSVWriter;
 import com.opencsv.bean.StatefulBeanToCsv;
 import com.opencsv.bean.StatefulBeanToCsvBuilder;
@@ -87,6 +84,7 @@ private String className = "MemberRoleController";
             String filename = Constant.CSV_MEMBER_ROLES;
 
             response.setContentType("text/csv");
+            response.setCharacterEncoding("UTF-8");
             response.setHeader(HttpHeaders.CONTENT_DISPOSITION,
                     "attachment; filename=\"" + filename + "\"");
 

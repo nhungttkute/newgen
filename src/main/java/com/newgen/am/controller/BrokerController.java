@@ -90,6 +90,7 @@ public class BrokerController {
 			String filename = Constant.CSV_BROKERS;
 
 			response.setContentType("text/csv");
+			response.setCharacterEncoding("UTF-8");
 			response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"");
 
 			// create a csv writer
@@ -250,7 +251,7 @@ public class BrokerController {
     }
 	
 	@GetMapping("/admin/brokers/{brokerCode}/commodities")
-	@PreAuthorize("hasAuthority('clientManagement.brokerManagement.brokerCommoditiesAssign.create')")
+//	@PreAuthorize("hasAuthority('clientManagement.brokerManagement.brokerCommoditiesAssign.create')")
 	public AdminResponseObj getBrokerCommodities(@PathVariable String brokerCode) {
 		String methodName = "getBrokerCommodities";
 		long refId = System.currentTimeMillis();

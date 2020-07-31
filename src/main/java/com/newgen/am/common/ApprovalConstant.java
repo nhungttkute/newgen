@@ -34,7 +34,8 @@ public class ApprovalConstant {
     public static final String MEMBER_USER_UPDATE = SERVICE_PACKAGE + "MemberService_updateMemberUser";
     public static final String MEMBER_USER_ROLES_CREATE = SERVICE_PACKAGE + "MemberService_saveMemberUserRoles";
     public static final String MEMBER_USER_FUNCTIONS_CREATE = SERVICE_PACKAGE + "MemberService_saveMemberUserFunctions";
-    public static final String MEMBER_DEFAULT_SETTING_CREATE = SERVICE_PACKAGE + "MemberService_createDefaultSetting";
+    public static final String MEMBER_ORDER_LIMIT_CREATE = SERVICE_PACKAGE + "MemberService_createOrderLimit";
+    public static final String MEMBER_DEFAULT_POSITION_LIMIT_CREATE = SERVICE_PACKAGE + "MemberService_createDefaultPositionLimit";
     public static final String MEMBER_COMMODITIES_ASSIGN = SERVICE_PACKAGE + "MemberService_assignCommodities";
     public static final String MEMBER_COMMODITIES_POSITION_LIMIT = SERVICE_PACKAGE + "MemberService_setCommoditiesPositionLimit";
     public static final String MEMBER_COMMODITIES_FEE = SERVICE_PACKAGE + "MemberService_setCommoditiesFee";
@@ -43,7 +44,8 @@ public class ApprovalConstant {
     public static final String MEMBER_RISK_MARGIN_WITHDRAWAL_LOCK_SET = SERVICE_PACKAGE + "MemberService_setMemberMarginWithDrawalLock";
     public static final String MEMBER_MARGIN_MULTIPLIER_BULK_CREATE = SERVICE_PACKAGE + "MemberService_setMarginMultiplierBulk";
     public static final String MEMBER_MARGIN_RATIO_BULK_CREATE = SERVICE_PACKAGE + "MemberService_setMarginRatioAlertBulk";
-    public static final String MEMBER_GENERAL_FEE_BULK_CREATE = SERVICE_PACKAGE + "MemberService_setGeneralFeesBulk";
+    public static final String MEMBER_GENERAL_FEE_BULK_CREATE = SERVICE_PACKAGE + "MemberService_setGeneralFeeBulk";
+    public static final String MEMBER_GENERAL_FEE_BULK_UPDATE = SERVICE_PACKAGE + "MemberService_updateGeneralFeeBulk";
     public static final String MEMBER_OTHER_FEE_BULK_CREATE = SERVICE_PACKAGE + "MemberService_setOtherFeeBulk";
     public static final String MEMBER_BROKER_COMMODITY_FEE_BULK_CREATE = SERVICE_PACKAGE + "MemberService_setBrokerCommoditiesFeeBulk";
     public static final String MEMBER_INVESTOR_COMMODITY_FEE_BULK_CREATE = SERVICE_PACKAGE + "MemberService_setInvestorCommoditiesFeeBulk";
@@ -80,4 +82,5 @@ public class ApprovalConstant {
     public static final String APPLIED_OBJ_MEMBER = "TVKD %s";
     public static final String APPLIED_OBJ_MEMBER_INVESTORS = "Toàn bộ TKGD của TVKD %s";
     public static final String APPLIED_OBJ_MEMBER_BROKERS = "Toàn bộ MG của TVKD %s";
+    public static final String APPLIED_OBJ_INVESTOR = "TKGD %s";
 }

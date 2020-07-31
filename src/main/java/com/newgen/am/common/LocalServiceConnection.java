@@ -26,4 +26,8 @@ public class LocalServiceConnection extends BaseConnection {
     public String getSMSNotificationServiceURL() {
         return ConfigLoader.getMainConfig().getString(Constant.SERVICE_NOTIFICATION_SMS);
     }
+    
+    public String getLogoutHandleServiceURL() {
+        return ConfigLoader.getMainConfig().getString(Constant.SERVICE_NOTIFICATION_LOGOUT);
+    }
 }

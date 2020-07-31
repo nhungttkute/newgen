@@ -26,8 +26,8 @@ public class InvestorMarginInfo extends AuditModel implements Serializable{
     private long actualProfitVND; // Lo lai thuc te
     private long estimatedProfitVND; // Lo lai du kien
     private long transactionFee; // Phi giao dich
-    private long initialRequiredMarginProvisional;
-    private long pendingTransactionFee;
+    private long initialRequiredMarginProvisional; // Ky quy ban dau yeu cau tam tinh
+    private long pendingTransactionFee; // Phi du thu (tren so lot cho khop)
     
 	public String getInvestorCode() {
 		return investorCode;

@@ -37,6 +37,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import com.google.gson.Gson;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+import com.newgen.am.dto.EmailDTO;
+import com.newgen.am.dto.NotifyServiceDTO;
 import com.newgen.am.dto.Pagination;
 import com.newgen.am.dto.UserInfoDTO;
 import com.newgen.am.exception.CustomException;
@@ -268,6 +270,32 @@ public class Utility {
 		return Math.round(value * scale) / scale;
 	}
     
+    public static boolean checkExistedMemberCode(String memberCode) {
+    	// check in member code exists
+    	MongoDatabase database = MongoDBConnection.getMongoDatabase();
+		MongoCollection<Document> memberCollection = database.getCollection("members");
+		
+		Document memberQuery = new Document();
+		memberQuery.append("code", memberCode);
+		
+		long memberCount = memberCollection.countDocuments(memberQuery);
+		
+		return (memberCount > 0) ? true : false;
+    }
+    
+    public static boolean checkExistedInvestorCode(String investorCode) {
+    	// check in member code exists
+    	MongoDatabase database = MongoDBConnection.getMongoDatabase();
+		MongoCollection<Document> investorCollection = database.getCollection("investors");
+		
+		Document investorQuery = new Document();
+		investorQuery.append("investorCode", investorCode);
+		
+		long investorCount = investorCollection.countDocuments(investorQuery);
+		
+		return (investorCount > 0) ? true : false;
+    }
+    
     public static boolean checkExistedTaxCode(String taxCode) {
     	long totalCount = 0;
     	
@@ -343,7 +371,7 @@ public class Utility {
 		Document invQuery2 = new Document();
 		invQuery2.append("individual.identityCard", identityCard);
 		
-		long invCount2 = investorCollection.countDocuments(invQuery1);
+		long invCount2 = investorCollection.countDocuments(invQuery2);
 		totalCount = totalCount + invCount2;
 		
 		return (totalCount > 0) ? true : false;
@@ -352,6 +380,7 @@ public class Utility {
     public static List<String> getNumberQueryFieldNames() {
     	List<String> fieldNames = new ArrayList<String>();
     	fieldNames.add("createdDate");
+    	fieldNames.add("approvalDate");
     	return fieldNames;
     }
     
@@ -394,5 +423,43 @@ public class Utility {
     		return WordUtils.uncapitalize(str);
     	}
     	return null;
+    }
+    
+    public static boolean isDeptUser(UserInfoDTO userInfo) {
+    	if (isNotNull(userInfo.getDeptCode())) return true;
+    	return false;
+    }
+    
+    public static boolean isMemberUser(UserInfoDTO userInfo) {
+    	if (isNotNull(userInfo.getMemberCode()) && isNull(userInfo.getBrokerCode()) && isNull(userInfo.getCollaboratorCode()) && isNull(userInfo.getInvestorCode())) return true;
+    	return false;
+    }
+ 
+    public static boolean isBrokerUser(UserInfoDTO userInfo) {
+    	if (isNotNull(userInfo.getBrokerCode()) && isNull(userInfo.getCollaboratorCode()) && isNull(userInfo.getInvestorCode())) return true;
+    	return false;
+    }
+    
+    public static boolean isCollaboratorUser(UserInfoDTO userInfo) {
+    	if (isNotNull(userInfo.getCollaboratorCode()) && isNull(userInfo.getInvestorCode())) return true;
+    	return false;
+    }
+    
+    public static boolean isInvestorUser(UserInfoDTO userInfo) {
+    	if (isNotNull(userInfo.getInvestorCode())) return true;
+    	return false;
+    }
+    
+    public static void sendHandleLogout(List<String> usernameList, long refId) {
+    	String methodName = "sendHandleLogout";
+		try {
+			NotifyServiceDTO notifyDto = new NotifyServiceDTO();
+			notifyDto.setUserID(usernameList);
+			LocalServiceConnection serviceCon = new LocalServiceConnection();
+			serviceCon.sendPostRequest(serviceCon.getLogoutHandleServiceURL(), new Gson().toJson(notifyDto));
+		} catch (Exception e) {
+			AMLogger.logError(className, methodName, refId, e);
+			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
     }
 }

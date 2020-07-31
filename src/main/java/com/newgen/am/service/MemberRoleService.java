@@ -276,7 +276,7 @@ public class MemberRoleService {
 			Document updateDoc = new Document();
 			if (Utility.isNotNull(roleDto.getName())) updateDoc.append("name", roleDto.getName());
 			if (Utility.isNotNull(roleDto.getDescription())) updateDoc.append("description", roleDto.getDescription());
-			if (Utility.isNotNull(roleDto.getStatus())) updateDoc.append("status", roleDto.getStatus());
+			if (Utility.isNotNull(roleDto.getStatus())) updateDoc.append("status", roleDto.getStatus().toUpperCase());
 			
 			if (updateDoc.isEmpty()) {
 				throw new CustomException(ErrorMessage.INVALID_REQUEST, HttpStatus.BAD_REQUEST);

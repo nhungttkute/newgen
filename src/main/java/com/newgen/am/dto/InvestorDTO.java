@@ -11,6 +11,7 @@ import com.newgen.am.model.Commodity;
 import com.newgen.am.model.Company;
 import com.newgen.am.model.Contact;
 import com.newgen.am.model.CqgInfo;
+import com.newgen.am.model.GeneralFee;
 import com.newgen.am.model.Individual;
 import com.newgen.am.model.InvestorAccount;
 import com.newgen.am.model.InvestorUser;
@@ -19,6 +20,9 @@ import com.newgen.am.model.RiskParameters;
 import com.newgen.am.model.UserRole;
 import com.newgen.am.validation.FormatGroup;
 import com.newgen.am.validation.LengthGroup;
+import com.newgen.am.validation.UniqueGroup;
+import com.newgen.am.validation.UniqueInvestorCode;
+import com.newgen.am.validation.UniqueMemberCode;
 import com.newgen.am.validation.ValidInvestorCode;
 import com.newgen.am.validation.ValidNumber;
 import com.newgen.am.validation.ValidUpdateStringField;
@@ -49,6 +53,7 @@ public class InvestorDTO implements Serializable {
     private String collaboratorName;
     @NotEmpty(message = "Required.")
     @ValidInvestorCode(groups = FormatGroup.class)
+    @UniqueInvestorCode(groups = UniqueGroup.class)
     private String investorCode;
     @NotEmpty(message = "Required.")
     @Size(min = 1, max = 200, message = "Invalid format.", groups = LengthGroup.class)
@@ -75,8 +80,7 @@ public class InvestorDTO implements Serializable {
     private int defaultPositionLimit;
     private long defaultCommodityFee;
     private double marginMultiplier;
-    private long generalFee;
-    private long otherFee;
+    private List<GeneralFee> generalFees;
     private MarginRatioAlert marginRatioAlert;
     private RiskParameters riskParameters;
     private List<Commodity> commodities;
@@ -213,17 +217,11 @@ public class InvestorDTO implements Serializable {
 	public void setMarginMultiplier(double marginMultiplier) {
 		this.marginMultiplier = marginMultiplier;
 	}
-	public long getGeneralFee() {
-		return generalFee;
+	public List<GeneralFee> getGeneralFees() {
+		return generalFees;
 	}
-	public void setGeneralFee(long generalFee) {
-		this.generalFee = generalFee;
-	}
-	public long getOtherFee() {
-		return otherFee;
-	}
-	public void setOtherFee(long otherFee) {
-		this.otherFee = otherFee;
+	public void setGeneralFees(List<GeneralFee> generalFees) {
+		this.generalFees = generalFees;
 	}
 	public int getDefaultPositionLimit() {
 		return defaultPositionLimit;

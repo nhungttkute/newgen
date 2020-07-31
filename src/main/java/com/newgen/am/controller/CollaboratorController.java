@@ -87,6 +87,7 @@ private String className = "CollaboratorController";
 			String filename = Constant.CSV_COLLABORATORS;
 
 			response.setContentType("text/csv");
+			response.setCharacterEncoding("UTF-8");
 			response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"");
 
 			// create a csv writer
@@ -107,8 +108,8 @@ private String className = "CollaboratorController";
 	
 	@PostMapping("/admin/collaborators")
 	@PreAuthorize("hasAuthority('clientManagement.brokerCollaboratorManagement.collaboratorInfo.create')")
-	public AdminResponseObj createBroker(HttpServletRequest request, @Validated(ValidationSequence.class) @RequestBody CollaboratorDTO collaboratorDto) {
-		String methodName = "createBroker";
+	public AdminResponseObj createCollaborator(HttpServletRequest request, @Validated(ValidationSequence.class) @RequestBody CollaboratorDTO collaboratorDto) {
+		String methodName = "createCollaborator";
 		long refId = System.currentTimeMillis();
 		AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [POST]/admin/collaborators");
 		AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(collaboratorDto));

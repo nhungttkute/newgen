@@ -13,7 +13,6 @@ public class PasswordValidator implements ConstraintValidator<ValidPassword, Str
 	@Override
 	public boolean isValid(String value, ConstraintValidatorContext context) {
 		boolean isValid = false;
-//		if (value == null) isValid = true;
 		if (value != null) {
 			Matcher matcher = pattern.matcher(value);
 			if (matcher.matches())

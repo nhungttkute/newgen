@@ -49,6 +49,7 @@ import com.newgen.am.dto.DepartmentCSV;
 import com.newgen.am.dto.DepartmentDTO;
 import com.newgen.am.dto.EmailDTO;
 import com.newgen.am.dto.FunctionsDTO;
+import com.newgen.am.dto.NotifyServiceDTO;
 import com.newgen.am.dto.UpdateDepartmentDTO;
 import com.newgen.am.dto.UpdateUserDTO;
 import com.newgen.am.dto.UserCSV;
@@ -148,7 +149,7 @@ public class DepartmentService {
 							new Document().append("$sort", searchCriteria.getSort()),
 							new Document().append("$project",
 									new Document().append("_id", new Document().append("$toString", "$_id"))
-											.append("code", 1.0).append("name", 1.0).append("status", 1.0)
+											.append("code", 1.0).append("name", 1.0).append("status", 1.0).append("note", 1.0)
 											.append("createdDate", new Document().append("$dateToString",
 													new Document().append("format", "%d/%m/%Y %H:%M:%S").append("date",
 															new Document().append("$toDate", "$createdDate"))))));
@@ -184,7 +185,7 @@ public class DepartmentService {
 			Document newDept = new Document();
 			newDept.append("createdUser", Utility.getCurrentUsername());
 			newDept.append("createdDate", System.currentTimeMillis());
-			newDept.append("code", deptDto.getCode());
+			newDept.append("code", deptDto.getCode().trim());
 			newDept.append("name", deptDto.getName());
 			newDept.append("status", Constant.STATUS_ACTIVE);
 			newDept.append("note", deptDto.getNote());
@@ -380,9 +381,14 @@ public class DepartmentService {
 				throw new CustomException(ErrorMessage.RESULT_NOT_FOUND, HttpStatus.OK);
 			}
 			
+			boolean isStatusUpdated = false;
 			Document updateDoc = new Document();
 			if (Utility.isNotNull(deptDto.getName())) updateDoc.append("name", deptDto.getName());
-			if (Utility.isNotNull(deptDto.getStatus())) updateDoc.append("status", deptDto.getStatus());
+			if (Utility.isNotNull(deptDto.getStatus())) {
+				isStatusUpdated = true;
+				updateDoc.append("status", deptDto.getStatus().toUpperCase());
+				updateDoc.append("users.$[].status", deptDto.getStatus().toUpperCase());
+			}
 			if (Utility.isNotNull(deptDto.getNote())) updateDoc.append("note", deptDto.getNote());
 			
 			updateDoc.put("lastModifiedUser", Utility.getCurrentUsername());
@@ -390,13 +396,54 @@ public class DepartmentService {
 			
 			Document query = new Document();
 			query.append("_id", new ObjectId(deptId));
+			query.append("users", new Document().append("$exists", true));
 			
 			Document update = new Document();
 			update.append("$set", updateDoc);
 			
 			MongoDatabase database = MongoDBConnection.getMongoDatabase();
-			MongoCollection<Document> collection = database.getCollection("departments");
-			collection.updateOne(query, update);
+			MongoCollection<Document> deptCollection = database.getCollection("departments");
+			deptCollection.updateMany(query, update);
+			
+			// update status of all login admin users belong to this department
+			if (isStatusUpdated) {
+				MongoCollection<Document> loginAdmCollection = database.getCollection("login_admin_users");
+				
+				Document loginAdmQuery = new Document();
+				loginAdmQuery.append("deptCode", getDepartmentInfo(deptId).getCode());
+				
+				Document loginAdmUpdateDoc = new Document();
+				loginAdmUpdateDoc.append("status", deptDto.getStatus().toUpperCase());
+				
+				Document loginAdmUpdate = new Document();
+				loginAdmUpdate.append("$set", loginAdmUpdateDoc);
+				
+				loginAdmCollection.updateMany(loginAdmQuery, loginAdmUpdate);
+				
+				// logout all users if status is invactive
+				if (Constant.STATUS_INACTIVE.equalsIgnoreCase(deptDto.getStatus())) {
+					List<? extends Bson> pipeline = Arrays.asList(
+		                    new Document()
+		                            .append("$match", new Document()
+		                                    .append("_id", new ObjectId(deptId))
+		                            ), 
+		                    new Document()
+		                            .append("$project", new Document()
+		                                    .append("_id", 0.0)
+		                                    .append("userID", new Document()
+		                                            .append("$concatArrays", Arrays.asList(
+		                                                    "$users.username"
+		                                                )
+		                                            )
+		                                    )
+		                            )
+		            );
+					Document result = deptCollection.aggregate(pipeline).first();
+					NotifyServiceDTO notifyDto = mongoTemplate.getConverter().read(NotifyServiceDTO.class, result);
+					
+					Utility.sendHandleLogout(notifyDto.getUserID(), refId);
+				}
+			}
 		} catch (Exception e) {
 			AMLogger.logError(className, methodName, refId, e);
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -515,6 +562,13 @@ public class DepartmentService {
 
 		if (!existedUser) {
 			try {
+				//check if isPasswordExpiryCheck
+				if (deptUserDto.getIsPasswordExpiryCheck()) {
+					if (deptUserDto.getPasswordExpiryDays() <= 0 || deptUserDto.getExpiryAlertDays() <= 0) {
+						throw new CustomException(ErrorMessage.INVALID_REQUEST, HttpStatus.BAD_REQUEST);
+					}
+				}
+				
 				// get redis user info
 				UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
 				// insert data to pending_approvals
@@ -592,6 +646,8 @@ public class DepartmentService {
 		try {
 			LocalServiceConnection serviceCon = new LocalServiceConnection();
 			EmailDTO email = new EmailDTO();
+			email.setSettingType(Constant.SERVICE_NOTIFICATION_SETTING_TYPE_CREATE_USER);
+			email.setSendingObject(Constant.SERVICE_NOTIFICATION_SENDING_OBJ);
 			email.setTo(toEmail);
 			email.setSubject(FileUtility.CREATE_NEW_USER_EMAIL_SUBJECT);
 
@@ -629,6 +685,7 @@ public class DepartmentService {
 			query.put("_id", new ObjectId(deptId));
 			query.put("users._id", new ObjectId(deptUserId));
 
+			boolean isStatusUpdated = false;
 			BasicDBObject newDocument = new BasicDBObject();
 
 			if (Utility.isNotNull(deptUserDto.getFullName()))
@@ -637,8 +694,11 @@ public class DepartmentService {
 				newDocument.put("users.$.phoneNumber", deptUserDto.getPhoneNumber());
 			if (Utility.isNotNull(deptUserDto.getEmail()))
 				newDocument.put("users.$.email", deptUserDto.getEmail());
-			if (Utility.isNotNull(deptUserDto.getStatus()))
-				newDocument.put("users.$.status", deptUserDto.getStatus());
+			if (Utility.isNotNull(deptUserDto.getStatus())) {
+				isStatusUpdated = true;
+				newDocument.put("users.$.status", deptUserDto.getStatus().toUpperCase());
+			}
+			
 			if (Utility.isNotNull(deptUserDto.getNote()))
 				newDocument.put("users.$.note", deptUserDto.getNote());
 			if (Utility.isNotNull(deptUserDto.getIsPasswordExpiryCheck()))
@@ -655,6 +715,32 @@ public class DepartmentService {
 			update.put("$set", newDocument);
 
 			collection.updateOne(query, update);
+			
+			// update status to login admin users
+			if (isStatusUpdated) {
+				String username = getUsername(deptUserId);
+				
+				MongoCollection<Document> loginAdmCollection = database.getCollection("login_admin_users");
+				
+				Document loginAdmQuery = new Document();
+				loginAdmQuery.append("username", username);
+				
+				Document loginAdmUpdateDoc = new Document();
+				loginAdmUpdateDoc.append("status", deptUserDto.getStatus().toUpperCase());
+				
+				Document loginAdmUpdate = new Document();
+				loginAdmUpdate.append("$set", loginAdmUpdateDoc);
+				
+				loginAdmCollection.updateOne(loginAdmQuery, loginAdmUpdate);
+				
+				// logout user if status is inactive
+				if (Constant.STATUS_INACTIVE.equalsIgnoreCase(deptUserDto.getStatus())) {
+					List<String> usernameList = new ArrayList<String>();
+					usernameList.add(username);
+					Utility.sendHandleLogout(usernameList, refId);
+				}
+			}
+			
 		} catch (Exception e) {
 			AMLogger.logError(className, methodName, refId, e);
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -665,6 +751,13 @@ public class DepartmentService {
 			ApprovalUpdateUserDTO deptUserDto, long refId) {
 		String methodName = "updateDepartmentUserPA";
 		try {
+			//check if isPasswordExpiryCheck
+			if (deptUserDto.getPendingData().getIsPasswordExpiryCheck()) {
+				if (deptUserDto.getPendingData().getPasswordExpiryDays() <= 0 || deptUserDto.getPendingData().getExpiryAlertDays() <= 0) {
+					throw new CustomException(ErrorMessage.INVALID_REQUEST, HttpStatus.BAD_REQUEST);
+				}
+			}
+			
 			// get redis user info
 			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
 			// insert data to pending_approvals
@@ -760,7 +853,6 @@ public class DepartmentService {
 				Document roleDoc = new Document();
 				roleDoc.append("name", role.getName());
 				roleDoc.append("description", role.getDescription());
-				roleDoc.append("status", role.getStatus());
 				roles.add(roleDoc);
 			}
 			BasicDBObject query = new BasicDBObject();
@@ -768,6 +860,9 @@ public class DepartmentService {
 			query.append("users", new BasicDBObject("$elemMatch", new BasicDBObject("_id", new ObjectId(deptUserId))));
 			
 			collection.updateOne(query, Updates.set("users.$.roles", roles));
+			
+//			//logout user
+//			Utility.sendHandleLogout(getUsername(deptUserId),  refId);
 		} catch (Exception e) {
 			AMLogger.logError(className, methodName, refId, e);
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -861,6 +956,8 @@ public class DepartmentService {
 			
 			collection.updateOne(query, Updates.set("users.$.functions", functions));
 			
+//			//logout user
+//			Utility.sendHandleLogout(getUsername(deptUserId),  refId);
 		} catch (Exception e) {
 			AMLogger.logError(className, methodName, refId, e);
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -945,6 +1042,8 @@ public class DepartmentService {
 					new Document().append("$replaceRoot", new Document().append("newRoot", "$users")));
 
 			Document deptUserDoc = deptCollection.aggregate(pipeline).first();
+			deptUserDoc.append("roles", null);
+			deptUserDoc.append("functions", null);
 
 			if (Utility.isNull(deptUserDoc)) {
 				throw new CustomException(ErrorMessage.INVALID_REQUEST, HttpStatus.BAD_REQUEST);
@@ -1093,6 +1192,8 @@ public class DepartmentService {
 		
 		Document result = deptCollection.aggregate(pipeline).first();
 		UserDTO userDto = mongoTemplate.getConverter().read(UserDTO.class, result);
-		return userDto.getUsername();
+		if (userDto != null) {
+			return userDto.getUsername();
+		} else return "";
 	}
 }

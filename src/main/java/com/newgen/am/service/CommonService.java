@@ -44,6 +44,34 @@ public class CommonService {
 	@Autowired
 	private ModelMapper modelMapper;
 	
+	public List<ListElementDTO> getDeptList(long refId) {
+		String methodName = "getDeptList";
+		List<ListElementDTO> deptList = new ArrayList<ListElementDTO>();
+		
+		try {
+			MongoDatabase database = MongoDBConnection.getMongoDatabase();
+			MongoCollection<Document> collection = database.getCollection("departments");
+			
+			Document query = new Document();
+			
+			Document projection = new Document();
+			projection.append("_id", 0.0);
+			projection.append("code", 1.0);
+			projection.append("name", 1.0);
+			
+			MongoCursor<Document> cur = collection.find(query).projection(projection).iterator();
+			while (cur.hasNext()) {
+				ListElementDTO elemDto = mongoTemplate.getConverter().read(ListElementDTO.class, cur.next());
+				if (elemDto != null) deptList.add(elemDto);
+			}
+		} catch (Exception e) {
+            AMLogger.logError(className, methodName, refId, e);
+            throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+		
+		return deptList;
+	}
+	
 	public List<ListElementDTO> getMemberList(HttpServletRequest request, long refId) {
 		String methodName = "getMemberList";
 		List<ListElementDTO> memberList = new ArrayList<ListElementDTO>();

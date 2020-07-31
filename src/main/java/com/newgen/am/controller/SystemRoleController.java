@@ -93,6 +93,7 @@ public class SystemRoleController {
             String filename = Constant.CSV_SYSTEM_ROLES;
 
             response.setContentType("text/csv");
+            response.setCharacterEncoding("UTF-8");
             response.setHeader(HttpHeaders.CONTENT_DISPOSITION,
                     "attachment; filename=\"" + filename + "\"");
 

@@ -30,16 +30,18 @@ import com.newgen.am.dto.AdminResponseObj;
 import com.newgen.am.dto.ApprovalChangeGroupDTO;
 import com.newgen.am.dto.ApprovalCommoditiesDTO;
 import com.newgen.am.dto.ApprovalCommodityFeesDTO;
-import com.newgen.am.dto.ApprovalDefaultSettingDTO;
+import com.newgen.am.dto.ApprovalDefaultPositionLimitDTO;
 import com.newgen.am.dto.ApprovalFunctionsDTO;
-import com.newgen.am.dto.ApprovalGeneralFeesDTO;
+import com.newgen.am.dto.ApprovalGeneralFeeDTO;
 import com.newgen.am.dto.ApprovalMarginMultiplierDTO;
 import com.newgen.am.dto.ApprovalMarginRatioAlertDTO;
+import com.newgen.am.dto.ApprovalOrderLimitDTO;
 import com.newgen.am.dto.ApprovalRiskParametersDTO;
 import com.newgen.am.dto.ApprovalUpdateMemberDTO;
 import com.newgen.am.dto.ApprovalUpdateUserDTO;
 import com.newgen.am.dto.ApprovalUserRolesDTO;
 import com.newgen.am.dto.BasePagination;
+import com.newgen.am.dto.GeneralFeeDTO;
 import com.newgen.am.dto.GeneralFeesDTO;
 import com.newgen.am.dto.ListElementDTO;
 import com.newgen.am.dto.MemberCSV;
@@ -104,6 +106,7 @@ public class MemberController {
 			String filename = Constant.CSV_MEMBERS;
 
 			response.setContentType("text/csv");
+			response.setCharacterEncoding("UTF-8");
 			response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"");
 
 			// create a csv writer
@@ -225,15 +228,32 @@ public class MemberController {
         return response;
     }
 	
-	@PostMapping("/admin/members/{memberCode}/defaultSetting")
-    @PreAuthorize("hasAuthority('clientManagement.memberManagement.memberCommoditiesFeeConfig.create') or hasAuthority('clientManagement.memberManagement.memberOrderLimitConfig.create')")
-    public AdminResponseObj createMemberDefaultSetting(HttpServletRequest request, @PathVariable String memberCode, @Validated(ValidationSequence.class) @RequestBody ApprovalDefaultSettingDTO memberDto) {
-        String methodName = "createMemberDefaultSetting";
+	@PostMapping("/admin/members/{memberCode}/orderLimit")
+    @PreAuthorize("hasAuthority('clientManagement.memberManagement.memberOrderLimitConfig.create')")
+    public AdminResponseObj createMemberOrderLimit(HttpServletRequest request, @PathVariable String memberCode, @Validated(ValidationSequence.class) @RequestBody ApprovalOrderLimitDTO memberDto) {
+        String methodName = "createMemberOrderLimit";
         long refId = System.currentTimeMillis();
-        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: " + String.format("[POST]/admin/members/%s/defaultSetting", memberCode));
+        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: " + String.format("[POST]/admin/members/%s/orderLimit", memberCode));
         AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(memberDto));
         
-        memberService.createDefaultSettingPA(request, memberCode, memberDto, refId);
+        memberService.createOrderLimitPA(request, memberCode, memberDto, refId);
+        
+        AdminResponseObj response = new AdminResponseObj();
+        response.setStatus(Constant.RESPONSE_OK);
+        
+        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+        return response;
+    }
+	
+	@PostMapping("/admin/members/{memberCode}/defaultPositionLimit")
+    @PreAuthorize("hasAuthority('clientManagement.memberManagement.defaultPositionLimitConfig.create')")
+    public AdminResponseObj createMemberDefaultPositionLimit(HttpServletRequest request, @PathVariable String memberCode, @Validated(ValidationSequence.class) @RequestBody ApprovalDefaultPositionLimitDTO memberDto) {
+        String methodName = "createMemberDefaultPositionLimit";
+        long refId = System.currentTimeMillis();
+        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: " + String.format("[POST]/admin/members/%s/defaultPositionLimit", memberCode));
+        AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(memberDto));
+        
+        memberService.createDefaultPositionLimitPA(request, memberCode, memberDto, refId);
         
         AdminResponseObj response = new AdminResponseObj();
         response.setStatus(Constant.RESPONSE_OK);
@@ -337,7 +357,7 @@ public class MemberController {
     }
 	
 	@PutMapping("/admin/members/{memberCode}/marginRatioBulk")
-    @PreAuthorize("hasAuthority('clientManagement.memberManagement.memberRiskManagement.marginWithdrawalLockConfig.create')")
+    @PreAuthorize("hasAuthority('clientManagement.memberManagement.investorMarginRatioBulkConfig.create')")
     public AdminResponseObj setMarginRatioBulk(HttpServletRequest request, @PathVariable String memberCode, @Validated(ValidationSequence.class) @RequestBody ApprovalMarginRatioAlertDTO memberDto) {
         String methodName = "setMarginRatioBulk";
         long refId = System.currentTimeMillis();
@@ -353,15 +373,32 @@ public class MemberController {
         return response;
     }
 	
-	@PutMapping("/admin/members/{memberCode}/generalFeeBulk")
-    @PreAuthorize("hasAuthority('clientManagement.memberManagement.memberRiskManagement.marginWithdrawalLockConfig.create')")
-    public AdminResponseObj setGeneralFeeBulk(HttpServletRequest request, @PathVariable String memberCode, @Validated(ValidationSequence.class) @RequestBody ApprovalGeneralFeesDTO memberDto) {
+	@PostMapping("/admin/members/{memberCode}/setGeneralFeeBulk")
+    @PreAuthorize("hasAuthority('clientManagement.memberManagement.investorGeneralFeeBulkConfig.create')")
+    public AdminResponseObj setGeneralFeeBulk(HttpServletRequest request, @PathVariable String memberCode, @Validated(ValidationSequence.class) @RequestBody GeneralFeeDTO memberDto) {
         String methodName = "setGeneralFeeBulk";
         long refId = System.currentTimeMillis();
-        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: " + String.format("[PUT]/admin/members/%s/generalFeeBulk", memberCode));
+        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: " + String.format("[POST]/admin/members/%s/setGeneralFeeBulk", memberCode));
         AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(memberDto));
         
         memberService.setGeneralFeesBulkPA(request, memberCode, memberDto, refId);
+        
+        AdminResponseObj response = new AdminResponseObj();
+        response.setStatus(Constant.RESPONSE_OK);
+        
+        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+        return response;
+    }
+	
+	@PutMapping("/admin/members/{memberCode}/updateGeneralFeeBulk")
+    @PreAuthorize("hasAuthority('clientManagement.memberManagement.investorGeneralFeeBulkConfig.create')")
+    public AdminResponseObj updateGeneralFeeBulk(HttpServletRequest request, @PathVariable String memberCode, @Validated(ValidationSequence.class) @RequestBody ApprovalGeneralFeeDTO memberDto) {
+        String methodName = "setGeneralFeeBulk";
+        long refId = System.currentTimeMillis();
+        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: " + String.format("[PUT]/admin/members/%s/updateGeneralFeeBulk", memberCode));
+        AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(memberDto));
+        
+        memberService.updateGeneralFeesBulkPA(request, memberCode, memberDto, refId);
         
         AdminResponseObj response = new AdminResponseObj();
         response.setStatus(Constant.RESPONSE_OK);
@@ -445,6 +482,7 @@ public class MemberController {
 			String filename = Constant.CSV_MEMBER_USERS;
 
 			response.setContentType("text/csv");
+			response.setCharacterEncoding("UTF-8");
 			response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"");
 
 			// create a csv writer
@@ -559,7 +597,7 @@ public class MemberController {
 	}
 	
 	@GetMapping("/admin/members/{memberCode}/functions")
-	@PreAuthorize("hasAuthority('clientManagement.memberManagement.memberRoleManagement.memberRoleFunctionsAssign.create')")
+	@PreAuthorize("hasAuthority('clientManagement.memberManagement.memberRoleManagement.memberRoleFunctionsAssign.create') or hasAuthority('clientManagement.memberManagement.memberUserManagement.memberUserRole.view') or hasAuthority('clientManagement.memberManagement.memberUserManagement.memberUserFunctionsAssign.create')")
 	public AdminResponseObj getMemberFunctions(@PathVariable String memberCode) {
 		String methodName = "getMemberFunctions";
 		long refId = System.currentTimeMillis();
@@ -583,7 +621,7 @@ public class MemberController {
 	}
 	
 	@GetMapping("/admin/members/{memberCode}/commodities")
-	@PreAuthorize("hasAuthority('clientManagement.brokerManagement.brokerCommoditiesAssign.create')")
+//	@PreAuthorize("hasAuthority('clientManagement.brokerManagement.brokerCommoditiesAssign.create')")
 	public AdminResponseObj getMemberCommodities(@PathVariable String memberCode) {
 		String methodName = "getMemberCommodities";
 		long refId = System.currentTimeMillis();

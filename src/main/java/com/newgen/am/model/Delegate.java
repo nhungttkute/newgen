@@ -19,6 +19,7 @@ import com.newgen.am.validation.UniqueGroup;
 import com.newgen.am.validation.UniqueIdentityCard;
 import com.newgen.am.validation.ValidDate;
 import com.newgen.am.validation.ValidNumber;
+import com.newgen.am.validation.ValidNumberCharacter;
 import com.newgen.am.validation.ValidPhoneNumber;
 import com.newgen.am.validation.ValidationSequence;
 
@@ -35,7 +36,7 @@ public class Delegate implements Serializable {
 	@ValidDate(groups = FormatGroup.class)
     private String birthDay;
 	@NotEmpty(message = "Required.")
-	@ValidNumber(groups = FormatGroup.class)
+	@ValidNumberCharacter(groups = FormatGroup.class)
 	@Size(min = 1, max = 20, groups = LengthGroup.class)
 	@UniqueIdentityCard(groups = UniqueGroup.class)
     private String identityCard;

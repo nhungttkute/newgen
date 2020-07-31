@@ -47,9 +47,9 @@ import com.newgen.am.dto.ApprovalUpdateInvestorDTO;
 import com.newgen.am.dto.BasePagination;
 import com.newgen.am.dto.ChangeGroupDTO;
 import com.newgen.am.dto.CommoditiesDTO;
+import com.newgen.am.dto.DefaultSettingDTO;
 import com.newgen.am.dto.EmailDTO;
 import com.newgen.am.dto.GeneralFeeDTO;
-import com.newgen.am.dto.GeneralFeesDTO;
 import com.newgen.am.dto.InvestorActivationDTO;
 import com.newgen.am.dto.InvestorCSV;
 import com.newgen.am.dto.InvestorDTO;
@@ -57,7 +57,9 @@ import com.newgen.am.dto.MarginInfoDTO;
 import com.newgen.am.dto.MarginMultiplierDTO;
 import com.newgen.am.dto.MarginRatioAlertDTO;
 import com.newgen.am.dto.MarginTransactionDTO;
-import com.newgen.am.dto.OtherFeeDTO;
+import com.newgen.am.dto.MemberCommoditiesDTO;
+import com.newgen.am.dto.MemberDTO;
+import com.newgen.am.dto.NotifyServiceDTO;
 import com.newgen.am.dto.RiskParametersDTO;
 import com.newgen.am.dto.UpdateInvestorDTO;
 import com.newgen.am.dto.UserCSV;
@@ -65,6 +67,7 @@ import com.newgen.am.dto.UserDTO;
 import com.newgen.am.dto.UserInfoDTO;
 import com.newgen.am.exception.CustomException;
 import com.newgen.am.model.Commodity;
+import com.newgen.am.model.GeneralFee;
 import com.newgen.am.model.Investor;
 import com.newgen.am.model.InvestorActivationApproval;
 import com.newgen.am.model.InvestorMarginInfo;
@@ -72,6 +75,8 @@ import com.newgen.am.model.InvestorMarginTransApproval;
 import com.newgen.am.model.InvestorMarginTransaction;
 import com.newgen.am.model.LoginAdminUser;
 import com.newgen.am.model.LoginInvestorUser;
+import com.newgen.am.model.MarginRatioAlert;
+import com.newgen.am.model.Member;
 import com.newgen.am.model.NestedObjectInfo;
 import com.newgen.am.model.PendingApproval;
 import com.newgen.am.model.PendingData;
@@ -85,6 +90,7 @@ import com.newgen.am.repository.InvestorMarginTransactionRepository;
 import com.newgen.am.repository.InvestorRepository;
 import com.newgen.am.repository.LoginAdminUserRepository;
 import com.newgen.am.repository.LoginInvestorUserRepository;
+import com.newgen.am.repository.MemberRepository;
 import com.newgen.am.repository.PendingApprovalRepository;
 import com.newgen.am.repository.SystemRoleRepository;
 
@@ -105,6 +111,9 @@ public class InvestorService {
     
     @Autowired
     private InvestorRepository investorRepo;
+    
+    @Autowired
+    private MemberRepository memberRepo;
     
     @Autowired
     private BrokerRepository brokerRepo;
@@ -265,6 +274,27 @@ public class InvestorService {
         }
     }
     
+    private Document getQueryDocument(RequestParamsParser.SearchCriteria searchCriteria, UserInfoDTO userInfo) {
+		Document query = new Document();
+		// get redis user info
+		if (Utility.isDeptUser(userInfo)) {
+			// do nothing
+			query = searchCriteria.getQuery();
+		} else if (Utility.isMemberUser(userInfo)) {
+			// match code=memberCode
+			query = searchCriteria.getQuery().append("memberCode", userInfo.getMemberCode());
+		} else if (Utility.isBrokerUser(userInfo)) {
+			query = searchCriteria.getQuery().append("memberCode", userInfo.getMemberCode()).append("brokerCode", userInfo.getBrokerCode());
+		} else if (Utility.isCollaboratorUser(userInfo)) {
+			query = searchCriteria.getQuery().append("memberCode", userInfo.getMemberCode()).append("brokerCode", userInfo.getBrokerCode()).append("collaboratorCode", userInfo.getCollaboratorCode());
+		} else if (Utility.isInvestorUser(userInfo)) {
+			query = searchCriteria.getQuery().append("memberCode", userInfo.getMemberCode()).append("brokerCode", userInfo.getBrokerCode()).append("collaboratorCode", userInfo.getCollaboratorCode()).append("investorCode", userInfo.getInvestorCode());
+		} else {
+			throw new CustomException(ErrorMessage.ACCESS_DENIED, HttpStatus.FORBIDDEN);
+		}
+		return query;
+	}
+    
     public BasePagination<InvestorDTO> list(HttpServletRequest request, long refId) {
 		String methodName = "list";
 		BasePagination<InvestorDTO> pagination = null;
@@ -272,9 +302,12 @@ public class InvestorService {
 			RequestParamsParser.SearchCriteria searchCriteria = rqParamsParser
 					.getSearchCriteria(request.getQueryString(), "", refId);
 
+			// get redis user info
+			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
+						
 			List<? extends Bson> pipeline = Arrays.asList(
                     new Document()
-                            .append("$match", searchCriteria.getQuery()), 
+                            .append("$match", getQueryDocument(searchCriteria, userInfo)), 
                     new Document()
                             .append("$sort", searchCriteria.getSort()), 
                     new Document()
@@ -336,9 +369,12 @@ public class InvestorService {
 			RequestParamsParser.SearchCriteria searchCriteria = rqParamsParser
 					.getSearchCriteria(request.getQueryString(), "", refId);
 
+			// get redis user info
+			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
+						
 			List<? extends Bson> pipeline = Arrays.asList(
                     new Document()
-                            .append("$match", searchCriteria.getQuery()), 
+                            .append("$match", getQueryDocument(searchCriteria, userInfo)), 
                     new Document()
                             .append("$sort", searchCriteria.getSort()), 
                     new Document()
@@ -473,8 +509,30 @@ public class InvestorService {
 			newInvestor.append("contact", contact);
 			newInvestor.append("role", investorRole);
 			
-			// insert new investor
 			MongoDatabase database = MongoDBConnection.getMongoDatabase();
+			
+			// applied all default setting from member
+			MongoCollection<Document> memberCollection = database.getCollection("members");
+			
+			Document memberQuery = new Document();
+			memberQuery.append("code", investorDto.getMemberCode());
+			
+			Document memberProjection = new Document();
+			memberProjection.append("_id", 0.0);
+			memberProjection.append("orderLimit", 1.0);
+			memberProjection.append("marginRatioAlert", 1.0);
+			memberProjection.append("marginMultiplier", 1.0);
+			memberProjection.append("generalFees", 1.0);
+			
+			Document memberDoc = memberCollection.find(memberQuery).projection(memberProjection).first();
+			MemberDTO memberDto = mongoTemplate.getConverter().read(MemberDTO.class, memberDoc);
+			
+			newInvestor.append("orderLimit", memberDto.getOrderLimit());
+			newInvestor.append("marginRatioAlert", createMarginRatioAlertDoc(memberDto.getMarginRatioAlert()));
+			newInvestor.append("marginMultiplier", memberDto.getMarginMultiplier());
+			newInvestor.append("generalFees", createGeneralFeesDoc(memberDto.getGeneralFees()));
+			
+			// insert new investor
 			MongoCollection<Document> collection = database.getCollection("investors");
 			collection.insertOne(newInvestor);
 			
@@ -492,6 +550,37 @@ public class InvestorService {
 			AMLogger.logError(className, methodName, refId, e);
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
+	}
+	
+	private Document createMarginRatioAlertDoc(MarginRatioAlert marginRatioAlert) {
+		if (marginRatioAlert != null) {
+			Document marginRatioDoc = new Document();
+			marginRatioDoc.append("warningRatio", marginRatioAlert.getWarningRatio());
+			marginRatioDoc.append("cancelOrderRatio", marginRatioAlert.getCancelOrderRatio());
+			marginRatioDoc.append("finalizationRatio", marginRatioAlert.getFinalizationRatio());
+			return marginRatioDoc;
+		}
+		return null;
+	}
+	
+	private List<Document> createGeneralFeesDoc(List<GeneralFee> generalFees) {
+		if (generalFees != null && generalFees.size() > 0) {
+			List<Document> generalFeesDoc = new ArrayList<Document>();
+			
+			for (GeneralFee fee : generalFees) {
+				Document feeDoc = new Document();
+				feeDoc.append("name", fee.getName());
+				feeDoc.append("processMethod", fee.getProcessMethod());
+				feeDoc.append("feeAmount", fee.getFeeAmount());
+				feeDoc.append("appliedDate", fee.getAppliedDate());
+				
+				generalFeesDoc.add(feeDoc);
+			}
+			
+			return generalFeesDoc;
+		}
+		
+		return null;
 	}
 	
 	private void insertNewInvestorMarginInfo(InvestorDTO investorDto) {
@@ -752,6 +841,8 @@ public class InvestorService {
 		try {
 			LocalServiceConnection serviceCon = new LocalServiceConnection();
 			EmailDTO email = new EmailDTO();
+			email.setSettingType(Constant.SERVICE_NOTIFICATION_SETTING_TYPE_CREATE_USER);
+			email.setSendingObject(Constant.SERVICE_NOTIFICATION_SENDING_OBJ);
 			email.setTo(toEmail);
 			email.setSubject(FileUtility.CREATE_NEW_USER_EMAIL_SUBJECT);
 
@@ -782,13 +873,17 @@ public class InvestorService {
 					ActivityLogService.ACTIVITY_APPROVAL_UPDATE_INVESTOR_DESC, investorCode, pendingApproval.getId());
 			
 			MongoDatabase database = MongoDBConnection.getMongoDatabase();
-			MongoCollection<Document> collection = database.getCollection("investors");
+			MongoCollection<Document> invCollection = database.getCollection("investors");
 			
 			BasicDBObject updateInvestor = new BasicDBObject();
 			boolean isUserUpdated = false;
+			boolean isStatusUpdated = false;
 			
 			if (Utility.isNotNull(investorDto.getInvestorName())) updateInvestor.append("investorName", investorDto.getInvestorName());
-			if (Utility.isNotNull(investorDto.getStatus())) updateInvestor.append("status", investorDto.getStatus());
+			if (Utility.isNotNull(investorDto.getStatus())) {
+				isStatusUpdated = true;
+				updateInvestor.append("status", investorDto.getStatus().toUpperCase());
+			}
 			if (Utility.isNotNull(investorDto.getNote())) {
 				updateInvestor.append("note", investorDto.getNote());
 				updateInvestor.append("users.$.note", investorDto.getNote());
@@ -880,7 +975,60 @@ public class InvestorService {
 				BasicDBObject update = new BasicDBObject();
 				update.append("$set", updateInvestor);
 				
-				collection.updateOne(query, update);
+				invCollection.updateOne(query, update);
+				
+				
+				if (isStatusUpdated) {
+					// update status of all invetor users belong to this investor
+					Document invQuery = new Document();
+					invQuery.append("investorCode", investorCode);
+					
+					Document updateDoc = new Document();
+					updateDoc.append("users.$[].status", investorDto.getStatus().toUpperCase());
+					
+					Document invUpdate = new Document();
+					invUpdate.append("$set", updateDoc);
+					
+					invCollection.updateMany(invQuery, invUpdate);
+					
+					// update status of all login investor users belong to this investor
+					MongoCollection<Document> loginAdmCollection = database.getCollection("login_investor_users");
+					
+					Document loginInvQuery = new Document();
+					loginInvQuery.append("investorCode", investorCode);
+					
+					Document loginInvUpdateDoc = new Document();
+					loginInvUpdateDoc.append("status", investorDto.getStatus().toUpperCase());
+					
+					Document loginInvUpdate = new Document();
+					loginInvUpdate.append("$set", loginInvUpdateDoc);
+					
+					loginAdmCollection.updateMany(loginInvQuery, loginInvUpdate);
+					
+					// logout all users if status is invactive
+					if (Constant.STATUS_INACTIVE.equalsIgnoreCase(investorDto.getStatus())) {
+						List<? extends Bson> pipeline = Arrays.asList(
+			                    new Document()
+			                            .append("$match", new Document()
+			                                    .append("investorCode", investorCode)
+			                            ), 
+			                    new Document()
+			                            .append("$project", new Document()
+			                                    .append("_id", 0.0)
+			                                    .append("userID", new Document()
+			                                            .append("$concatArrays", Arrays.asList(
+			                                                    "$users.username"
+			                                                )
+			                                            )
+			                                    )
+			                            )
+			            );
+						Document result = invCollection.aggregate(pipeline).first();
+						NotifyServiceDTO notifyDto = mongoTemplate.getConverter().read(NotifyServiceDTO.class, result);
+						
+						Utility.sendHandleLogout(notifyDto.getUserID(), refId);
+					}
+				}
 			}
 		} catch (CustomException e) {
 			throw e;
@@ -971,7 +1119,7 @@ public class InvestorService {
 					marginInfo.setCurrency(investor.getAccount().getCurrency());
 					marginInfo.setMarginDeficitInterestRate(investor.getAccount().getMarginDeficitInterestRate());
 					marginInfo.setMarginSurplusInterestRate(investor.getAccount().getMarginSurplusInterestRate());
-					marginInfo.setAvailableBalance(invMarginInfo.getSodBalance() - invMarginInfo.getChangedAmount());
+					marginInfo.setAvailableBalance(invMarginInfo.getSodBalance() + invMarginInfo.getChangedAmount());
 				}
 				
 				InvestorDTO investorDto = modelMapper.map(investor, InvestorDTO.class);
@@ -992,6 +1140,59 @@ public class InvestorService {
 		try {
 			Document query = new Document();
             query.append("investorCode", investorCode);
+            
+            MongoDatabase database = MongoDBConnection.getMongoDatabase();
+			MongoCollection<Document> collection = database.getCollection("investors");
+			
+			Document investorDoc = collection.find(query).first();
+			if (investorDoc == null) {
+				throw new CustomException(ErrorMessage.RESULT_NOT_FOUND, HttpStatus.OK);
+			}
+			
+			Investor investor = mongoTemplate.getConverter().read(Investor.class, investorDoc);
+			
+			if (investor != null) {
+				//clear some fields
+				investor.setUsers(null);
+				if (investor.getCompany() != null && investor.getCompany().getDelegate() != null) {
+					investor.getCompany().getDelegate().setScannedBackIdCard(null);
+					investor.getCompany().getDelegate().setScannedFrontIdCard(null);
+					investor.getCompany().getDelegate().setScannedSignature(null);
+				}
+				
+				if (investor.getIndividual() != null) {
+					investor.getIndividual().setScannedBackIdCard(null);
+					investor.getIndividual().setScannedFrontIdCard(null);
+					investor.getIndividual().setScannedSignature(null);
+				}
+				
+				MarginInfoDTO marginInfo = new MarginInfoDTO();
+				marginInfo.setInvestorCode(investor.getInvestorCode());
+				marginInfo.setInvestorName(investor.getInvestorName());
+				if (investor.getAccount() != null) {
+					marginInfo.setCurrency(investor.getAccount().getCurrency());
+					marginInfo.setMarginDeficitInterestRate(investor.getAccount().getMarginDeficitInterestRate());
+					marginInfo.setMarginSurplusInterestRate(investor.getAccount().getMarginSurplusInterestRate());
+				}
+				
+				InvestorDTO investorDto = modelMapper.map(investor, InvestorDTO.class);
+				investorDto.setAccount(marginInfo);
+				return investorDto;
+			} else return null;
+			
+		} catch (CustomException e) {
+			throw e;
+		} catch (Exception e) {
+			AMLogger.logError(className, methodName, refId, e);
+			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+	
+	public InvestorDTO getInvestorInfoByCQGAccountId(String cqgAccountId, long refId) {
+		String methodName = "getInvestorInfoByCQGAccountId";
+		try {
+			Document query = new Document();
+            query.append("cqgInfo.accountId", cqgAccountId);
             
             MongoDatabase database = MongoDBConnection.getMongoDatabase();
 			MongoCollection<Document> collection = database.getCollection("investors");
@@ -1345,10 +1546,14 @@ public class InvestorService {
 		return approvalId;
 	}
 	
-	public void createDefaultSetting(HttpServletRequest request, String investorCode, UpdateInvestorDTO investorDto, long refId) {
+	public void createDefaultSetting(HttpServletRequest request, String memberCode, String investorCode, DefaultSettingDTO investorDto, long refId) {
 		String methodName = "createDefaultSetting";
-		boolean needUpdateCommodities = false;
 		try {
+			long memberDefaultPositionLimit = getMemberDefaultPositionLimit(memberCode, refId);
+			if (memberDefaultPositionLimit > 0 && investorDto.getDefaultPositionLimit() > memberDefaultPositionLimit) {
+				throw new CustomException(ErrorMessage.INVALID_REQUEST, HttpStatus.BAD_REQUEST);
+			}
+			
 			// get redis user info
 			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
 			// send activity log
@@ -1360,16 +1565,8 @@ public class InvestorService {
 			}
 			
 			Document updateDocument = new Document();
-			if (investorDto.getOrderLimit() > 0) {
-				updateDocument.append("orderLimit", investorDto.getOrderLimit());
-			}
 			if (investorDto.getDefaultPositionLimit() > 0) {
-				needUpdateCommodities = true;
 				updateDocument.append("defaultPositionLimit", investorDto.getDefaultPositionLimit());
-			}
-			if (investorDto.getDefaultCommodityFee() > 0) {
-				needUpdateCommodities = true;
-				updateDocument.append("defaultCommodityFee", investorDto.getDefaultCommodityFee());
 			}
 			
 			if (updateDocument.isEmpty()) {
@@ -1384,45 +1581,39 @@ public class InvestorService {
 				updateDocument.append("lastModifiedUser", Utility.getCurrentUsername());
 				updateDocument.append("lastModifiedDate", System.currentTimeMillis());
 				
-				if (needUpdateCommodities) {
-					// update default position litmit and fee for all commodities
-					List<Document> newCommodities = new ArrayList<Document>();
-					
-					Document projection = new Document();
-		            projection.append("_id", 0.0);
-		            projection.append("commodities", 1.0);
-		            
-		            Document resultDoc = collection.find(query).projection(projection).first();
-		            InvestorDTO invComm = mongoTemplate.getConverter().read(InvestorDTO.class, resultDoc);
-		            if (invComm != null && invComm.getCommodities() != null) {
-		            	for (Commodity comm : invComm.getCommodities()) {
-			            	Document newComm = new Document();
-			            	newComm.append("commodityCode", comm.getCommodityCode());
-			            	newComm.append("commodityName", comm.getCommodityCode());
-			            	newComm.append("currency", Constant.CURRENCY_VND);
-			            	if (investorDto.getDefaultCommodityFee() > 0) {
-			            		newComm.append("commodityFee", investorDto.getDefaultCommodityFee());
-			            	} else {
-			            		newComm.append("commodityFee", comm.getCommodityFee());
-			            	}
-			            	if (Constant.POSITION_INHERITED.equalsIgnoreCase(comm.getPositionLimitType())) {
-			            		if (investorDto.getDefaultPositionLimit() > 0) {
-			            			newComm.append("positionLimitType", Constant.POSITION_INHERITED);
-			            			newComm.append("positionLimit", investorDto.getDefaultPositionLimit());
-			            		} else {
-			            			newComm.append("positionLimitType", Constant.POSITION_INHERITED);
-			            			newComm.append("positionLimit", comm.getPositionLimit());
-			            		}
-			            	} else {
-			            		newComm.append("positionLimitType", comm.getPositionLimitType());
+				// update default position litmit and fee for all commodities
+				List<Document> newCommodities = new ArrayList<Document>();
+				
+				Document projection = new Document();
+	            projection.append("_id", 0.0);
+	            projection.append("commodities", 1.0);
+	            
+	            Document resultDoc = collection.find(query).projection(projection).first();
+	            InvestorDTO invComm = mongoTemplate.getConverter().read(InvestorDTO.class, resultDoc);
+	            if (invComm != null && invComm.getCommodities() != null) {
+	            	for (Commodity comm : invComm.getCommodities()) {
+		            	Document newComm = new Document();
+		            	newComm.append("commodityCode", comm.getCommodityCode());
+		            	newComm.append("commodityName", comm.getCommodityCode());
+		            	newComm.append("currency", Constant.CURRENCY_VND);
+		            	if (Constant.POSITION_INHERITED.equalsIgnoreCase(comm.getPositionLimitType())) {
+		            		if (investorDto.getDefaultPositionLimit() > 0) {
+		            			newComm.append("positionLimitType", Constant.POSITION_INHERITED);
+		            			newComm.append("positionLimit", investorDto.getDefaultPositionLimit());
+		            		} else {
+		            			newComm.append("positionLimitType", Constant.POSITION_INHERITED);
 		            			newComm.append("positionLimit", comm.getPositionLimit());
-			            	}
-			            	newCommodities.add(newComm);
-			            }
+		            		}
+		            	} else {
+		            		newComm.append("positionLimitType", comm.getPositionLimitType());
+	            			newComm.append("positionLimit", comm.getPositionLimit());
+		            	}
+		            	newComm.append("commodityFee", comm.getCommodityFee());
+		            	newCommodities.add(newComm);
 		            }
-		            
-		            updateDocument.append("commodities", newCommodities);
-				}
+	            }
+	            
+	            updateDocument.append("commodities", newCommodities);
 				
 	            
 	            Document update = new Document();
@@ -1438,54 +1629,123 @@ public class InvestorService {
 		}
 	}
 	
-	public void createInvestorCommodities(HttpServletRequest request, String investorCode, CommoditiesDTO commoditiesDto, long refId) {
+	private long getMemberDefaultPositionLimit (String memberCode, long refId) {
+		String methodName = "getMemberDefaultPositionLimit";
+		try {
+			MongoDatabase database = MongoDBConnection.getMongoDatabase();
+			MongoCollection<Document> collection = database.getCollection("members");
+			
+			Document query = new Document();
+			query.append("code", memberCode);
+			
+			Document projection = new Document();
+			projection.append("_id", 0.0);
+			projection.append("defaultPositionLimit", 1.0);
+			
+			Document result = collection.find(query).projection(projection).first();
+			DefaultSettingDTO defaultDto = mongoTemplate.getConverter().read(DefaultSettingDTO.class, result);
+			if (defaultDto != null) return defaultDto.getDefaultPositionLimit();
+			else return 0;
+		} catch (Exception e) {
+			AMLogger.logError(className, methodName, refId, e);
+			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+	
+	public void createInvestorCommodities(HttpServletRequest request, String memberCode, String investorCode, CommoditiesDTO commoditiesDto, long refId) {
 		String methodName = "createInvestorCommodities";
 		try {
-			// get redis user info
-			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
-			// send activity log
-			activityLogService.sendActivityLog(userInfo, request,
-					ActivityLogService.ACTIVITY_CREATE_INVESTOR_COMMODITIES_ASSIGN,
-					ActivityLogService.ACTIVITY_CREATE_INVESTOR_COMMODITIES_ASSIGN_DESC, investorCode,
-					"");
-
 			if (!investorRepo.existsInvestorByInvestorCode(investorCode)) {
 				throw new CustomException(ErrorMessage.RESULT_NOT_FOUND, HttpStatus.OK);
 			}
 			
-			List<Document> commodities = new ArrayList<Document>();
-			
-			for (Commodity comm : commoditiesDto.getCommodities()) {
-				Document commDoc = new Document();
-				commDoc.append("commodityCode", comm.getCommodityCode());
-				commDoc.append("commodityName", comm.getCommodityName());
-				commDoc.append("commodityFee", comm.getCommodityFee());
-				commDoc.append("positionLimitType", comm.getPositionLimitType());
-				commDoc.append("positionLimit", comm.getPositionLimit());
-				commDoc.append("currency", Constant.CURRENCY_VND);
-				commodities.add(commDoc);
+			if (commoditiesDto.getCommodities() != null) {
+				// get redis user info
+				UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
+				// send activity log
+				activityLogService.sendActivityLog(userInfo, request,
+						ActivityLogService.ACTIVITY_CREATE_INVESTOR_COMMODITIES_ASSIGN,
+						ActivityLogService.ACTIVITY_CREATE_INVESTOR_COMMODITIES_ASSIGN_DESC, investorCode,
+						"");
+				
+				List<Document> commodities = new ArrayList<Document>();
+				List<Commodity> memberCommodities = getMemberCommodities(memberCode, refId);
+				
+				for (Commodity comm : commoditiesDto.getCommodities()) {
+					//check if investor position limit is less than member's
+					if (memberCommodities != null) {
+						Commodity memberComm = getCommodityInAListByCode(memberCommodities, comm.getCommodityCode());
+						if (memberComm != null && comm.getPositionLimit() > memberComm.getPositionLimit()) {
+							throw new CustomException(ErrorMessage.INVALID_REQUEST, HttpStatus.BAD_REQUEST);
+						}
+					}
+					
+					Document commDoc = new Document();
+					commDoc.append("commodityCode", comm.getCommodityCode());
+					commDoc.append("commodityName", comm.getCommodityName());
+					commDoc.append("commodityFee", comm.getCommodityFee());
+					commDoc.append("positionLimitType", comm.getPositionLimitType());
+					commDoc.append("positionLimit", comm.getPositionLimit());
+					commDoc.append("currency", Constant.CURRENCY_VND);
+					commodities.add(commDoc);
+				}
+				
+				Document query = new Document();
+				query.append("investorCode", investorCode);
+				
+				Document updateDoc = new Document();
+				updateDoc.append("commodities", commodities);
+				updateDoc.append("lastModifiedUser", Utility.getCurrentUsername());
+				updateDoc.append("lastModifiedDate", System.currentTimeMillis());
+				
+				Document update = new Document();
+				update.append("$set", updateDoc);
+				
+				MongoDatabase database = MongoDBConnection.getMongoDatabase();
+				MongoCollection<Document> collection = database.getCollection("investors");
+				collection.updateOne(query, update);
 			}
-			
-			Document query = new Document();
-			query.append("investorCode", investorCode);
-			
-			Document updateDoc = new Document();
-			updateDoc.append("commodities", commodities);
-			updateDoc.append("lastModifiedUser", Utility.getCurrentUsername());
-			updateDoc.append("lastModifiedDate", System.currentTimeMillis());
-			
-			Document update = new Document();
-			update.append("$set", updateDoc);
-			
-			MongoDatabase database = MongoDBConnection.getMongoDatabase();
-			MongoCollection<Document> collection = database.getCollection("investors");
-			collection.updateOne(query, update);
 		} catch (CustomException e) {
 			throw e;
 		} catch (Exception e) {
 			AMLogger.logError(className, methodName, refId, e);
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
+	}
+	
+	private List<Commodity> getMemberCommodities (String memberCode, long refId) {
+		String methodName="getMemberCommodities";
+		try {
+			MongoDatabase database = MongoDBConnection.getMongoDatabase();
+			MongoCollection<Document> collection = database.getCollection("members");
+			
+			Document query = new Document();
+			query.append("code", memberCode);
+			
+			Document projection = new Document();
+			projection.append("_id", 0.0);
+			projection.append("commodities", 1.0);
+			
+			Document result = collection.find(query).projection(projection).first();
+			MemberCommoditiesDTO memberDto = mongoTemplate.getConverter().read(MemberCommoditiesDTO.class, result);
+			if (memberDto != null) {
+				return memberDto.getCommodities();
+			}
+			return null;
+		} catch (Exception e) {
+			AMLogger.logError(className, methodName, refId, e);
+			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+	
+	private Commodity getCommodityInAListByCode(List<Commodity> commodities, String code) {
+		if (commodities != null && commodities.size() > 0) {
+			for (Commodity comm : commodities) {
+				if (code.equals(comm.getCommodityCode())) return comm;
+			}
+		}
+		
+		return null;
 	}
 	
 	public void setInvestorNewPositionOrderLock(HttpServletRequest request, PendingApproval pendingApproval, long refId) {
@@ -1556,6 +1816,7 @@ public class InvestorService {
 			pendingData.setServiceFunctionName(ApprovalConstant.INVESTOR_RISK_NEW_POSITION_LOCK_SET);
 			pendingData.setCollectionName("investors");
 			pendingData.setAction(Constant.APPROVAL_ACTION_UPDATE);
+			pendingData.setAppliedObject(String.format(ApprovalConstant.APPLIED_OBJ_INVESTOR, investorCode));
 			pendingData.setQueryField("investorCode");
 			pendingData.setQueryValue(investorCode);
 			pendingData.setOldValue(new Gson().toJson(riskParamDto.getOldData()));
@@ -1646,6 +1907,7 @@ public class InvestorService {
 			pendingData.setServiceFunctionName(ApprovalConstant.INVESTOR_RISK_ORDER_LOCK_SET);
 			pendingData.setCollectionName("investors");
 			pendingData.setAction(Constant.APPROVAL_ACTION_UPDATE);
+			pendingData.setAppliedObject(String.format(ApprovalConstant.APPLIED_OBJ_INVESTOR, investorCode));
 			pendingData.setQueryField("investorCode");
 			pendingData.setQueryValue(investorCode);
 			pendingData.setOldValue(new Gson().toJson(riskParamDto.getOldData()));
@@ -1717,9 +1979,9 @@ public class InvestorService {
 			}
 			
 			boolean isValidRatio = true;
-			if (marginRatioAlertDto.getMarginRatioAlert().getFinalizationRatio() > marginRatioAlertDto.getMarginRatioAlert().getCancelOrderRatio() || (marginRatioAlertDto.getMarginRatioAlert().getFinalizationRatio() > marginRatioAlertDto.getMarginRatioAlert().getWarningRatio())) {
+			if (marginRatioAlertDto.getMarginRatioAlert().getFinalizationRatio() >= marginRatioAlertDto.getMarginRatioAlert().getCancelOrderRatio() || (marginRatioAlertDto.getMarginRatioAlert().getFinalizationRatio() >= marginRatioAlertDto.getMarginRatioAlert().getWarningRatio())) {
 				isValidRatio = false;
-			} else if (marginRatioAlertDto.getMarginRatioAlert().getCancelOrderRatio() > marginRatioAlertDto.getMarginRatioAlert().getWarningRatio()) {
+			} else if (marginRatioAlertDto.getMarginRatioAlert().getCancelOrderRatio() >= marginRatioAlertDto.getMarginRatioAlert().getWarningRatio()) {
 				isValidRatio = false;
 			}
 			 
@@ -1754,7 +2016,25 @@ public class InvestorService {
 		}
 	}
 	
-	public void setGeneralFees(HttpServletRequest request, String investorCode, GeneralFeesDTO generalFeesDto, long refId) {
+	private boolean checkIfExistedFee(String investorCode, String feeName, long refId) {
+		String methodName = "checkIfExistedFee";
+		try {
+			MongoDatabase database = MongoDBConnection.getMongoDatabase();
+			MongoCollection<Document> memberCollection = database.getCollection("investors");
+			
+			Document query = new Document();
+			query.append("investorCode", investorCode);
+			query.append("generalFees.name", feeName);
+			
+			Document result = memberCollection.find(query).first();
+			if (result != null) return true;
+			return false;
+		} catch (Exception e) {
+			AMLogger.logError(className, methodName, refId, e);
+			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+	public void setGeneralFee(HttpServletRequest request, String investorCode, GeneralFeeDTO generalFeeDto, long refId) {
 		String methodName = "setGeneralFees";
 		try {
 			if (!investorRepo.existsInvestorByInvestorCode(investorCode)) {
@@ -1771,35 +2051,67 @@ public class InvestorService {
 				throw new CustomException(ErrorMessage.RESULT_NOT_FOUND, HttpStatus.OK);
 			}
 			
-			if (generalFeesDto.getGeneralFees() != null && generalFeesDto.getGeneralFees().size() > 0) {
-				List<Document> generalFees = new ArrayList<Document>();
-				
-				for (GeneralFeeDTO fee : generalFeesDto.getGeneralFees()) {
-					Document feeDoc = new Document();
-					feeDoc.append("name", fee.getName());
-					feeDoc.append("processMethod", fee.getProcessMethod());
-					feeDoc.append("feeAmount", fee.getFeeAmount());
-					feeDoc.append("appliedDate", fee.getAppliedDate());
-					
-					generalFees.add(feeDoc);
+			if (generalFeeDto != null) {
+				if (checkIfExistedFee(investorCode, generalFeeDto.getName(), refId)) {
+					throw new CustomException(ErrorMessage.DOCUMENT_ALREADY_EXISTED, HttpStatus.OK);
 				}
 				
-				Document updateDocument = new Document();
-				updateDocument.append("generalFees", generalFees);
-				updateDocument.append("lastModifiedUser", Utility.getCurrentUsername());
-				updateDocument.append("lastModifiedDate", System.currentTimeMillis());
+				Document feeDoc = new Document();
+				feeDoc.append("name", generalFeeDto.getName());
+				feeDoc.append("processMethod", generalFeeDto.getProcessMethod());
+				feeDoc.append("feeAmount", generalFeeDto.getFeeAmount());
+				feeDoc.append("appliedDate", generalFeeDto.getAppliedDate());
 				
 				Document query = new Document();
 				query.append("investorCode", investorCode);
 				
-				Document update = new Document();
-				update.append("$set", updateDocument);
+				MongoDatabase database = MongoDBConnection.getMongoDatabase();
+				MongoCollection<Document> collection = database.getCollection("investors");
+				collection.updateOne(query, Updates.addToSet("generalFees", feeDoc));
+			}
+		} catch (CustomException e) {
+			throw e;
+		} catch (Exception e) {
+			AMLogger.logError(className, methodName, refId, e);
+			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+	
+	public void updateGeneralFee(HttpServletRequest request, String investorCode, GeneralFeeDTO generalFeeDto, long refId) {
+		String methodName = "setGeneralFees";
+		try {
+			if (!investorRepo.existsInvestorByInvestorCode(investorCode)) {
+				throw new CustomException(ErrorMessage.RESULT_NOT_FOUND, HttpStatus.OK);
+			}
+			
+			// get redis user info
+			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
+			// send activity log
+			activityLogService.sendActivityLog(userInfo, request, ActivityLogService.ACTIVITY_CREATE_INVESTOR_GENERAL_FEE,
+					ActivityLogService.ACTIVITY_CREATE_INVESTOR_GENERAL_FEE_DESC, investorCode, "");
+
+			if (!investorRepo.existsInvestorByInvestorCode(investorCode)) {
+				throw new CustomException(ErrorMessage.RESULT_NOT_FOUND, HttpStatus.OK);
+			}
+			
+			if (generalFeeDto != null) {
+				Document updateFeeDoc = new Document();
+				updateFeeDoc.append("name", generalFeeDto.getName());
+				updateFeeDoc.append("processMethod", generalFeeDto.getProcessMethod());
+				updateFeeDoc.append("feeAmount", generalFeeDto.getFeeAmount());
+				updateFeeDoc.append("appliedDate", generalFeeDto.getAppliedDate());
+				
+				Document query = new Document();
+				query.append("investorCode", investorCode);
 				
 				MongoDatabase database = MongoDBConnection.getMongoDatabase();
 				MongoCollection<Document> collection = database.getCollection("investors");
-				collection.updateOne(query, update);
+				
+				Document investorFields = new Document("generalFees", new Document("name", generalFeeDto.getName()));
+				Document investorUpdate = new Document("$pull", investorFields);
+				collection.updateOne(query, investorUpdate);
+				collection.updateOne(query, Updates.addToSet("generalFees", updateFeeDoc));
 			}
-			
 		} catch (CustomException e) {
 			throw e;
 		} catch (Exception e) {
@@ -1841,6 +2153,7 @@ public class InvestorService {
 
 			BasicDBObject newLoginAdmUser = new BasicDBObject();
 			newLoginAdmUser.put("brokerCode", changeGroupDto.getGroupCode());
+			newLoginAdmUser.put("brokerName", changeGroupDto.getGroupName());
 
 			BasicDBObject updateObj = new BasicDBObject();
 			updateObj.put("$set", newLoginAdmUser);
@@ -1948,6 +2261,7 @@ public class InvestorService {
 
 			BasicDBObject newLoginAdmUser = new BasicDBObject();
 			newLoginAdmUser.put("collaboratorCode", changeGroupDto.getGroupCode());
+			newLoginAdmUser.put("collaboratorName", changeGroupDto.getGroupName());
 
 			BasicDBObject updateObj = new BasicDBObject();
 			updateObj.put("$set", newLoginAdmUser);
@@ -2049,6 +2363,20 @@ public class InvestorService {
 			MongoDatabase database = MongoDBConnection.getMongoDatabase();
 			MongoCollection<Document> collection = database.getCollection("investors");
 			collection.updateOne(query, update);
+			
+			//update investor_margin_info
+			Document marginQuery = new Document();
+			marginQuery.append("investorCode", investorCode);
+			
+			Document updateMarginDoc = new Document();
+			updateMarginDoc.append("marginSurplusInterestRate", marginDto.getMarginSurplusInterestRate());
+			updateMarginDoc.append("marginDeficitInterestRate", marginDto.getMarginDeficitInterestRate());
+			
+			Document marginUpdate = new Document();
+			marginUpdate.append("$set", updateMarginDoc);
+			
+			MongoCollection<Document> marginCollection = database.getCollection("investor_margin_info");
+			marginCollection.updateOne(marginQuery, marginUpdate);
 		} catch (CustomException e) {
 			throw e;
 		} catch (Exception e) {
@@ -2206,30 +2534,38 @@ public class InvestorService {
 				throw new CustomException(ErrorMessage.INVALID_REQUEST, HttpStatus.BAD_REQUEST);
 			}
 			
-			// get redis user info
-			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
-			// insert data to inv_margin_trans_approvals
-			String approvalId = insertInvestorMarginWithdrawPA(userInfo, marginTransDto, refId);
-			// send activity log
-			activityLogService.sendActivityLog(userInfo, request, ActivityLogService.ACTIVITY_CREATE_INVESTOR_WITHDRAWAL_MONEY,
-					ActivityLogService.ACTIVITY_CREATE_INVESTOR_WITHDRAWAL_MONEY_DESC, marginTransDto.getInvestorCode(), approvalId);
+			// check if member can withdraw money
+			String memberCode = marginTransDto.getMemberCode();
+			Member member = memberRepo.findByCode(memberCode);
 			
-			// update pendingWithdrawalAmount in investor_margin_info
-			InvestorMarginInfo marginInfo = invMarginInfoRepo.findByInvestorCode(marginTransDto.getInvestorCode());
-			long pendingWithdrawalAmount = marginInfo.getPendingWithdrawalAmount() + marginTransDto.getAmount();
-			
-			Document query = new Document();
-			query.append("investorCode", marginTransDto.getInvestorCode());
-			
-			Document updateDoc = new Document();
-			updateDoc.append("pendingWithdrawalAmount", pendingWithdrawalAmount);
-			
-			Document update = new Document();
-			update.append("$set", updateDoc);
-			
-			MongoDatabase database = MongoDBConnection.getMongoDatabase();
-			MongoCollection<Document> collection = database.getCollection("investor_margin_info");
-			collection.updateOne(query, update);
+			if ("N".equals(member.getRiskParameters().getMarginWithdrawalLock())) {
+				// get redis user info
+				UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
+				// insert data to inv_margin_trans_approvals
+				String approvalId = insertInvestorMarginWithdrawPA(userInfo, marginTransDto, refId);
+				// send activity log
+				activityLogService.sendActivityLog(userInfo, request, ActivityLogService.ACTIVITY_CREATE_INVESTOR_WITHDRAWAL_MONEY,
+						ActivityLogService.ACTIVITY_CREATE_INVESTOR_WITHDRAWAL_MONEY_DESC, marginTransDto.getInvestorCode(), approvalId);
+				
+				// update pendingWithdrawalAmount in investor_margin_info
+				InvestorMarginInfo marginInfo = invMarginInfoRepo.findByInvestorCode(marginTransDto.getInvestorCode());
+				long pendingWithdrawalAmount = marginInfo.getPendingWithdrawalAmount() + marginTransDto.getAmount();
+				
+				Document query = new Document();
+				query.append("investorCode", marginTransDto.getInvestorCode());
+				
+				Document updateDoc = new Document();
+				updateDoc.append("pendingWithdrawalAmount", pendingWithdrawalAmount);
+				
+				Document update = new Document();
+				update.append("$set", updateDoc);
+				
+				MongoDatabase database = MongoDBConnection.getMongoDatabase();
+				MongoCollection<Document> collection = database.getCollection("investor_margin_info");
+				collection.updateOne(query, update);
+			} else {
+				throw new CustomException(ErrorMessage.WITHDRAWAL_DENIED, HttpStatus.OK);
+			}
 		} catch (CustomException e) {
 			throw e;
 		} catch (Exception e) {
@@ -2277,10 +2613,13 @@ public class InvestorService {
 		try {
 			RequestParamsParser.SearchCriteria searchCriteria = rqParamsParser
 					.getSearchCriteria(request.getQueryString(), "", refId);
-
+			// get redis user info
+			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
+						
+			System.out.println("getQueryDocument: " + getQueryDocument(searchCriteria, userInfo).toJson());
 			List<? extends Bson> pipeline = Arrays.asList(
                     new Document()
-                            .append("$match", searchCriteria.getQuery()), 
+                            .append("$match", getQueryDocument(searchCriteria, userInfo)), 
                     new Document()
                             .append("$sort", searchCriteria.getSort()), 
                     new Document()

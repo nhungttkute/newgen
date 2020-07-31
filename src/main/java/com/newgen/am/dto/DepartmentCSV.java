@@ -17,19 +17,19 @@ public class DepartmentCSV {
 	@CsvBindByPosition(position = 0)
     private String _id;
 	@CsvBindByName(column = "CODE")
-	@CsvBindByPosition(position = 1)
+	@CsvBindByPosition(position = 0)
     private String code;
 	@CsvBindByName(column = "NAME")
-	@CsvBindByPosition(position = 2)
+	@CsvBindByPosition(position = 1)
     private String name;
 	@CsvBindByName(column = "STATUS")
-	@CsvBindByPosition(position = 3)
+	@CsvBindByPosition(position = 2)
     private String status;
 	@CsvBindByName(column = "NOTE")
-	@CsvBindByPosition(position = 4)
+	@CsvBindByPosition(position = 3)
     private String note;
 	@CsvBindByName(column = "CREATED_DATE")
-	@CsvBindByPosition(position = 5)
+	@CsvBindByPosition(position = 4)
 	private String createdDate;
 
     public String get_id() {

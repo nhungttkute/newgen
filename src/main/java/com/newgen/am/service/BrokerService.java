@@ -44,6 +44,7 @@ import com.newgen.am.dto.BrokerDTO;
 import com.newgen.am.dto.DefaultCommodityFeeDTO;
 import com.newgen.am.dto.EmailDTO;
 import com.newgen.am.dto.FunctionsDTO;
+import com.newgen.am.dto.NotifyServiceDTO;
 import com.newgen.am.dto.UpdateBrokerDTO;
 import com.newgen.am.dto.UserDTO;
 import com.newgen.am.dto.UserInfoDTO;
@@ -96,6 +97,23 @@ public class BrokerService {
 	@Autowired
 	PasswordEncoder passwordEncoder;
 	
+	private Document getQueryDocument(RequestParamsParser.SearchCriteria searchCriteria, UserInfoDTO userInfo) {
+		Document query = new Document();
+		// get redis user info
+		if (Utility.isDeptUser(userInfo)) {
+			// do nothing
+			query = searchCriteria.getQuery();
+		} else if (Utility.isMemberUser(userInfo)) {
+			// match code=memberCode
+			query = searchCriteria.getQuery().append("memberCode", userInfo.getMemberCode());
+		} else if (Utility.isBrokerUser(userInfo)) {
+			query = searchCriteria.getQuery().append("memberCode", userInfo.getMemberCode()).append("code", userInfo.getBrokerCode());
+		} else {
+			throw new CustomException(ErrorMessage.ACCESS_DENIED, HttpStatus.FORBIDDEN);
+		}
+		return query;
+	}
+	
 	public BasePagination<BrokerDTO> list(HttpServletRequest request, long refId) {
 		String methodName = "list";
 		BasePagination<BrokerDTO> pagination = null;
@@ -103,9 +121,12 @@ public class BrokerService {
 			RequestParamsParser.SearchCriteria searchCriteria = rqParamsParser
 					.getSearchCriteria(request.getQueryString(), "", refId);
 
+			// get redis user info
+			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
+			
 			List<? extends Bson> pipeline = Arrays.asList(
                     new Document()
-                            .append("$match", searchCriteria.getQuery()), 
+                            .append("$match", getQueryDocument(searchCriteria, userInfo)), 
                     new Document()
                             .append("$sort", searchCriteria.getSort()), 
                     new Document()
@@ -148,11 +169,11 @@ public class BrokerService {
 			MongoCollection<Document> collection = database.getCollection("brokers");
 			Document resultDoc = collection.aggregate(pipeline).first();
 			pagination = mongoTemplate.getConverter().read(BasePagination.class, resultDoc);
+		} catch (CustomException e) {
+			throw e;
 		} catch (Exception e) {
 			AMLogger.logError(className, methodName, refId, e);
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
-		} finally {
-			
 		}
 		return pagination;
 	}
@@ -164,9 +185,12 @@ public class BrokerService {
 			RequestParamsParser.SearchCriteria searchCriteria = rqParamsParser
 					.getSearchCriteria(request.getQueryString(), "", refId);
 
+			// get redis user info
+			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
+			
 			List<? extends Bson> pipeline = Arrays.asList(
                     new Document()
-                            .append("$match", searchCriteria.getQuery()), 
+                            .append("$match", getQueryDocument(searchCriteria, userInfo)), 
                     new Document()
                             .append("$sort", searchCriteria.getSort()), 
                     new Document()
@@ -195,6 +219,8 @@ public class BrokerService {
 				if (brokerCsv != null)
 					brokerList.add(brokerCsv);
 			}
+		} catch (CustomException e) {
+			throw e;
 		} catch (Exception e) {
 			AMLogger.logError(className, methodName, refId, e);
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -302,7 +328,7 @@ public class BrokerService {
 			collection.insertOne(newBroker);
 			
 			// insert new broker's user to login_admin_users
-			createBrokerUser(request, brokerDto, brokerCode, brokerRole, refId);
+			createBrokerUser(request, brokerDto, brokerCode, refId);
 		} catch (CustomException e) {
 			throw e;
 		} catch (Exception e) {
@@ -341,7 +367,7 @@ public class BrokerService {
 		}
 	}
 	
-	private void createBrokerUser(HttpServletRequest request, BrokerDTO brokerDto, String brokerCode, Document brokerRole, long refId) {
+	private void createBrokerUser(HttpServletRequest request, BrokerDTO brokerDto, String brokerCode, long refId) {
 		String methodName = "createBrokerUser";
 		boolean existedUser = false;
 		String username = Constant.BROKER_USER_PREFIX + brokerCode;
@@ -383,7 +409,7 @@ public class BrokerService {
 				brokerUser.append("expiryAlertDays", 0);
 				brokerUser.append("createdUser", Utility.getCurrentUsername());
 				brokerUser.append("createdDate", System.currentTimeMillis());
-				brokerUser.append("role", brokerRole);
+//				brokerUser.append("role", brokerRole);
 
 				BasicDBObject query = new BasicDBObject();
 				query.append("code", brokerCode);
@@ -394,7 +420,7 @@ public class BrokerService {
 				UserInfoDTO brokerUserDto = new UserInfoDTO();
 				brokerUserDto.setMemberCode(brokerDto.getMemberCode());
 				brokerUserDto.setMemberName(brokerDto.getMemberName());
-				brokerUserDto.setBrokerCode(brokerDto.getCode());
+				brokerUserDto.setBrokerCode(brokerCode);
 				brokerUserDto.setBrokerName(brokerDto.getName());
 				brokerUserDto.setUsername(username);
 				brokerUserDto.setFullName(fullName);
@@ -440,6 +466,8 @@ public class BrokerService {
 		try {
 			LocalServiceConnection serviceCon = new LocalServiceConnection();
 			EmailDTO email = new EmailDTO();
+			email.setSettingType(Constant.SERVICE_NOTIFICATION_SETTING_TYPE_CREATE_USER);
+			email.setSendingObject(Constant.SERVICE_NOTIFICATION_SENDING_OBJ);
 			email.setTo(toEmail);
 			email.setSubject(FileUtility.CREATE_NEW_USER_EMAIL_SUBJECT);
 
@@ -505,9 +533,13 @@ public class BrokerService {
 			
 			BasicDBObject updateBroker = new BasicDBObject();
 			boolean isUserUpdated = false;
+			boolean isStatusUpdated = false;
 			
 			if (Utility.isNotNull(brokerDto.getName())) updateBroker.append("name", brokerDto.getName());
-			if (Utility.isNotNull(brokerDto.getStatus())) updateBroker.append("status", brokerDto.getStatus());
+			if (Utility.isNotNull(brokerDto.getStatus())) {
+				updateBroker.append("status", brokerDto.getStatus().toUpperCase());
+				isStatusUpdated = true;
+			}
 			if (Utility.isNotNull(brokerDto.getNote())) {
 				updateBroker.append("note", brokerDto.getNote());
 				updateBroker.append("user.note", brokerDto.getNote());
@@ -593,13 +625,49 @@ public class BrokerService {
 					updateBroker.append("user.lastModifiedDate", System.currentTimeMillis());
 				}
 				
-				BasicDBObject query2 = new BasicDBObject();
-				query2.append("code", brokerCode);
+				BasicDBObject query = new BasicDBObject();
+				query.append("code", brokerCode);
 				
 				BasicDBObject update = new BasicDBObject();
 				update.append("$set", updateBroker);
 				
-				collection.updateOne(query2, update);
+				collection.updateOne(query, update);
+				
+				if (isStatusUpdated) {
+					// update status of broker user
+					Document brokerQuery = new Document();
+					brokerQuery.append("code", brokerCode);
+					
+					Document updateDoc = new Document();
+					updateDoc.append("user.status", brokerDto.getStatus().toUpperCase());
+					
+					Document brokerUpdate = new Document();
+					brokerUpdate.append("$set", updateDoc);
+					
+					collection.updateMany(brokerQuery, brokerUpdate);
+					
+					// update status of all login broker user
+					MongoCollection<Document> loginAdmCollection = database.getCollection("login_admin_users");
+					
+					String brokerUsername = Constant.BROKER_USER_PREFIX + brokerCode;
+					Document loginAdmQuery = new Document();
+					loginAdmQuery.append("username", brokerUsername);
+					
+					Document loginAdmUpdateDoc = new Document();
+					loginAdmUpdateDoc.append("status", brokerDto.getStatus().toUpperCase());
+					
+					Document loginAdmUpdate = new Document();
+					loginAdmUpdate.append("$set", loginAdmUpdateDoc);
+					
+					loginAdmCollection.updateMany(loginAdmQuery, loginAdmUpdate);
+					
+					// logout all users if status is invactive
+					if (Constant.STATUS_INACTIVE.equalsIgnoreCase(brokerDto.getStatus())) {
+						List<String> userList = new ArrayList<String>();
+						userList.add(brokerUsername);
+						Utility.sendHandleLogout(userList, refId);
+					}
+				}
 			}
 		} catch (CustomException e) {
 			throw e;
@@ -755,11 +823,11 @@ public class BrokerService {
 			
 			BasicDBObject updateBroker = new BasicDBObject();
 			updateBroker.append("functions", functions);
-			updateBroker.append("user.functions", functions);
+//			updateBroker.append("user.functions", functions);
 			updateBroker.append("lastModifiedUser", Utility.getCurrentUsername());
 			updateBroker.append("lastModifiedDate", System.currentTimeMillis());
-			updateBroker.append("user.lastModifiedUser", Utility.getCurrentUsername());
-			updateBroker.append("user.lastModifiedDate", System.currentTimeMillis());
+//			updateBroker.append("user.lastModifiedUser", Utility.getCurrentUsername());
+//			updateBroker.append("user.lastModifiedDate", System.currentTimeMillis());
 			
 			
 			BasicDBObject update = new BasicDBObject();

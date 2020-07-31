@@ -37,10 +37,10 @@ import com.newgen.am.dto.ApprovalChangeGroupDTO;
 import com.newgen.am.dto.ApprovalRiskParametersDTO;
 import com.newgen.am.dto.ApprovalUpdateInvestorDTO;
 import com.newgen.am.dto.BasePagination;
-import com.newgen.am.dto.ChangeGroupDTO;
 import com.newgen.am.dto.CommoditiesDTO;
 import com.newgen.am.dto.DataObj;
-import com.newgen.am.dto.GeneralFeesDTO;
+import com.newgen.am.dto.DefaultSettingDTO;
+import com.newgen.am.dto.GeneralFeeDTO;
 import com.newgen.am.dto.InvestorCSV;
 import com.newgen.am.dto.InvestorDTO;
 import com.newgen.am.dto.InvestorDetailDTO;
@@ -48,9 +48,7 @@ import com.newgen.am.dto.MarginInfoDTO;
 import com.newgen.am.dto.MarginMultiplierDTO;
 import com.newgen.am.dto.MarginRatioAlertDTO;
 import com.newgen.am.dto.MarginTransactionDTO;
-import com.newgen.am.dto.OtherFeeDTO;
 import com.newgen.am.dto.ResponseObj;
-import com.newgen.am.dto.UpdateInvestorDTO;
 import com.newgen.am.dto.UserCSV;
 import com.newgen.am.dto.UserDTO;
 import com.newgen.am.exception.CustomException;
@@ -137,18 +135,33 @@ public class InvestorController {
 			response.setErrMsg(ErrorMessage.RESULT_NOT_FOUND);
 		}
 
-		AdminResponseObj logResponse = (AdminResponseObj) SerializationUtils.clone(response);
-		if (logResponse.getData().getInvestor() != null && logResponse.getData().getInvestor().getCompany() != null && logResponse.getData().getInvestor().getCompany().getDelegate() != null) {
-			logResponse.getData().getInvestor().getCompany().getDelegate().setScannedBackIdCard("");
-			logResponse.getData().getInvestor().getCompany().getDelegate().setScannedFrontIdCard("");
-			logResponse.getData().getInvestor().getCompany().getDelegate().setScannedSignature("");
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+		return response;
+    }
+    
+    @PostMapping("/admin/investorInfo/cqgAccount")
+    public AdminResponseObj getInvestorInfoByCQGAccountId(HttpServletRequest request, @RequestBody InvestorDetailDTO investorDetailDto) {
+        String methodName = "getInvestorInfoByCQGAccountId";
+        long refId = System.currentTimeMillis();
+        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: /admin/getInvestorInfoByCQGAccountId");
+        AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(investorDetailDto));
+        
+        if (!Utility.isLocalRequest(request)) throw new CustomException(ErrorMessage.ACCESS_DENIED, HttpStatus.FORBIDDEN);
+        
+        AdminResponseObj response = new AdminResponseObj();
+        
+        InvestorDTO investorDto = investorService.getInvestorInfoByCQGAccountId(investorDetailDto.getCqgAccountId(), refId);
+        
+		if (investorDto != null) {
+			response.setStatus(Constant.RESPONSE_OK);
+			response.setData(new AdminDataObj());
+			response.getData().setInvestor(investorDto);
+		} else {
+			response.setStatus(Constant.RESPONSE_ERROR);
+			response.setErrMsg(ErrorMessage.RESULT_NOT_FOUND);
 		}
-		if (logResponse.getData().getInvestor() != null && logResponse.getData().getInvestor().getIndividual() != null) {
-			logResponse.getData().getInvestor().getIndividual().setScannedBackIdCard("");
-			logResponse.getData().getInvestor().getIndividual().setScannedFrontIdCard("");
-			logResponse.getData().getInvestor().getIndividual().setScannedSignature("");
-		}
-		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(logResponse));
+		
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
 		return response;
     }
     
@@ -193,6 +206,7 @@ public class InvestorController {
 			String filename = Constant.CSV_INVESTORS;
 
 			response.setContentType("text/csv");
+			response.setCharacterEncoding("UTF-8");
 			response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"");
 
 			// create a csv writer
@@ -320,6 +334,7 @@ public class InvestorController {
 			String filename = Constant.CSV_INVESTOR_USERS;
 
 			response.setContentType("text/csv");
+			response.setCharacterEncoding("UTF-8");
 			response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"");
 
 			// create a csv writer
@@ -379,15 +394,15 @@ public class InvestorController {
 		return response;
 	}
 	
-	@PostMapping("/admin/investors/{investorCode}/defaultSetting")
-    @PreAuthorize("hasAuthority('clientManagement.investorManagement.investorOrderLimit.create') or hasAuthority('clientManagement.investorManagement.investorCommoditiesFee.create')")
-    public AdminResponseObj createInvestorDefaultSetting(HttpServletRequest request, @PathVariable String investorCode, @Validated(ValidationSequence.class) @RequestBody UpdateInvestorDTO investorDto) {
+	@PostMapping("/admin/investors/{memberCode}/{investorCode}/defaultSetting")
+    @PreAuthorize("hasAuthority('clientManagement.investorManagement.investorDefaultPositionLimit.create')")
+    public AdminResponseObj createInvestorDefaultSetting(HttpServletRequest request, @PathVariable String memberCode, @PathVariable String investorCode, @Validated(ValidationSequence.class) @RequestBody DefaultSettingDTO investorDto) {
         String methodName = "createInvestorDefaultSetting";
         long refId = System.currentTimeMillis();
-        AMLogger.logMessage(className, methodName, refId, String.format("REQUEST_API: [POST]/admin/investors/%s/defaultSetting", investorCode));
+        AMLogger.logMessage(className, methodName, refId, String.format("REQUEST_API: [POST]/admin/investors/%s/%s/defaultSetting", memberCode, investorCode));
         AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(investorDto));
         
-        investorService.createDefaultSetting(request, investorCode, investorDto, refId);
+        investorService.createDefaultSetting(request, memberCode, investorCode, investorDto, refId);
         
         AdminResponseObj response = new AdminResponseObj();
         response.setStatus(Constant.RESPONSE_OK);
@@ -396,15 +411,15 @@ public class InvestorController {
         return response;
     }
 	
-	@PostMapping("/admin/investors/{investorCode}/commoditiesSetting")
+	@PostMapping("/admin/investors/{memberCode}/{investorCode}/commoditiesSetting")
     @PreAuthorize("hasAuthority('clientManagement.investorManagement.investorCommoditiesAssign.create') or hasAuthority('clientManagement.investorManagement.investorCommoditiesFee.create') or hasAuthority('clientManagement.investorManagement.investorOrderLimit.create')")
-    public AdminResponseObj createInvestorCommoditiesSetting(HttpServletRequest request, @PathVariable String investorCode, @Validated(ValidationSequence.class) @RequestBody CommoditiesDTO investorDto) {
+    public AdminResponseObj createInvestorCommoditiesSetting(HttpServletRequest request, @PathVariable String memberCode, @PathVariable String investorCode, @Validated(ValidationSequence.class) @RequestBody CommoditiesDTO investorDto) {
         String methodName = "createInvestorCommoditiesSetting";
         long refId = System.currentTimeMillis();
-        AMLogger.logMessage(className, methodName, refId, String.format("REQUEST_API: [POST]/admin/investors/%s/commoditiesSetting", investorCode));
+        AMLogger.logMessage(className, methodName, refId, String.format("REQUEST_API: [POST]/admin/investors/%s/%s/commoditiesSetting", memberCode, investorCode));
         AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(investorDto));
         
-        investorService.createInvestorCommodities(request, investorCode, investorDto, refId);
+        investorService.createInvestorCommodities(request, memberCode, investorCode, investorDto, refId);
         
         AdminResponseObj response = new AdminResponseObj();
         response.setStatus(Constant.RESPONSE_OK);
@@ -487,15 +502,32 @@ public class InvestorController {
         return response;
     }
 	
-	@PutMapping("/admin/investors/{investorCode}/generalFee")
+	@PostMapping("/admin/investors/{investorCode}/setGeneralFee")
     @PreAuthorize("hasAuthority('clientManagement.investorManagement.investorGeneralFee.create')")
-    public AdminResponseObj setGeneralFee(HttpServletRequest request, @PathVariable String investorCode, @Validated(ValidationSequence.class) @RequestBody GeneralFeesDTO investorDto) {
+    public AdminResponseObj setGeneralFee(HttpServletRequest request, @PathVariable String investorCode, @Validated(ValidationSequence.class) @RequestBody GeneralFeeDTO investorDto) {
         String methodName = "setGeneralFee";
         long refId = System.currentTimeMillis();
-        AMLogger.logMessage(className, methodName, refId, String.format("REQUEST_API: [PUT]/admin/investors/%s/generalFee", investorCode));
+        AMLogger.logMessage(className, methodName, refId, String.format("REQUEST_API: [PUT]/admin/investors/%s/setGeneralFee", investorCode));
         AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(investorDto));
         
-        investorService.setGeneralFees(request, investorCode, investorDto, refId);
+        investorService.setGeneralFee(request, investorCode, investorDto, refId);
+        
+        AdminResponseObj response = new AdminResponseObj();
+        response.setStatus(Constant.RESPONSE_OK);
+        
+        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+        return response;
+    }
+	
+	@PutMapping("/admin/investors/{investorCode}/updateGeneralFee")
+    @PreAuthorize("hasAuthority('clientManagement.investorManagement.investorGeneralFee.create')")
+    public AdminResponseObj updateGeneralFee(HttpServletRequest request, @PathVariable String investorCode, @Validated(ValidationSequence.class) @RequestBody GeneralFeeDTO investorDto) {
+        String methodName = "updateGeneralFee";
+        long refId = System.currentTimeMillis();
+        AMLogger.logMessage(className, methodName, refId, String.format("REQUEST_API: [PUT]/admin/investors/%s/updateGeneralFee", investorCode));
+        AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(investorDto));
+        
+        investorService.updateGeneralFee(request, investorCode, investorDto, refId);
         
         AdminResponseObj response = new AdminResponseObj();
         response.setStatus(Constant.RESPONSE_OK);
@@ -505,7 +537,7 @@ public class InvestorController {
     }
 	
 	@PutMapping("/admin/investors/{investorCode}/changeBroker")
-    @PreAuthorize("hasAuthority('clientManagement.investorManagement.investorOtherFee.create')")
+    @PreAuthorize("hasAuthority('clientManagement.investorManagement.investorNewBroker.transfer')")
     public AdminResponseObj changeBroker(HttpServletRequest request, @PathVariable String investorCode, @Validated(ValidationSequence.class) @RequestBody ApprovalChangeGroupDTO groupDto) {
         String methodName = "changeBroker";
         long refId = System.currentTimeMillis();
@@ -522,7 +554,7 @@ public class InvestorController {
     }
 	
 	@PutMapping("/admin/investors/{investorCode}/changeCollaborator")
-    @PreAuthorize("hasAuthority('clientManagement.investorManagement.investorOtherFee.create')")
+    @PreAuthorize("hasAuthority('clientManagement.investorManagement.investorNewCollaborator.transfer')")
     public AdminResponseObj changeCollaborator(HttpServletRequest request, @PathVariable String investorCode, @Validated(ValidationSequence.class) @RequestBody ApprovalChangeGroupDTO groupDto) {
         String methodName = "changeCollaborator";
         long refId = System.currentTimeMillis();

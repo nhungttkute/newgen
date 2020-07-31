@@ -245,7 +245,7 @@ public class SystemRoleService {
 			Document updateDoc = new Document();
 			if (Utility.isNotNull(sysRoleDto.getName())) updateDoc.append("name", sysRoleDto.getName());
 			if (Utility.isNotNull(sysRoleDto.getDescription())) updateDoc.append("description", sysRoleDto.getDescription());
-			if (Utility.isNotNull(sysRoleDto.getStatus())) updateDoc.append("status", sysRoleDto.getStatus());
+			if (Utility.isNotNull(sysRoleDto.getStatus())) updateDoc.append("status", sysRoleDto.getStatus().toUpperCase());
 			
 			updateDoc.put("lastModifiedUser", Utility.getCurrentUsername());
 			updateDoc.put("lastModifiedDate", System.currentTimeMillis());

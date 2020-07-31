@@ -73,9 +73,25 @@ public class InvestorActivationService {
     			
     			//update pending approval status
     			invActivationApproval.setStatus(Constant.APPROVAL_STATUS_ACTIVATED);
+    			invActivationApproval.setMarginSurplusInterestRate(interestRateDto.getMarginSurplusInterestRate());
+    			invActivationApproval.setMarginDeficitInterestRate(interestRateDto.getMarginDeficitInterestRate());
     			invActivationApproval.setApprovalUser(Utility.getCurrentUsername());
     			invActivationApproval.setApprovalDate(System.currentTimeMillis());
     			invActivationApprovalRepo.save(invActivationApproval);
+    			
+    			//update investor_margin_info
+    			Document marginQuery = new Document();
+    			marginQuery.append("investorCode", investorCode);
+    			
+    			Document updateMarginDoc = new Document();
+    			updateMarginDoc.append("marginSurplusInterestRate", interestRateDto.getMarginSurplusInterestRate());
+    			updateMarginDoc.append("marginDeficitInterestRate", interestRateDto.getMarginDeficitInterestRate());
+    			
+    			Document marginUpdate = new Document();
+    			marginUpdate.append("$set", updateMarginDoc);
+    			
+    			MongoCollection<Document> marginCollection = database.getCollection("investor_margin_info");
+    			marginCollection.updateOne(marginQuery, marginUpdate);
     	    } else {
     	    	throw new CustomException(ErrorMessage.ACCESS_DENIED, HttpStatus.FORBIDDEN);
     	    }

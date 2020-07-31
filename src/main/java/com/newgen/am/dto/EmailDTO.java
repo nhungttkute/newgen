@@ -10,11 +10,29 @@ package com.newgen.am.dto;
  * @author nhungtt
  */
 public class EmailDTO {
+	private String settingType;
+	private String sendingObject;
     private String to;
     private String subject;
     private String bodyStr;
 
-    public String getTo() {
+    public String getSettingType() {
+		return settingType;
+	}
+
+	public void setSettingType(String settingType) {
+		this.settingType = settingType;
+	}
+
+	public String getSendingObject() {
+		return sendingObject;
+	}
+
+	public void setSendingObject(String sendingObject) {
+		this.sendingObject = sendingObject;
+	}
+
+	public String getTo() {
         return to;
     }
 

@@ -174,6 +174,8 @@ public class RequestParamsParser {
 
 	private Document buildQueryDocument(Document query, String reqParams, long refId) {
 		String methodName = "buildQueryDocument";
+		ArrayList<Document> queryList = new ArrayList<Document>();
+		
 		ArrayList<Filter> listFilter = convertFilter(reqParams);
 		Iterator<RequestParamsParser.Filter> itFilter = listFilter.iterator();
 		if (itFilter.hasNext()) {
@@ -182,25 +184,33 @@ public class RequestParamsParser {
 				AMLogger.logMessage(className, methodName, refId, "[FILTER]: " + filter.toString());
 				if (Constant.OPT_CONTAINS.equals(filter.getOperator())) {
 					String queryValue = String.format(".*%s.*", filter.getValue());
-					query.append(filter.getFieldName(), new BsonRegularExpression(queryValue, "i"));
+					Document queryDoc = new Document();
+					queryDoc.append(filter.getFieldName(), new BsonRegularExpression(queryValue, "i"));
+					queryList.add(queryDoc);
 				} else if (Constant.OPT_EQUALS.equals(filter.getOperator())) {
+					Document queryDoc = new Document();
 					if (Utility.getNumberQueryFieldNames().contains(filter.getFieldName())) {
-						query.append(filter.getFieldName(), Long.valueOf(filter.getValue()));
+						queryDoc.append(filter.getFieldName(), Long.valueOf(filter.getValue()));
 					} else {
-						query.append(filter.getFieldName(), filter.getValue());
+						queryDoc.append(filter.getFieldName(), filter.getValue());
 					}
-					
+					queryList.add(queryDoc);
 				} else if (Constant.OPT_IN.equals(filter.getOperator())
 						|| Constant.OPT_NOT_IN.equals(filter.getOperator())) {
-					query.append(filter.getFieldName(),
+					Document queryDoc = new Document();
+					queryDoc.append(filter.getFieldName(),
 							new Document().append(filter.getOperator(), convertStringToArray(filter.getValue())));
+					queryList.add(queryDoc);
 				} else {
-					query.append(filter.getFieldName(),
+					Document queryDoc = new Document();
+					queryDoc.append(filter.getFieldName(),
 							new Document().append(filter.getOperator(), Long.parseLong(filter.getValue())));
+					queryList.add(queryDoc);
 				}
 			}
+			query.append("$and", queryList);
 		}
-
+		
 		return query;
 	}
 

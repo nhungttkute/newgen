@@ -38,11 +38,12 @@ import com.newgen.am.common.Utility;
 import com.newgen.am.dto.ApprovalChangeGroupDTO;
 import com.newgen.am.dto.ApprovalCommoditiesDTO;
 import com.newgen.am.dto.ApprovalCommodityFeesDTO;
-import com.newgen.am.dto.ApprovalDefaultSettingDTO;
+import com.newgen.am.dto.ApprovalDefaultPositionLimitDTO;
 import com.newgen.am.dto.ApprovalFunctionsDTO;
-import com.newgen.am.dto.ApprovalGeneralFeesDTO;
+import com.newgen.am.dto.ApprovalGeneralFeeDTO;
 import com.newgen.am.dto.ApprovalMarginMultiplierDTO;
 import com.newgen.am.dto.ApprovalMarginRatioAlertDTO;
+import com.newgen.am.dto.ApprovalOrderLimitDTO;
 import com.newgen.am.dto.ApprovalRiskParametersDTO;
 import com.newgen.am.dto.ApprovalUpdateMemberDTO;
 import com.newgen.am.dto.ApprovalUpdateUserDTO;
@@ -53,6 +54,7 @@ import com.newgen.am.dto.BrokerDTO;
 import com.newgen.am.dto.ChangeGroupDTO;
 import com.newgen.am.dto.CommoditiesDTO;
 import com.newgen.am.dto.CommodityFeesDTO;
+import com.newgen.am.dto.DefaultPositionLimitDTO;
 import com.newgen.am.dto.DefaultSettingDTO;
 import com.newgen.am.dto.EmailDTO;
 import com.newgen.am.dto.FunctionsDTO;
@@ -65,6 +67,7 @@ import com.newgen.am.dto.MarginRatioAlertDTO;
 import com.newgen.am.dto.MemberCSV;
 import com.newgen.am.dto.MemberCommoditiesDTO;
 import com.newgen.am.dto.MemberDTO;
+import com.newgen.am.dto.OrderLimitDTO;
 import com.newgen.am.dto.OtherFeeDTO;
 import com.newgen.am.dto.RiskParametersDTO;
 import com.newgen.am.dto.RoleFunctionsDTO;
@@ -129,16 +132,33 @@ public class MemberService {
 	@Autowired
 	PasswordEncoder passwordEncoder;
 	
+	private Document getQueryDocument(RequestParamsParser.SearchCriteria searchCriteria, UserInfoDTO userInfo) {
+		Document query = new Document();
+		// get redis user info
+		if (Utility.isDeptUser(userInfo)) {
+			// do nothing
+			query = searchCriteria.getQuery();
+		} else if (Utility.isMemberUser(userInfo)) {
+			// match code=memberCode
+			query = searchCriteria.getQuery().append("code", userInfo.getMemberCode());
+		} else {
+			throw new CustomException(ErrorMessage.ACCESS_DENIED, HttpStatus.FORBIDDEN);
+		}
+		return query;
+	}
+	
 	public BasePagination<MemberDTO> list(HttpServletRequest request, long refId) {
 		String methodName = "list";
 		BasePagination<MemberDTO> pagination = null;
 		try {
 			RequestParamsParser.SearchCriteria searchCriteria = rqParamsParser
 					.getSearchCriteria(request.getQueryString(), "", refId);
-
+			// get redis user info
+			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
+						
 			List<? extends Bson> pipeline = Arrays.asList(
                     new Document()
-                            .append("$match", searchCriteria.getQuery()), 
+                            .append("$match", getQueryDocument(searchCriteria, userInfo)), 
                     new Document()
                             .append("$sort", searchCriteria.getSort()), 
                     new Document()
@@ -179,6 +199,8 @@ public class MemberService {
 			MongoCollection<Document> collection = database.getCollection("members");
 			Document resultDoc = collection.aggregate(pipeline).first();
 			pagination = mongoTemplate.getConverter().read(BasePagination.class, resultDoc);
+		} catch (CustomException e) {
+			throw e;
 		} catch (Exception e) {
 			AMLogger.logError(className, methodName, refId, e);
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -193,9 +215,12 @@ public class MemberService {
 			RequestParamsParser.SearchCriteria searchCriteria = rqParamsParser
 					.getSearchCriteria(request.getQueryString(), "", refId);
 
+			// get redis user info
+			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
+			
 			List<? extends Bson> pipeline = Arrays.asList(
                     new Document()
-                            .append("$match", searchCriteria.getQuery()), 
+                            .append("$match", getQueryDocument(searchCriteria, userInfo)), 
                     new Document()
                             .append("$sort", searchCriteria.getSort()), 
                     new Document()
@@ -222,6 +247,8 @@ public class MemberService {
 				if (memberCsv != null)
 					memberList.add(memberCsv);
 			}
+		} catch (CustomException e) {
+			throw e;
 		} catch (Exception e) {
 			AMLogger.logError(className, methodName, refId, e);
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -279,6 +306,12 @@ public class MemberService {
 			memberRole.append("name", defaultMemberRole.getName());
 			memberRole.append("description", defaultMemberRole.getDescription());
 			
+			// create riskParameters
+			Document riskParameters = new Document();
+			riskParameters.append("newPositionOrderLock", Constant.RISK_OPTION_NO);
+			riskParameters.append("orderLock", Constant.RISK_OPTION_NO);
+			riskParameters.append("marginWithdrawalLock", Constant.RISK_OPTION_NO);
+			
 			ObjectId memberId = new ObjectId();
 			Document newMember = new Document();
 			newMember.append("createdUser", Utility.getCurrentUsername());
@@ -291,6 +324,7 @@ public class MemberService {
 			newMember.append("company", company);
 			newMember.append("contact", contact);
 			newMember.append("role", memberRole);
+			newMember.append("riskParameters", riskParameters);
 			
 			// insert new member
 			MongoDatabase database = MongoDBConnection.getMongoDatabase();
@@ -462,6 +496,8 @@ public class MemberService {
 		try {
 			LocalServiceConnection serviceCon = new LocalServiceConnection();
 			EmailDTO email = new EmailDTO();
+			email.setSettingType(Constant.SERVICE_NOTIFICATION_SETTING_TYPE_CREATE_USER);
+			email.setSendingObject(Constant.SERVICE_NOTIFICATION_SENDING_OBJ);
 			email.setTo(toEmail);
 			email.setSubject(FileUtility.CREATE_NEW_USER_EMAIL_SUBJECT);
 
@@ -493,9 +529,13 @@ public class MemberService {
 			
 			BasicDBObject updateMember = new BasicDBObject();
 			boolean isUserUpdated = false;
+			boolean isStatusUpdated = false;
 			
 			if (Utility.isNotNull(memberDto.getName())) updateMember.append("name", memberDto.getName());
-			if (Utility.isNotNull(memberDto.getStatus())) updateMember.append("status", memberDto.getStatus());
+			if (Utility.isNotNull(memberDto.getStatus())) {
+				isStatusUpdated = true;
+				updateMember.append("status", memberDto.getStatus().toUpperCase());
+			}
 			if (Utility.isNotNull(memberDto.getNote())) {
 				updateMember.append("note", memberDto.getNote());
 				updateMember.append("users.$.note", memberDto.getNote());
@@ -560,6 +600,8 @@ public class MemberService {
 				MongoDatabase database = MongoDBConnection.getMongoDatabase();
 				MongoCollection<Document> collection = database.getCollection("members");
 				collection.updateOne(query, update);
+				
+				// if status is changed, update all 
 			}
 		} catch (CustomException e) {
 			throw e;
@@ -911,6 +953,8 @@ public class MemberService {
 				update.append("$set", updateMember);
 				
 				collection.updateOne(query, update);
+				
+				setMemberInfoRedis(collection, memberCode, refId);
 			}
 		} catch (CustomException e) {
 			throw e;
@@ -1094,30 +1138,65 @@ public class MemberService {
 		return approvalId;
 	}
 	
-	public void createDefaultSetting(HttpServletRequest request, PendingApproval pendingApproval, long refId) {
-		String methodName = "createDefaultSetting";
-		boolean needUpdateCommodities = false;
+	public void createOrderLimit(HttpServletRequest request, PendingApproval pendingApproval, long refId) {
+		String methodName = "createOrderLimit";
 		try {
 			String memberCode = pendingApproval.getPendingData().getQueryValue();
-			DefaultSettingDTO memberDto = new Gson().fromJson(pendingApproval.getPendingData().getPendingValue(), DefaultSettingDTO.class);
+			OrderLimitDTO memberDto = new Gson().fromJson(pendingApproval.getPendingData().getPendingValue(), OrderLimitDTO.class);
 			
 			// get redis user info
 			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
 			// send activity log
-			activityLogService.sendActivityLog(userInfo, request, ActivityLogService.ACTIVITY_APPROVAL_CREATE_MEMBER_DEFAULT_SETTING,
-					ActivityLogService.ACTIVITY_APPROVAL_CREATE_MEMBER_DEFAULT_SETTING_DESC, memberCode, pendingApproval.getId());
+			activityLogService.sendActivityLog(userInfo, request, ActivityLogService.ACTIVITY_APPROVAL_CREATE_MEMBER_ORDER_LIMIT,
+					ActivityLogService.ACTIVITY_APPROVAL_CREATE_MEMBER_ORDER_LIMIT_DESC, memberCode, pendingApproval.getId());
 			
 			Document updateDocument = new Document();
 			if (memberDto.getOrderLimit() > 0) {
 				updateDocument.append("orderLimit", memberDto.getOrderLimit());
 			}
+			
+			if (updateDocument.isEmpty()) {
+				throw new CustomException(ErrorMessage.INVALID_REQUEST, HttpStatus.BAD_REQUEST);
+			} else {
+				MongoDatabase database = MongoDBConnection.getMongoDatabase();
+				MongoCollection<Document> collection = database.getCollection("members");
+				
+				Document query = new Document();
+				query.append("code", memberCode);
+				
+				updateDocument.append("lastModifiedUser", Utility.getCurrentUsername());
+				updateDocument.append("lastModifiedDate", System.currentTimeMillis());
+				
+	            Document update = new Document();
+				update.append("$set", updateDocument);
+				
+				collection.updateOne(query, update);
+			}
+		} catch (CustomException e) {
+			throw e;
+		} catch (Exception e) {
+			AMLogger.logError(className, methodName, refId, e);
+			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+	
+	public void createDefaultPositionLimit(HttpServletRequest request, PendingApproval pendingApproval, long refId) {
+		String methodName = "createDefaultPositionLimit";
+		boolean needUpdateCommodities = false;
+		try {
+			String memberCode = pendingApproval.getPendingData().getQueryValue();
+			DefaultPositionLimitDTO memberDto = new Gson().fromJson(pendingApproval.getPendingData().getPendingValue(), DefaultPositionLimitDTO.class);
+			
+			// get redis user info
+			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
+			// send activity log
+			activityLogService.sendActivityLog(userInfo, request, ActivityLogService.ACTIVITY_APPROVAL_CREATE_MEMBER_DEFAULT_POSITION_LIMIT,
+					ActivityLogService.ACTIVITY_APPROVAL_CREATE_MEMBER_DEFAULT_POSITION_LIMIT_DESC, memberCode, pendingApproval.getId());
+			
+			Document updateDocument = new Document();
 			if (memberDto.getDefaultPositionLimit() > 0) {
 				needUpdateCommodities = true;
 				updateDocument.append("defaultPositionLimit", memberDto.getDefaultPositionLimit());
-			}
-			if (memberDto.getDefaultCommodityFee() > 0) {
-				needUpdateCommodities = true;
-				updateDocument.append("defaultCommodityFee", memberDto.getDefaultCommodityFee());
 			}
 			
 			if (updateDocument.isEmpty()) {
@@ -1148,11 +1227,7 @@ public class MemberService {
 			            	newComm.append("commodityCode", comm.getCommodityCode());
 			            	newComm.append("commodityName", comm.getCommodityCode());
 			            	newComm.append("currency", Constant.CURRENCY_VND);
-			            	if (memberDto.getDefaultCommodityFee() > 0) {
-			            		newComm.append("commodityFee", memberDto.getDefaultCommodityFee());
-			            	} else {
-			            		newComm.append("commodityFee", comm.getCommodityFee());
-			            	}
+			            	newComm.append("commodityFee", comm.getCommodityFee());
 			            	if (Constant.POSITION_INHERITED.equalsIgnoreCase(comm.getPositionLimitType())) {
 			            		if (memberDto.getDefaultPositionLimit() > 0) {
 			            			newComm.append("positionLimitType", Constant.POSITION_INHERITED);
@@ -1177,6 +1252,8 @@ public class MemberService {
 				update.append("$set", updateDocument);
 				
 				collection.updateOne(query, update);
+				
+				setMemberInfoRedis(collection, memberCode, refId);
 			}
 		} catch (CustomException e) {
 			throw e;
@@ -1186,8 +1263,8 @@ public class MemberService {
 		}
 	}
 	
-	public void createDefaultSettingPA(HttpServletRequest request, String memberCode, ApprovalDefaultSettingDTO memberDto, long refId) {
-		String methodName = "createDefaultSettingPA";
+	public void createOrderLimitPA(HttpServletRequest request, String memberCode, ApprovalOrderLimitDTO memberDto, long refId) {
+		String methodName = "createOrderLimitPA";
 		try {
 			if (!memberRepository.existsMemberByCode(memberCode)) {
 				throw new CustomException(ErrorMessage.RESULT_NOT_FOUND, HttpStatus.OK);
@@ -1196,7 +1273,8 @@ public class MemberService {
 			// get redis user info
 			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
 			// insert data to pending_approvals
-			String approvalId = insertDefaultSettingPA(userInfo, memberCode, memberDto, refId);
+			String approvalId = insertOrderLimitSettingPA(userInfo, memberCode, memberDto, refId);
+			
 			// send activity log
 			activityLogService.sendActivityLog(userInfo, request, ActivityLogService.ACTIVITY_CREATE_MEMBER_DEFAULT_SETTING,
 					ActivityLogService.ACTIVITY_CREATE_MEMBER_DEFAULT_SETTING_DESC, memberCode, approvalId);
@@ -1208,16 +1286,73 @@ public class MemberService {
 		}
 	}
 	
-	private String insertDefaultSettingPA(UserInfoDTO userInfo, String memberCode, ApprovalDefaultSettingDTO memberDto,
+	public void createDefaultPositionLimitPA(HttpServletRequest request, String memberCode, ApprovalDefaultPositionLimitDTO memberDto, long refId) {
+		String methodName = "createDefaultPositionLimitPA";
+		try {
+			if (!memberRepository.existsMemberByCode(memberCode)) {
+				throw new CustomException(ErrorMessage.RESULT_NOT_FOUND, HttpStatus.OK);
+			}
+			
+			// get redis user info
+			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
+			// insert data to pending_approvals
+			String approvalId = insertDefaultPositionLimitSettingPA(userInfo, memberCode, memberDto, refId);
+			
+			// send activity log
+			activityLogService.sendActivityLog(userInfo, request, ActivityLogService.ACTIVITY_CREATE_MEMBER_DEFAULT_SETTING,
+					ActivityLogService.ACTIVITY_CREATE_MEMBER_DEFAULT_SETTING_DESC, memberCode, approvalId);
+		} catch (CustomException e) {
+			throw e;
+		} catch (Exception e) {
+			AMLogger.logError(className, methodName, refId, e);
+			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+	
+	private String insertOrderLimitSettingPA(UserInfoDTO userInfo, String memberCode, ApprovalOrderLimitDTO memberDto,
 			long refId) {
-		String methodName = "insertDefaultSettingPA";
+		String methodName = "insertOrderLimitSettingPA";
 		String approvalId = "";
 		try {
 			NestedObjectInfo nestedObjInfo = new NestedObjectInfo();
 			nestedObjInfo.setDeptCode(userInfo.getDeptCode());
 
 			PendingData pendingData = new PendingData();
-			pendingData.setServiceFunctionName(ApprovalConstant.MEMBER_DEFAULT_SETTING_CREATE);
+			pendingData.setServiceFunctionName(ApprovalConstant.MEMBER_ORDER_LIMIT_CREATE);
+			pendingData.setCollectionName("members");
+			pendingData.setAction(Constant.APPROVAL_ACTION_UPDATE);
+			pendingData.setQueryField("code");
+			pendingData.setQueryValue(memberCode);
+			pendingData.setOldValue(new Gson().toJson(memberDto.getOldData()));
+			pendingData.setPendingValue(new Gson().toJson(memberDto.getPendingData()));
+
+			PendingApproval pendingApproval = new PendingApproval();
+			pendingApproval.setApiUrl(String.format(ApprovalConstant.APPROVAL_PENDING_URL, approvalId));
+			pendingApproval.setFunctionCode(SystemFunctionCode.APPROVAL_MEMBER_ORDER_LIMIT_CREATE_CODE);
+			pendingApproval.setFunctionName(SystemFunctionCode.MEMBER_ORDER_LIMIT_CREATE_NAME);
+			pendingApproval.setDescription(
+					SystemFunctionCode.getApprovalDescription(pendingApproval.getFunctionName(), memberCode));
+			pendingApproval.setStatus(Constant.APPROVAL_STATUS_PENDING);
+			pendingApproval.setNestedObjInfo(nestedObjInfo);
+			pendingApproval.setPendingData(pendingData);
+			approvalId = pendingApprovalRepo.save(pendingApproval).getId();
+		} catch (Exception e) {
+			AMLogger.logError(className, methodName, refId, e);
+			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		return approvalId;
+	}
+	
+	private String insertDefaultPositionLimitSettingPA(UserInfoDTO userInfo, String memberCode, ApprovalDefaultPositionLimitDTO memberDto,
+			long refId) {
+		String methodName = "insertDefaultPositionLimitSettingPA";
+		String approvalId = "";
+		try {
+			NestedObjectInfo nestedObjInfo = new NestedObjectInfo();
+			nestedObjInfo.setDeptCode(userInfo.getDeptCode());
+
+			PendingData pendingData = new PendingData();
+			pendingData.setServiceFunctionName(ApprovalConstant.MEMBER_DEFAULT_POSITION_LIMIT_CREATE);
 			pendingData.setCollectionName("members");
 			pendingData.setAction(Constant.APPROVAL_ACTION_CREATE);
 			pendingData.setQueryField("code");
@@ -1227,8 +1362,8 @@ public class MemberService {
 
 			PendingApproval pendingApproval = new PendingApproval();
 			pendingApproval.setApiUrl(String.format(ApprovalConstant.APPROVAL_PENDING_URL, approvalId));
-			pendingApproval.setFunctionCode(SystemFunctionCode.APPROVAL_MEMBER_LIMIT_CREATE_CODE);
-			pendingApproval.setFunctionName(SystemFunctionCode.MEMBER_LIMIT_CREATE_NAME);
+			pendingApproval.setFunctionCode(SystemFunctionCode.APPROVAL_MEMBER_DEFAULT_POSITION_LIMIT_CREATE_CODE);
+			pendingApproval.setFunctionName(SystemFunctionCode.MEMBER_DEFAULT_POSITION_LIMIT_CREATE_NAME);
 			pendingApproval.setDescription(
 					SystemFunctionCode.getApprovalDescription(pendingApproval.getFunctionName(), memberCode));
 			pendingApproval.setStatus(Constant.APPROVAL_STATUS_PENDING);
@@ -1269,17 +1404,7 @@ public class MemberService {
 			MongoCollection<Document> collection = database.getCollection("members");
 			collection.updateOne(query, update);
 			
-			// delete redis info (if existed)
-			Utility.deleteRedisInfo(template, memberCode, refId);
-			
-			// insert new redis info
-			Document projection = new Document();
-			projection.append("_id", 0.0);
-			projection.append("riskParameters", 1.0);
-			
-			Document result = collection.find(query).projection(projection).first();
-			RiskParametersDTO riskDto = mongoTemplate.getConverter().read(RiskParametersDTO.class, result);
-			Utility.setRedisInfo(template, memberCode, riskDto, refId);
+			setMemberInfoRedis(collection, memberCode, refId);
 		} catch (CustomException e) {
 			throw e;
 		} catch (Exception e) {
@@ -1372,18 +1497,7 @@ public class MemberService {
 			MongoCollection<Document> collection = database.getCollection("members");
 			collection.updateOne(query, update);
 			
-
-			// delete redis info (if existed)
-			Utility.deleteRedisInfo(template, memberCode, refId);
-			
-			// insert new redis info
-			Document projection = new Document();
-			projection.append("_id", 0.0);
-			projection.append("riskParameters", 1.0);
-			
-			Document result = collection.find(query).projection(projection).first();
-			RiskParametersDTO riskDto = mongoTemplate.getConverter().read(RiskParametersDTO.class, result);
-			Utility.setRedisInfo(template, memberCode, riskDto, refId);
+			setMemberInfoRedis(collection, memberCode, refId);
 		} catch (CustomException e) {
 			throw e;
 		} catch (Exception e) {
@@ -1426,7 +1540,6 @@ public class MemberService {
 			pendingData.setServiceFunctionName(ApprovalConstant.MEMBER_RISK_ORDER_LOCK_SET);
 			pendingData.setCollectionName("members");
 			pendingData.setAction(Constant.APPROVAL_ACTION_UPDATE);
-			pendingData.setAppliedObject(String.format(ApprovalConstant.APPLIED_OBJ_MEMBER, memberCode));
 			pendingData.setAppliedObject(String.format(ApprovalConstant.APPLIED_OBJ_MEMBER, memberCode));
 			pendingData.setQueryField("code");
 			pendingData.setQueryValue(memberCode);
@@ -1477,18 +1590,7 @@ public class MemberService {
 			MongoCollection<Document> collection = database.getCollection("members");
 			collection.updateOne(query, update);
 			
-
-			// delete redis info (if existed)
-			Utility.deleteRedisInfo(template, memberCode, refId);
-			
-			// insert new redis info
-			Document projection = new Document();
-			projection.append("_id", 0.0);
-			projection.append("riskParameters", 1.0);
-			
-			Document result = collection.find(query).projection(projection).first();
-			RiskParametersDTO riskDto = mongoTemplate.getConverter().read(RiskParametersDTO.class, result);
-			Utility.setRedisInfo(template, memberCode, riskDto, refId);
+			setMemberInfoRedis(collection, memberCode, refId);
 		} catch (CustomException e) {
 			throw e;
 		} catch (Exception e) {
@@ -1552,6 +1654,30 @@ public class MemberService {
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 		return approvalId;
+	}
+	
+	private void setMemberInfoRedis(MongoCollection<Document> collection, String memberCode, long refId) {
+		String methodName = "setMemberInfoRedis";
+		try {
+			Document query = new Document();
+			query.append("code", memberCode);
+			
+			// delete redis info (if existed)
+			Utility.deleteRedisInfo(template, memberCode, refId);
+			
+			// insert new redis info
+			Document projection = new Document();
+			projection.append("_id", 0.0);
+			projection.append("riskParameters", 1.0);
+			projection.append("commodities", 1.0);
+			
+			Document result = collection.find(query).projection(projection).first();
+			MemberDTO memberResultDto = mongoTemplate.getConverter().read(MemberDTO.class, result);
+			Utility.setRedisInfo(template, memberCode, memberResultDto, refId);
+		} catch (Exception e) {
+			AMLogger.logError(className, methodName, refId, e);
+			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
 	}
 	
 	public void setMarginMultiplierBulk(HttpServletRequest request, PendingApproval pendingApproval, long refId) {
@@ -1720,9 +1846,9 @@ public class MemberService {
 			}
 			
 			boolean isValidRatio = true;
-			if (memberDto.getPendingData().getMarginRatioAlert().getFinalizationRatio() > memberDto.getPendingData().getMarginRatioAlert().getCancelOrderRatio() || (memberDto.getPendingData().getMarginRatioAlert().getFinalizationRatio() > memberDto.getPendingData().getMarginRatioAlert().getWarningRatio())) {
+			if (memberDto.getPendingData().getMarginRatioAlert().getFinalizationRatio() >= memberDto.getPendingData().getMarginRatioAlert().getCancelOrderRatio() || (memberDto.getPendingData().getMarginRatioAlert().getFinalizationRatio() >= memberDto.getPendingData().getMarginRatioAlert().getWarningRatio())) {
 				isValidRatio = false;
-			} else if (memberDto.getPendingData().getMarginRatioAlert().getCancelOrderRatio() > memberDto.getPendingData().getMarginRatioAlert().getWarningRatio()) {
+			} else if (memberDto.getPendingData().getMarginRatioAlert().getCancelOrderRatio() >= memberDto.getPendingData().getMarginRatioAlert().getWarningRatio()) {
 				isValidRatio = false;
 			}
 			 
@@ -1780,11 +1906,11 @@ public class MemberService {
 		return approvalId;
 	}
 	
-	public void setGeneralFeesBulk(HttpServletRequest request, PendingApproval pendingApproval, long refId) {
-		String methodName = "setGeneralFeesBulk";
+	public void setGeneralFeeBulk(HttpServletRequest request, PendingApproval pendingApproval, long refId) {
+		String methodName = "setGeneralFeeBulk";
 		try {
 			String memberCode = pendingApproval.getPendingData().getQueryValue();
-			GeneralFeesDTO generalFeesDto = new Gson().fromJson(pendingApproval.getPendingData().getPendingValue(), GeneralFeesDTO.class);
+			GeneralFeeDTO generalFeeDto = new Gson().fromJson(pendingApproval.getPendingData().getPendingValue(), GeneralFeeDTO.class);
 			
 			// get redis user info
 			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
@@ -1792,49 +1918,32 @@ public class MemberService {
 			activityLogService.sendActivityLog(userInfo, request, ActivityLogService.ACTIVITY_APPROVAL_CREATE_MEMBER_GENERAL_FEE_BULK,
 					ActivityLogService.ACTIVITY_APPROVAL_CREATE_MEMBER_GENERAL_FEE_BULK_DESC, memberCode, pendingApproval.getId());
 			
-			if (generalFeesDto.getGeneralFees() != null && generalFeesDto.getGeneralFees().size() > 0) {
-				List<Document> generalFees = new ArrayList<Document>();
-				
-				for (GeneralFeeDTO fee : generalFeesDto.getGeneralFees()) {
-					Document feeDoc = new Document();
-					feeDoc.append("name", fee.getName());
-					feeDoc.append("processMethod", fee.getProcessMethod());
-					feeDoc.append("feeAmount", fee.getFeeAmount());
-					feeDoc.append("appliedDate", fee.getAppliedDate());
-					
-					generalFees.add(feeDoc);
-				}
-				
-				Document memberUpdateDoc = new Document();
-				memberUpdateDoc.append("generalFees", generalFees);
-				memberUpdateDoc.append("lastModifiedUser", Utility.getCurrentUsername());
-				memberUpdateDoc.append("lastModifiedDate", System.currentTimeMillis());
+			if (generalFeeDto != null) {
+				Document feeDoc = new Document();
+				feeDoc.append("name", generalFeeDto.getName());
+				feeDoc.append("processMethod", generalFeeDto.getProcessMethod());
+				feeDoc.append("feeAmount", generalFeeDto.getFeeAmount());
+				feeDoc.append("appliedDate", generalFeeDto.getAppliedDate());
 				
 				Document memberQuery = new Document();
 				memberQuery.append("code", memberCode);
 				
-				Document memberUpdate = new Document();
-				memberUpdate.append("$set", memberUpdateDoc);
-				
+				// add new fee in memers
 				MongoDatabase database = MongoDBConnection.getMongoDatabase();
 				MongoCollection<Document> memberCollection = database.getCollection("members");
-				memberCollection.updateOne(memberQuery, memberUpdate);
+				memberCollection.updateOne(memberQuery, Updates.addToSet("generalFees", feeDoc));
 				
+				// add new fee in investors
 				BasicDBObject investorQuery = new BasicDBObject();
 				investorQuery.append("memberCode", memberCode);
 				
-				BasicDBObject invUpdateDoc = new BasicDBObject();
-				invUpdateDoc.append("generalFees", generalFees);
-				invUpdateDoc.append("lastModifiedUser", Utility.getCurrentUsername());
-				invUpdateDoc.append("lastModifiedDate", System.currentTimeMillis());
-				
-				BasicDBObject invUpdate = new BasicDBObject();
-				invUpdate.append("$set", invUpdateDoc);
-
 				MongoCollection<Document> invCollection = database.getCollection("investors");
-				invCollection.updateMany(investorQuery, invUpdate);
+				invCollection.updateMany(investorQuery, Updates.addToSet("generalFees", feeDoc));
+				
+				// add new fee in investor_margin_info
+				MongoCollection<Document> marginCollection = database.getCollection("investor_margin_info");
+				marginCollection.updateMany(investorQuery, Updates.addToSet("generalFees", feeDoc));
 			}
-			
 		} catch (CustomException e) {
 			throw e;
 		} catch (Exception e) {
@@ -1843,17 +1952,21 @@ public class MemberService {
 		}
 	}
 	
-	public void setGeneralFeesBulkPA(HttpServletRequest request, String memberCode, ApprovalGeneralFeesDTO generalFeesDto, long refId) {
+	public void setGeneralFeesBulkPA(HttpServletRequest request, String memberCode, GeneralFeeDTO generalFeeDto, long refId) {
 		String methodName = "setGeneralFeesBulkPA";
 		try {
 			if (!memberRepository.existsMemberByCode(memberCode)) {
 				throw new CustomException(ErrorMessage.RESULT_NOT_FOUND, HttpStatus.OK);
 			}
 			
+			if (checkIfExistedFee(memberCode, generalFeeDto.getName(), refId)) {
+				throw new CustomException(ErrorMessage.DOCUMENT_ALREADY_EXISTED, HttpStatus.OK);
+			}
+			
 			// get redis user info
 			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
 			// insert data to pending_approvals
-			String approvalId = insertGeneralFeesBulkPA(userInfo, memberCode, generalFeesDto, refId);
+			String approvalId = insertGeneralFeesBulkPA(userInfo, memberCode, generalFeeDto, refId);
 			// send activity log
 			activityLogService.sendActivityLog(userInfo, request, ActivityLogService.ACTIVITY_CREATE_MEMBER_GENERAL_FEE_BULK,
 					ActivityLogService.ACTIVITY_CREATE_MEMBER_GENERAL_FEE_BULK_DESC, memberCode, approvalId);
@@ -1865,7 +1978,26 @@ public class MemberService {
 		}
 	}
 	
-	public String insertGeneralFeesBulkPA(UserInfoDTO userInfo, String memberCode, ApprovalGeneralFeesDTO generalFeesDto,
+	private boolean checkIfExistedFee(String memberCode, String feeName, long refId) {
+		String methodName = "checkIfExistedFee";
+		try {
+			MongoDatabase database = MongoDBConnection.getMongoDatabase();
+			MongoCollection<Document> memberCollection = database.getCollection("members");
+			
+			Document query = new Document();
+			query.append("code", memberCode);
+			query.append("generalFees.name", feeName);
+			
+			Document result = memberCollection.find(query).first();
+			if (result != null) return true;
+			return false;
+		} catch (Exception e) {
+			AMLogger.logError(className, methodName, refId, e);
+			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+	
+	private String insertGeneralFeesBulkPA(UserInfoDTO userInfo, String memberCode, GeneralFeeDTO generalFeeDto,
 			long refId) {
 		String methodName = "insertGeneralFeeBulkPA";
 		String approvalId = "";
@@ -1876,12 +2008,128 @@ public class MemberService {
 			PendingData pendingData = new PendingData();
 			pendingData.setServiceFunctionName(ApprovalConstant.MEMBER_GENERAL_FEE_BULK_CREATE);
 			pendingData.setCollectionName("members");
+			pendingData.setAction(Constant.APPROVAL_ACTION_CREATE);
+			pendingData.setAppliedObject(String.format(ApprovalConstant.APPLIED_OBJ_MEMBER_INVESTORS, memberCode));
+			pendingData.setQueryField("code");
+			pendingData.setQueryValue(memberCode);
+			pendingData.setPendingValue(new Gson().toJson(generalFeeDto));
+
+			PendingApproval pendingApproval = new PendingApproval();
+			pendingApproval.setApiUrl(String.format(ApprovalConstant.APPROVAL_PENDING_URL, approvalId));
+			pendingApproval.setFunctionCode(SystemFunctionCode.APPROVAL_MEMBER_GENERAL_FEE_BULK_CREATE_CODE);
+			pendingApproval.setFunctionName(SystemFunctionCode.MEMBER_GENERAL_FEE_BULK_CREATE_NAME);
+			pendingApproval.setDescription(
+					SystemFunctionCode.getApprovalDescription(pendingApproval.getFunctionName(), memberCode));
+			pendingApproval.setStatus(Constant.APPROVAL_STATUS_PENDING);
+			pendingApproval.setNestedObjInfo(nestedObjInfo);
+			pendingApproval.setPendingData(pendingData);
+			approvalId = pendingApprovalRepo.save(pendingApproval).getId();
+		} catch (Exception e) {
+			AMLogger.logError(className, methodName, refId, e);
+			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		return approvalId;
+	}
+	
+	public void updateGeneralFeeBulk(HttpServletRequest request, PendingApproval pendingApproval, long refId) {
+		String methodName = "updateGeneralFeeBulk";
+		try {
+			String memberCode = pendingApproval.getPendingData().getQueryValue();
+			String oldFeeName = pendingApproval.getPendingData().getQueryValue2();
+			GeneralFeeDTO generalFeeDto = new Gson().fromJson(pendingApproval.getPendingData().getPendingValue(), GeneralFeeDTO.class);
+			
+			// get redis user info
+			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
+			// send activity log
+			activityLogService.sendActivityLog(userInfo, request, ActivityLogService.ACTIVITY_APPROVAL_CREATE_MEMBER_GENERAL_FEE_BULK,
+					ActivityLogService.ACTIVITY_APPROVAL_CREATE_MEMBER_GENERAL_FEE_BULK_DESC, memberCode, pendingApproval.getId());
+			
+			if (generalFeeDto != null) {
+				// update generalFees in members
+				Document updateFeeDoc = new Document();
+				updateFeeDoc.append("name", generalFeeDto.getName());
+				updateFeeDoc.append("processMethod", generalFeeDto.getProcessMethod());
+				updateFeeDoc.append("feeAmount", generalFeeDto.getFeeAmount());
+				updateFeeDoc.append("appliedDate", generalFeeDto.getAppliedDate());
+				
+				Document memberQuery = new Document();
+				memberQuery.append("code", memberCode);
+				
+				MongoDatabase database = MongoDBConnection.getMongoDatabase();
+				MongoCollection<Document> memberCollection = database.getCollection("members");
+				
+				Document memberFields = new Document("generalFees", new Document("name", oldFeeName));
+				Document memberUpdate = new Document("$pull", memberFields);
+				memberCollection.updateOne(memberQuery, memberUpdate);
+				
+				memberCollection.updateOne(memberQuery, Updates.addToSet("generalFees", updateFeeDoc));
+				
+				// update generalFees in investors
+				Document investorQuery = new Document();
+				investorQuery.append("memberCode", memberCode);
+				
+				MongoCollection<Document> invCollection = database.getCollection("investors");
+				Document investorFields = new Document("generalFees", new Document("name", oldFeeName));
+				Document investorUpdate = new Document("$pull", investorFields);
+				invCollection.updateMany(investorQuery, investorUpdate);
+				
+				invCollection.updateMany(investorQuery, Updates.addToSet("generalFees", updateFeeDoc));
+				
+				// update generalFess in investor_margin_info
+				MongoCollection<Document> marginCollection = database.getCollection("investor_margin_info");
+				marginCollection.updateMany(investorQuery, investorUpdate);
+				
+				marginCollection.updateMany(investorQuery, Updates.addToSet("generalFees", updateFeeDoc));
+			}
+		} catch (CustomException e) {
+			throw e;
+		} catch (Exception e) {
+			AMLogger.logError(className, methodName, refId, e);
+			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+	
+	public void updateGeneralFeesBulkPA(HttpServletRequest request, String memberCode, ApprovalGeneralFeeDTO generalFeeDto, long refId) {
+		String methodName = "updateGeneralFeesBulkPA";
+		try {
+			if (!memberRepository.existsMemberByCode(memberCode)) {
+				throw new CustomException(ErrorMessage.RESULT_NOT_FOUND, HttpStatus.OK);
+			}
+			
+			// get redis user info
+			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
+			// insert data to pending_approvals
+			String approvalId = insertGeneralFeesBulkUpdatePA(userInfo, memberCode, generalFeeDto, refId);
+			// send activity log
+			activityLogService.sendActivityLog(userInfo, request, ActivityLogService.ACTIVITY_CREATE_MEMBER_GENERAL_FEE_BULK,
+					ActivityLogService.ACTIVITY_CREATE_MEMBER_GENERAL_FEE_BULK_DESC, memberCode, approvalId);
+		} catch (CustomException e) {
+			throw e;
+		} catch (Exception e) {
+			AMLogger.logError(className, methodName, refId, e);
+			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+	
+	private String insertGeneralFeesBulkUpdatePA(UserInfoDTO userInfo, String memberCode, ApprovalGeneralFeeDTO generalFeeDto,
+			long refId) {
+		String methodName = "insertGeneralFeesBulkUpdatePA";
+		String approvalId = "";
+		try {
+			NestedObjectInfo nestedObjInfo = new NestedObjectInfo();
+			nestedObjInfo.setDeptCode(userInfo.getDeptCode());
+
+			PendingData pendingData = new PendingData();
+			pendingData.setServiceFunctionName(ApprovalConstant.MEMBER_GENERAL_FEE_BULK_UPDATE);
+			pendingData.setCollectionName("members");
 			pendingData.setAction(Constant.APPROVAL_ACTION_UPDATE);
 			pendingData.setAppliedObject(String.format(ApprovalConstant.APPLIED_OBJ_MEMBER_INVESTORS, memberCode));
 			pendingData.setQueryField("code");
 			pendingData.setQueryValue(memberCode);
-			pendingData.setOldValue(new Gson().toJson(generalFeesDto.getOldData()));
-			pendingData.setPendingValue(new Gson().toJson(generalFeesDto.getPendingData()));
+			pendingData.setQueryField2("generalFees.name");
+			pendingData.setQueryValue2(generalFeeDto.getOldData().getName());
+			pendingData.setOldValue(new Gson().toJson(generalFeeDto.getOldData()));
+			pendingData.setPendingValue(new Gson().toJson(generalFeeDto.getPendingData()));
 
 			PendingApproval pendingApproval = new PendingApproval();
 			pendingApproval.setApiUrl(String.format(ApprovalConstant.APPROVAL_PENDING_URL, approvalId));
@@ -2535,7 +2783,7 @@ public class MemberService {
 			if (Utility.isNotNull(userDto.getEmail()))
 				newDocument.append("users.$.email", userDto.getEmail());
 			if (Utility.isNotNull(userDto.getStatus()))
-				newDocument.append("users.$.status", userDto.getStatus());
+				newDocument.append("users.$.status", userDto.getStatus().toUpperCase());
 			if (Utility.isNotNull(userDto.getNote()))
 				newDocument.append("users.$.note", userDto.getNote());
 			if (Utility.isNotNull(userDto.getIsPasswordExpiryCheck()))
@@ -2682,7 +2930,7 @@ public class MemberService {
 				Document roleDoc = new Document();
 				roleDoc.append("name", role.getName());
 				roleDoc.append("description", role.getDescription());
-				roleDoc.append("status", role.getStatus());
+				roleDoc.append("status", role.getStatus().toUpperCase());
 				roles.add(roleDoc);
 			}
 			BasicDBObject query = new BasicDBObject();
@@ -3022,8 +3270,13 @@ public class MemberService {
 			invQuery.put("memberCode", memberCode);
 
 			BasicDBObject invUpdateDoc = new BasicDBObject();
-			invUpdateDoc.put("memberCode", changeGroupDto.getGroupCode());
-			invUpdateDoc.put("memberName", changeGroupDto.getGroupName());
+			invUpdateDoc.append("memberCode", changeGroupDto.getGroupCode());
+			invUpdateDoc.append("memberName", changeGroupDto.getGroupName());
+			invUpdateDoc.append("brokerCode", null);
+			invUpdateDoc.append("brokerName", null);
+			invUpdateDoc.append("collaboratorCode", null);
+			invUpdateDoc.append("collaboratorName", null);
+			invUpdateDoc.append("orderLimit", getMemberOrderLimit(changeGroupDto.getGroupCode()));
 			
 			BasicDBObject invUpdate = new BasicDBObject();
 			invUpdate.put("$set", invUpdateDoc);
@@ -3036,6 +3289,11 @@ public class MemberService {
 
 			BasicDBObject newLoginAdmUser = new BasicDBObject();
 			newLoginAdmUser.put("memberCode", changeGroupDto.getGroupCode());
+			newLoginAdmUser.put("memberName", changeGroupDto.getGroupName());
+			newLoginAdmUser.put("brokerCode", null);
+			newLoginAdmUser.put("brokerName", null);
+			newLoginAdmUser.put("collaboratorCode", null);
+			newLoginAdmUser.put("collaboratorName", null);
 
 			BasicDBObject updateObj = new BasicDBObject();
 			updateObj.put("$set", newLoginAdmUser);
@@ -3047,6 +3305,24 @@ public class MemberService {
 			AMLogger.logError(className, methodName, refId, e);
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
+	}
+	
+	private long getMemberOrderLimit(String memberCode) {
+		MongoDatabase database = MongoDBConnection.getMongoDatabase();
+		MongoCollection<Document> collection = database.getCollection("members");
+		
+		Document query = new Document();
+		query.append("code", memberCode);
+		
+		Document projection = new Document();
+		projection.append("_id", 0.0);
+		projection.append("orderLimit", 1.0);
+		
+		Document result = collection.find(query).projection(projection).first();
+		MemberDTO memberDto = mongoTemplate.getConverter().read(MemberDTO.class, result);
+		if (memberDto != null) {
+			return memberDto.getOrderLimit();
+		} else return 0;
 	}
 	
 	public void moveAllInvestorsToNewMemberPA(HttpServletRequest request, ApprovalChangeGroupDTO changeGroupDto, long refId) {

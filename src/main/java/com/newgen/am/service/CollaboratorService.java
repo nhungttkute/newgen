@@ -93,6 +93,25 @@ public class CollaboratorService {
 	@Autowired
 	PasswordEncoder passwordEncoder;
 	
+	private Document getQueryDocument(RequestParamsParser.SearchCriteria searchCriteria, UserInfoDTO userInfo) {
+		Document query = new Document();
+		// get redis user info
+		if (Utility.isDeptUser(userInfo)) {
+			// do nothing
+			query = searchCriteria.getQuery();
+		} else if (Utility.isMemberUser(userInfo)) {
+			// match code=memberCode
+			query = searchCriteria.getQuery().append("memberCode", userInfo.getMemberCode());
+		} else if (Utility.isBrokerUser(userInfo)) {
+			query = searchCriteria.getQuery().append("memberCode", userInfo.getMemberCode()).append("brokerCode", userInfo.getBrokerCode());
+		} else if (Utility.isCollaboratorUser(userInfo)) {
+			query = searchCriteria.getQuery().append("memberCode", userInfo.getMemberCode()).append("brokerCode", userInfo.getBrokerCode()).append("code", userInfo.getCollaboratorCode());
+		} else {
+			throw new CustomException(ErrorMessage.ACCESS_DENIED, HttpStatus.FORBIDDEN);
+		}
+		return query;
+	}
+	
 	public BasePagination<CollaboratorDTO> list(HttpServletRequest request, long refId) {
 		String methodName = "list";
 		BasePagination<CollaboratorDTO> pagination = null;
@@ -100,9 +119,12 @@ public class CollaboratorService {
 			RequestParamsParser.SearchCriteria searchCriteria = rqParamsParser
 					.getSearchCriteria(request.getQueryString(), "", refId);
 
+			// get redis user info
+			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
+			
 			List<? extends Bson> pipeline = Arrays.asList(
                     new Document()
-                            .append("$match", searchCriteria.getQuery()), 
+                            .append("$match", getQueryDocument(searchCriteria, userInfo)), 
                     new Document()
                             .append("$sort", searchCriteria.getSort()), 
                     new Document()
@@ -147,6 +169,8 @@ public class CollaboratorService {
 			MongoCollection<Document> collection = database.getCollection("collaborators");
 			Document resultDoc = collection.aggregate(pipeline).first();
 			pagination = mongoTemplate.getConverter().read(BasePagination.class, resultDoc);
+		} catch (CustomException e) {
+			throw e;
 		} catch (Exception e) {
 			AMLogger.logError(className, methodName, refId, e);
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -160,10 +184,12 @@ public class CollaboratorService {
 		try {
 			RequestParamsParser.SearchCriteria searchCriteria = rqParamsParser
 					.getSearchCriteria(request.getQueryString(), "", refId);
-
+			// get redis user info
+			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
+			
 			List<? extends Bson> pipeline = Arrays.asList(
                     new Document()
-                            .append("$match", searchCriteria.getQuery()), 
+                            .append("$match", getQueryDocument(searchCriteria, userInfo)), 
                     new Document()
                             .append("$sort", searchCriteria.getSort()), 
                     new Document()
@@ -194,6 +220,8 @@ public class CollaboratorService {
 				if (brokerCsv != null)
 					collaboratorList.add(brokerCsv);
 			}
+		} catch (CustomException e) {
+			throw e;
 		} catch (Exception e) {
 			AMLogger.logError(className, methodName, refId, e);
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -267,7 +295,7 @@ public class CollaboratorService {
 			collection.insertOne(newCollaborator);
 			
 			// insert new broker's user to login_admin_users
-			createCollaboratorUser(request, collaboratorDto, collaboratorCode, collaboratorRole, refId);
+			createCollaboratorUser(request, collaboratorDto, collaboratorCode, refId);
 		} catch (CustomException e) {
 			throw e;
 		} catch (Exception e) {
@@ -294,7 +322,7 @@ public class CollaboratorService {
 		}
 	}
 	
-	private void createCollaboratorUser(HttpServletRequest request, CollaboratorDTO collaboratorDto, String collaboratorCode, Document collaboratorRole, long refId) {
+	private void createCollaboratorUser(HttpServletRequest request, CollaboratorDTO collaboratorDto, String collaboratorCode, long refId) {
 		String methodName = "createCollaboratorUser";
 		boolean existedUser = false;
 		String username = Constant.COLLABORATOR_USER_PREFIX + collaboratorCode;
@@ -323,7 +351,6 @@ public class CollaboratorService {
 				collaboratorUser.append("expiryAlertDays", 0);
 				collaboratorUser.append("createdUser", Utility.getCurrentUsername());
 				collaboratorUser.append("createdDate", System.currentTimeMillis());
-				collaboratorUser.append("role", collaboratorRole);
 
 				BasicDBObject query = new BasicDBObject();
 				query.append("code", collaboratorCode);
@@ -336,7 +363,7 @@ public class CollaboratorService {
 				userDto.setMemberName(collaboratorDto.getMemberName());
 				userDto.setBrokerCode(collaboratorDto.getBrokerCode());
 				userDto.setBrokerName(collaboratorDto.getBrokerName());
-				userDto.setCollaboratorCode(collaboratorDto.getCode());
+				userDto.setCollaboratorCode(collaboratorCode);
 				userDto.setCollaboratorName(collaboratorDto.getName());
 				userDto.setUsername(username);
 				userDto.setFullName(collaboratorDto.getDelegate().getFullName());
@@ -382,6 +409,8 @@ public class CollaboratorService {
 		try {
 			LocalServiceConnection serviceCon = new LocalServiceConnection();
 			EmailDTO email = new EmailDTO();
+			email.setSettingType(Constant.SERVICE_NOTIFICATION_SETTING_TYPE_CREATE_USER);
+			email.setSendingObject(Constant.SERVICE_NOTIFICATION_SENDING_OBJ);
 			email.setTo(toEmail);
 			email.setSubject(FileUtility.CREATE_NEW_USER_EMAIL_SUBJECT);
 
@@ -444,9 +473,13 @@ public class CollaboratorService {
 
 			BasicDBObject collaboratorMember = new BasicDBObject();
 			boolean isUserUpdated = false;
+			boolean isStatusUpdated = false;
 			
 			if (Utility.isNotNull(collaboratorDto.getName())) collaboratorMember.append("name", collaboratorDto.getName());
-			if (Utility.isNotNull(collaboratorDto.getStatus())) collaboratorMember.append("status", collaboratorDto.getStatus());
+			if (Utility.isNotNull(collaboratorDto.getStatus())) {
+				collaboratorMember.append("status", collaboratorDto.getStatus().toUpperCase());
+				isStatusUpdated = true;
+			}
 			if (Utility.isNotNull(collaboratorDto.getNote())) {
 				collaboratorMember.append("note", collaboratorDto.getNote());
 				collaboratorMember.append("user.note", collaboratorDto.getNote());
@@ -501,6 +534,42 @@ public class CollaboratorService {
 				MongoDatabase database = MongoDBConnection.getMongoDatabase();
 				MongoCollection<Document> collection = database.getCollection("collaborators");
 				collection.updateOne(query, update);
+				
+				if (isStatusUpdated) {
+					// update status of broker user
+					Document collaboratorQuery = new Document();
+					collaboratorQuery.append("code", collaboratorCode);
+					
+					Document updateDoc = new Document();
+					updateDoc.append("user.status", collaboratorDto.getStatus().toUpperCase());
+					
+					Document collaboratorUpdate = new Document();
+					collaboratorUpdate.append("$set", updateDoc);
+					
+					collection.updateMany(collaboratorQuery, collaboratorUpdate);
+					
+					// update status of all login broker user
+					MongoCollection<Document> loginAdmCollection = database.getCollection("login_admin_users");
+					
+					String collaboratorUsername = Constant.COLLABORATOR_USER_PREFIX + collaboratorCode;
+					Document loginAdmQuery = new Document();
+					loginAdmQuery.append("username", collaboratorUsername);
+					
+					Document loginAdmUpdateDoc = new Document();
+					loginAdmUpdateDoc.append("status", collaboratorDto.getStatus().toUpperCase());
+					
+					Document loginAdmUpdate = new Document();
+					loginAdmUpdate.append("$set", loginAdmUpdateDoc);
+					
+					loginAdmCollection.updateMany(loginAdmQuery, loginAdmUpdate);
+					
+					// logout all users if status is invactive
+					if (Constant.STATUS_INACTIVE.equalsIgnoreCase(collaboratorDto.getStatus())) {
+						List<String> userList = new ArrayList<String>();
+						userList.add(collaboratorUsername);
+						Utility.sendHandleLogout(userList, refId);
+					}
+				}
 			}
 		} catch (CustomException e) {
 			throw e;
@@ -541,7 +610,7 @@ public class CollaboratorService {
 			nestedObjInfo.setMemberCode(userInfo.getMemberCode());
 
 			PendingData pendingData = new PendingData();
-			pendingData.setServiceFunctionName(ApprovalConstant.MEMBER_UPDATE);
+			pendingData.setServiceFunctionName(ApprovalConstant.COLLABORATOR_UPDATE);
 			pendingData.setCollectionName("collaborators");
 			pendingData.setQueryField("code");
 			pendingData.setQueryValue(collaboratorCode);
@@ -656,12 +725,8 @@ public class CollaboratorService {
 			
 			BasicDBObject updateBroker = new BasicDBObject();
 			updateBroker.append("functions", functions);
-			updateBroker.append("user.functions", functions);
 			updateBroker.append("lastModifiedUser", Utility.getCurrentUsername());
 			updateBroker.append("lastModifiedDate", System.currentTimeMillis());
-			updateBroker.append("user.lastModifiedUser", Utility.getCurrentUsername());
-			updateBroker.append("user.lastModifiedDate", System.currentTimeMillis());
-			
 			
 			BasicDBObject update = new BasicDBObject();
 			update.append("$set", updateBroker);

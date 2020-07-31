@@ -10,6 +10,7 @@ import com.newgen.am.validation.UniqueGroup;
 import com.newgen.am.validation.UniqueIdentityCard;
 import com.newgen.am.validation.ValidDate;
 import com.newgen.am.validation.ValidNumber;
+import com.newgen.am.validation.ValidNumberCharacter;
 import com.newgen.am.validation.ValidPhoneNumber;
 import com.newgen.am.validation.ValidUpdateStringField;
 
@@ -21,7 +22,7 @@ public class UpdateDelegateDTO {
 	@ValidDate(groups = FormatGroup.class)
     private String birthDay;
 	@ValidUpdateStringField
-	@ValidNumber(groups = FormatGroup.class)
+	@ValidNumberCharacter(groups = FormatGroup.class)
 	@Size(max = 20, groups = LengthGroup.class)
 	@UniqueIdentityCard(groups = UniqueGroup.class)
     private String identityCard;

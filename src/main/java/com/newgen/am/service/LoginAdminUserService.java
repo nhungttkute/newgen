@@ -235,6 +235,7 @@ public class LoginAdminUserService {
 								new Document().append("from", "system_roles").append("localField", "users.roles.name")
 										.append("foreignField", "name").append("as", "roleObj")),
 						new Document().append("$unwind", new Document().append("path", "$roleObj")),
+						new Document().append("$match", new Document().append("roleObj.status", Constant.STATUS_ACTIVE)),
 						new Document().append("$project", new Document().append("_id", 0.0).append("deptCode", "$code")
 								.append("deptName", "$name").append("fullName", "$users.fullName")
 								.append("email", "$users.email").append("phoneNumber", "$users.phoneNumber")
@@ -284,12 +285,12 @@ public class LoginAdminUserService {
 				}
 
 				List<? extends Bson> pipeline = Arrays.asList(
-						new Document().append("$match",
-								new Document().append("users.username", user.getUsername())),
+						new Document().append("$match", new Document().append("users.username", user.getUsername())),
 						new Document().append("$unwind", new Document().append("path", "$users")),
-						new Document().append("$match",
-								new Document().append("users.username", user.getUsername())),
-						lookupDoc, new Document().append("$unwind", new Document().append("path", "$roleObj")),
+						new Document().append("$match", new Document().append("users.username", user.getUsername())),
+						lookupDoc, 
+						new Document().append("$unwind", new Document().append("path", "$roleObj")),
+						new Document().append("$match", new Document().append("roleObj.status", Constant.STATUS_ACTIVE)),
 						new Document().append("$project", new Document().append("_id", 0.0)
 								.append("memberCode", "$code").append("memberName", "$name")
 								.append("fullName", "$users.fullName").append("email", "$users.email")
@@ -331,15 +332,16 @@ public class LoginAdminUserService {
 				List<? extends Bson> pipeline = Arrays.asList(
 						new Document().append("$match", new Document().append("user.username", user.getUsername())),
 						new Document().append("$lookup",
-								new Document().append("from", "system_roles").append("localField", "user.role.name")
+								new Document().append("from", "system_roles").append("localField", "role.name")
 										.append("foreignField", "name").append("as", "roleObj")),
 						new Document().append("$unwind", new Document().append("path", "$roleObj")),
+						new Document().append("$match", new Document().append("roleObj.status", Constant.STATUS_ACTIVE)),
 						new Document().append("$project", new Document().append("_id", 0.0).append("memberCode", 1.0)
 								.append("memberName", 1.0).append("brokerCode", "$code").append("brokerName", "$name")
 								.append("fullName", "$user.fullName").append("email", "$user.email")
 								.append("phoneNumber", "$user.phoneNumber").append("commodities", 1.0)
 								.append("userFunctions",
-										new Document().append("$concatArrays", Arrays.asList("$user.functions.code")))
+										new Document().append("$concatArrays", Arrays.asList("$functions.code")))
 								.append("roleFunctions", new Document().append("$concatArrays",
 										Arrays.asList("$roleObj.functions.code")))));
 
@@ -373,16 +375,17 @@ public class LoginAdminUserService {
 				List<? extends Bson> pipeline = Arrays.asList(
 						new Document().append("$match", new Document().append("user.username", user.getUsername())),
 						new Document().append("$lookup",
-								new Document().append("from", "system_roles").append("localField", "user.role.name")
+								new Document().append("from", "system_roles").append("localField", "role.name")
 										.append("foreignField", "name").append("as", "roleObj")),
 						new Document().append("$unwind", new Document().append("path", "$roleObj")),
+						new Document().append("$match", new Document().append("roleObj.status", Constant.STATUS_ACTIVE)),
 						new Document().append("$project", new Document().append("_id", 0.0).append("memberCode", 1.0)
 								.append("memberName", 1.0).append("brokerCode", 1.0).append("brokerName", 1.0)
 								.append("collaboratorCode", "$code").append("collaboratorName", "$name")
 								.append("fullName", "$user.fullName").append("email", "$user.email")
 								.append("phoneNumber", "$user.phoneNumber").append("commodities", 1.0)
 								.append("userFunctions",
-										new Document().append("$concatArrays", Arrays.asList("$user.functions.code")))
+										new Document().append("$concatArrays", Arrays.asList("$functions.code")))
 								.append("roleFunctions", new Document().append("$concatArrays",
 										Arrays.asList("$roleObj.functions.code")))));
 
@@ -424,13 +427,13 @@ public class LoginAdminUserService {
 		List<String> allFunctions = new ArrayList<>();
 		List<String> userFunctions = new ArrayList<>();
 		List<String> roleFunctions = new ArrayList<>();
-		
+
 		try {
 			MongoDatabase database = MongoDBConnection.getMongoDatabase();
 			// if user is admin user
 			if (Utility.isNotNull(user.getDeptCode())) {
 				MongoCollection<Document> collection = database.getCollection("departments");
-				
+
 				List<? extends Bson> pipeline = Arrays.asList(
 						new Document().append("$match", new Document().append("users.username", user.getUsername())),
 						new Document().append("$unwind", new Document().append("path", "$users")),
@@ -439,11 +442,12 @@ public class LoginAdminUserService {
 								new Document().append("from", "system_roles").append("localField", "users.roles.name")
 										.append("foreignField", "name").append("as", "roleObj")),
 						new Document().append("$unwind", new Document().append("path", "$roleObj")),
+						new Document().append("$match", new Document().append("roleObj.status", Constant.STATUS_ACTIVE)),
 						new Document().append("$project", new Document().append("_id", 0.0)
 								.append("userFunctions",
 										new Document().append("$concatArrays", Arrays.asList("$users.functions.code")))
-								.append("roleFunctions",
-										new Document().append("$concatArrays", Arrays.asList("$roleObj.functions.code")))));
+								.append("roleFunctions", new Document().append("$concatArrays",
+										Arrays.asList("$roleObj.functions.code")))));
 
 				UserFunctionResult result = null;
 				try (MongoCursor<Document> cur = collection.aggregate(pipeline).iterator()) {
@@ -459,60 +463,38 @@ public class LoginAdminUserService {
 
 				allFunctions.addAll(userFunctions);
 				allFunctions.addAll(roleFunctions);
-			} else if (Utility.isNotNull(user.getMemberCode()) && Utility.isNull(user.getBrokerCode()) && Utility.isNull(user.getCollaboratorCode())) {
+			} else if (Utility.isNotNull(user.getMemberCode()) && Utility.isNull(user.getBrokerCode())
+					&& Utility.isNull(user.getCollaboratorCode())) {
 				MongoCollection<Document> collection = database.getCollection("members");
-				
+
 				Document lookupDoc = null;
 				if (user.getUsername().contains(Constant.MEMBER_MASTER_USER_PREFIX)) {
 					lookupDoc = new Document();
-					lookupDoc.append("$lookup", new Document()
-	                        .append("from", "system_roles")
-	                        .append("localField", "users.roles.name")
-	                        .append("foreignField", "name")
-	                        .append("as", "roleObj"));
+					lookupDoc.append("$lookup",
+							new Document().append("from", "system_roles").append("localField", "users.roles.name")
+									.append("foreignField", "name").append("as", "roleObj"));
 				} else {
 					lookupDoc = new Document();
-					lookupDoc.append("$lookup", new Document()
-	                        .append("from", "member_roles")
-	                        .append("localField", "users.roles.name")
-	                        .append("foreignField", "name")
-	                        .append("as", "roleObj"));
+					lookupDoc.append("$lookup",
+							new Document().append("from", "member_roles").append("localField", "users.roles.name")
+									.append("foreignField", "name").append("as", "roleObj"));
 				}
-				
+
 				List<? extends Bson> pipeline = Arrays.asList(
-	                    new Document()
-	                            .append("$match", new Document()
-	                                    .append("users.username", user.getUsername())
-	                            ), 
-	                    new Document()
-	                            .append("$unwind", new Document()
-	                                    .append("path", "$users")
-	                            ), 
-	                    new Document()
-	                            .append("$match", new Document()
-	                                    .append("users.username", user.getUsername())
-	                            ), 
-	                    lookupDoc, 
-	                    new Document().append("$unwind", new Document().append("path", "$roleObj")),
-	                    new Document()
-	                            .append("$project", new Document()
-	                            		.append("_id", 0.0)
-	                                    .append("userFunctions", new Document()
-	                                            .append("$concatArrays", Arrays.asList(
-	                                                    "$users.functions.code"
-	                                                )
-	                                            )
-	                                    )
-	                                    .append("roleFunctions", new Document()
-	                                            .append("$concatArrays", Arrays.asList(
-	                                                    "$roleObj.functions.code"
-	                                                )
-	                                            )
-	                                    )
-	                            )
-	                  
-	            );
-				
+						new Document().append("$match", new Document().append("users.username", user.getUsername())),
+						new Document().append("$unwind", new Document().append("path", "$users")),
+						new Document().append("$match", new Document().append("users.username", user.getUsername())),
+						lookupDoc, 
+						new Document().append("$unwind", new Document().append("path", "$roleObj")),
+						new Document().append("$match", new Document().append("roleObj.status", Constant.STATUS_ACTIVE)),
+						new Document().append("$project", new Document().append("_id", 0.0)
+								.append("userFunctions",
+										new Document().append("$concatArrays", Arrays.asList("$users.functions.code")))
+								.append("roleFunctions", new Document().append("$concatArrays",
+										Arrays.asList("$roleObj.functions.code"))))
+
+				);
+
 				UserFunctionResult result = null;
 				try (MongoCursor<Document> cur = collection.aggregate(pipeline).iterator()) {
 
@@ -529,41 +511,20 @@ public class LoginAdminUserService {
 				allFunctions.addAll(roleFunctions);
 			} else if (Utility.isNotNull(user.getBrokerCode()) && Utility.isNull(user.getCollaboratorCode())) {
 				MongoCollection<Document> collection = database.getCollection("brokers");
-				
+
 				List<? extends Bson> pipeline = Arrays.asList(
-	                    new Document()
-	                            .append("$match", new Document()
-	                                    .append("user.username", user.getUsername())
-	                            ), 
-	                    new Document()
-	                            .append("$lookup", new Document()
-	                                    .append("from", "system_roles")
-	                                    .append("localField", "user.role.name")
-	                                    .append("foreignField", "name")
-	                                    .append("as", "roleObj")
-	                            ), 
-	                   new Document()
-	                            .append("$unwind", new Document()
-	                                    .append("path", "$roleObj")
-	                            ), 
-	                    new Document()
-	                            .append("$project", new Document()
-	                                    .append("_id", 0.0)
-	                                    .append("userFunctions", new Document()
-	                                            .append("$concatArrays", Arrays.asList(
-	                                                    "$user.functions.code"
-	                                                )
-	                                            )
-	                                    )
-	                                    .append("roleFunctions", new Document()
-	                                            .append("$concatArrays", Arrays.asList(
-	                                                    "$roleObj.functions.code"
-	                                                )
-	                                            )
-	                                    )
-	                            )
-	            );
-				
+						new Document().append("$match", new Document().append("user.username", user.getUsername())),
+						new Document().append("$lookup",
+								new Document().append("from", "system_roles").append("localField", "role.name")
+										.append("foreignField", "name").append("as", "roleObj")),
+						new Document().append("$unwind", new Document().append("path", "$roleObj")),
+						new Document().append("$match", new Document().append("roleObj.status", Constant.STATUS_ACTIVE)),
+						new Document().append("$project", new Document().append("_id", 0.0)
+								.append("userFunctions",
+										new Document().append("$concatArrays", Arrays.asList("$functions.code")))
+								.append("roleFunctions", new Document().append("$concatArrays",
+										Arrays.asList("$roleObj.functions.code")))));
+
 				UserFunctionResult result = null;
 				try (MongoCursor<Document> cur = collection.aggregate(pipeline).iterator()) {
 
@@ -583,12 +544,13 @@ public class LoginAdminUserService {
 				List<? extends Bson> pipeline = Arrays.asList(
 						new Document().append("$match", new Document().append("user.username", user.getUsername())),
 						new Document().append("$lookup",
-								new Document().append("from", "system_roles").append("localField", "user.role.name")
+								new Document().append("from", "system_roles").append("localField", "role.name")
 										.append("foreignField", "name").append("as", "roleObj")),
 						new Document().append("$unwind", new Document().append("path", "$roleObj")),
+						new Document().append("$match", new Document().append("roleObj.status", Constant.STATUS_ACTIVE)),
 						new Document().append("$project", new Document().append("_id", 0.0)
 								.append("userFunctions",
-										new Document().append("$concatArrays", Arrays.asList("$user.functions.code")))
+										new Document().append("$concatArrays", Arrays.asList("$functions.code")))
 								.append("roleFunctions", new Document().append("$concatArrays",
 										Arrays.asList("$roleObj.functions.code")))));
 
@@ -624,6 +586,7 @@ public class LoginAdminUserService {
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
+
 	public LoginAdminUser search(String userId, long refId) throws CustomException {
 		String methodName = "search";
 		try {
@@ -719,6 +682,8 @@ public class LoginAdminUserService {
 		try {
 			LocalServiceConnection serviceCon = new LocalServiceConnection();
 			EmailDTO email = new EmailDTO();
+			email.setSettingType(Constant.SERVICE_NOTIFICATION_SETTING_TYPE_RESET_PASSWORD);
+			email.setSendingObject(Constant.SERVICE_NOTIFICATION_SENDING_OBJ);
 			email.setTo(toEmail);
 			email.setSubject(FileUtility.CHANGE_PASSWORD_EMAIL_SUBJECT);
 
@@ -741,6 +706,8 @@ public class LoginAdminUserService {
 		try {
 			LocalServiceConnection serviceCon = new LocalServiceConnection();
 			EmailDTO email = new EmailDTO();
+			email.setSettingType(Constant.SERVICE_NOTIFICATION_SETTING_TYPE_RESET_PIN);
+			email.setSendingObject(Constant.SERVICE_NOTIFICATION_SENDING_OBJ);
 			email.setTo(toEmail);
 			email.setSubject(FileUtility.CHANGE_PIN_EMAIL_SUBJECT);
 

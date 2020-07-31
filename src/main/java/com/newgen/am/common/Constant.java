@@ -63,6 +63,11 @@ public class Constant {
     public static final String SERVICE_ACTIVITY_LOG = "SERVICE_ACTIVITY_LOG";
     public static final String SERVICE_NOTIFICATION_EMAIL = "SERVICE_NOTIFICATION_EMAIL";
     public static final String SERVICE_NOTIFICATION_SMS = "SERVICE_NOTIFICATION_SMS";
+    public static final String SERVICE_NOTIFICATION_LOGOUT = "SERVICE_NOTIFICATION_LOGOUT";
+    public static final String SERVICE_NOTIFICATION_SETTING_TYPE_CREATE_USER="Tạo mới người dùng";
+    public static final String SERVICE_NOTIFICATION_SETTING_TYPE_RESET_PASSWORD="Làm mới mật khẩu";
+    public static final String SERVICE_NOTIFICATION_SETTING_TYPE_RESET_PIN="Làm mới mã PIN";
+    public static final String SERVICE_NOTIFICATION_SENDING_OBJ="Thông báo tự động từ hệ thống";
 
     public static final String OPT_CONTAINS = "$contains";
     public static final String OPT_EQUALS = "$eq";
@@ -88,6 +93,9 @@ public class Constant {
     
     public static final String MEMBER_DEFAULT_ROLE = "TVKD";
     public static final String MEMBER_MASTER_USER_PREFIX = "TVKD_";
+    
+    public static final String RISK_OPTION_NO = "N";
+    public static final String RISK_OPTION_YES = "Y";
     
     public static final String BROKER_SEQ = "broker_seq_";
     public static final String COLLABORATOR_SEQ = "collaborator_seq_";

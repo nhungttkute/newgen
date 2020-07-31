@@ -9,6 +9,9 @@ public class InvestorActivationApproval extends BaseApproval {
 	@Id
 	private String id;
 	private String investorCode;
+	private double marginSurplusInterestRate;
+    private double marginDeficitInterestRate;
+    
 	public String getId() {
 		return id;
 	}
@@ -20,5 +23,17 @@ public class InvestorActivationApproval extends BaseApproval {
 	}
 	public void setInvestorCode(String investorCode) {
 		this.investorCode = investorCode;
+	}
+	public double getMarginSurplusInterestRate() {
+		return marginSurplusInterestRate;
+	}
+	public void setMarginSurplusInterestRate(double marginSurplusInterestRate) {
+		this.marginSurplusInterestRate = marginSurplusInterestRate;
+	}
+	public double getMarginDeficitInterestRate() {
+		return marginDeficitInterestRate;
+	}
+	public void setMarginDeficitInterestRate(double marginDeficitInterestRate) {
+		this.marginDeficitInterestRate = marginDeficitInterestRate;
 	}
 }

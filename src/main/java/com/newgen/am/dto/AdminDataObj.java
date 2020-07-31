@@ -60,6 +60,7 @@ public class AdminDataObj implements Serializable {
     private UserDTO collaboratorUser;
     
     // response for common list
+    private List<ListElementDTO> departmentList;
     private List<ListElementDTO> memberList;
     private List<ListElementDTO> brokerList;
     private List<ListElementDTO> collaboratorList;
@@ -82,7 +83,9 @@ public class AdminDataObj implements Serializable {
     private List<AccountStatusDTO> accountStatusInfos;
     private List<InvestorMarginTransaction> investorMarginTransactions;
     
-    private List<ExchangeSettingDTO> exchangeSettings;
+    private List<ExchangeSettingDTO> adminUserExchanges;
+    private List<ExchangeSettingDTO> investorUserExchanges;
+    
     private ExchangeSettingDTO exchangeSetting;
 
     public LoginAdminUserOutputDTO getUser() {
@@ -305,6 +308,14 @@ public class AdminDataObj implements Serializable {
 		return memberList;
 	}
 
+	public List<ListElementDTO> getDepartmentList() {
+		return departmentList;
+	}
+
+	public void setDepartmentList(List<ListElementDTO> departmentList) {
+		this.departmentList = departmentList;
+	}
+
 	public void setMemberList(List<ListElementDTO> memberList) {
 		this.memberList = memberList;
 	}
@@ -453,19 +464,27 @@ public class AdminDataObj implements Serializable {
 		this.functions = functions;
 	}
 
-	public List<ExchangeSettingDTO> getExchangeSettings() {
-		return exchangeSettings;
-	}
-
-	public void setExchangeSettings(List<ExchangeSettingDTO> exchangeSettings) {
-		this.exchangeSettings = exchangeSettings;
-	}
-
 	public ExchangeSettingDTO getExchangeSetting() {
 		return exchangeSetting;
 	}
 
 	public void setExchangeSetting(ExchangeSettingDTO exchangeSetting) {
 		this.exchangeSetting = exchangeSetting;
+	}
+
+	public List<ExchangeSettingDTO> getAdminUserExchanges() {
+		return adminUserExchanges;
+	}
+
+	public void setAdminUserExchanges(List<ExchangeSettingDTO> adminUserExchanges) {
+		this.adminUserExchanges = adminUserExchanges;
+	}
+
+	public List<ExchangeSettingDTO> getInvestorUserExchanges() {
+		return investorUserExchanges;
+	}
+
+	public void setInvestorUserExchanges(List<ExchangeSettingDTO> investorUserExchanges) {
+		this.investorUserExchanges = investorUserExchanges;
 	}
 }

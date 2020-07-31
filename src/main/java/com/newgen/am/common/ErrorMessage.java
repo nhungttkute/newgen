@@ -21,4 +21,7 @@ public class ErrorMessage {
     public static final String IDENTITY_CARD_ALREADY_EXISTED = "The identity card already existed.";
     public static final String DEFAULT_ROLE_DOESNT_EXIST = "Default role doesn't exist.";
     public static final String ACCESS_DENIED = "Access denied.";
+    public static final String WITHDRAWAL_DENIED = "Withdrawal denied.";
+    public static final String AUTHENTICATION_FAILED = "Authentication failed.";
+    public static final String INACTIVE_USER = "Inactive User.";
 }

@@ -16,7 +16,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
  *
  * @author nhungtt
  */
-@JsonInclude(JsonInclude.Include.NON_DEFAULT)
 public class Commodity implements Serializable {
 	private static final long serialVersionUID = 1L;
 	@NotEmpty(message = "Required.")
