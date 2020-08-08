@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -3159,6 +3161,7 @@ public class MemberService {
 			if (Utility.isNull(roleFuncsDto)) {
 				throw new CustomException(ErrorMessage.RESULT_NOT_FOUND, HttpStatus.OK);
 			}
+			
 			List<RoleFunction> allFunctions = new ArrayList<RoleFunction>();
 			if (roleFuncsDto.getRoleFunctions() != null && roleFuncsDto.getRoleFunctions().size() > 0) {
 				allFunctions.addAll(roleFuncsDto.getRoleFunctions());
@@ -3166,7 +3169,8 @@ public class MemberService {
 			if (roleFuncsDto.getSpecificFunctions() != null && roleFuncsDto.getSpecificFunctions().size() > 0) {
 				allFunctions.addAll(roleFuncsDto.getSpecificFunctions());
 			}
-			List<RoleFunction> allFunctionsWithoutDuplicates = new ArrayList<>(new HashSet<RoleFunction>(allFunctions));
+			
+			List<RoleFunction> allFunctionsWithoutDuplicates = new ArrayList<RoleFunction>(new HashSet<RoleFunction>(allFunctions));
 			return allFunctionsWithoutDuplicates;
 		} catch (CustomException e) {
 			throw e;

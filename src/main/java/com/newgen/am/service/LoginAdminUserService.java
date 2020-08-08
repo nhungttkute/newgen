@@ -573,7 +573,8 @@ public class LoginAdminUserService {
 			AMLogger.logError(className, methodName, 999999999, e);
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
-		return allFunctions;
+		List<String> allFunctionsWithoutDuplicates = new ArrayList<>(new HashSet<String>(allFunctions));
+		return allFunctionsWithoutDuplicates;
 	}
 
 	public List<String> getFunctionsByUsername(String username) {
