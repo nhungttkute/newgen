@@ -532,6 +532,8 @@ public class BrokerService {
 			MongoCollection<Document> collection = database.getCollection("brokers");
 			
 			BasicDBObject updateBroker = new BasicDBObject();
+			BasicDBObject updateLoginAdmUser = new BasicDBObject();
+			
 			boolean isUserUpdated = false;
 			boolean isStatusUpdated = false;
 			
@@ -560,6 +562,7 @@ public class BrokerService {
 						updateBroker.append("company.delegate.fullName", brokerDto.getCompany().getDelegate().getFullName());
 						updateBroker.append("user.fullName", brokerDto.getCompany().getDelegate().getFullName());
 						updateBroker.append("contact.fullName", brokerDto.getCompany().getDelegate().getFullName());
+						updateLoginAdmUser.append("fullName", brokerDto.getCompany().getDelegate().getFullName());
 						isUserUpdated = true;
 					}
 					if (Utility.isNotNull(brokerDto.getCompany().getDelegate().getBirthDay())) updateBroker.append("company.delegate.birthDay", brokerDto.getCompany().getDelegate().getBirthDay());
@@ -570,12 +573,14 @@ public class BrokerService {
 						updateBroker.append("company.delegate.email", brokerDto.getCompany().getDelegate().getEmail());
 						updateBroker.append("user.email", brokerDto.getCompany().getDelegate().getEmail());
 						updateBroker.append("contact.email", brokerDto.getCompany().getDelegate().getEmail());
+						updateLoginAdmUser.append("email", brokerDto.getCompany().getDelegate().getEmail());
 						isUserUpdated = true;
 					}
 					if (Utility.isNotNull(brokerDto.getCompany().getDelegate().getPhoneNumber()))  {
 						updateBroker.append("company.delegate.phoneNumber", brokerDto.getCompany().getDelegate().getPhoneNumber());
 						updateBroker.append("user.phoneNumber", brokerDto.getCompany().getDelegate().getPhoneNumber());
 						updateBroker.append("contact.phoneNumber", brokerDto.getCompany().getDelegate().getPhoneNumber());
+						updateLoginAdmUser.append("phoneNumber", brokerDto.getCompany().getDelegate().getPhoneNumber());
 						isUserUpdated = true;
 					}
 					if (Utility.isNotNull(brokerDto.getCompany().getDelegate().getAddress()))  updateBroker.append("company.delegate.address", brokerDto.getCompany().getDelegate().getAddress());
@@ -632,6 +637,18 @@ public class BrokerService {
 				update.append("$set", updateBroker);
 				
 				collection.updateOne(query, update);
+				
+				// update login_admin_users if there's any change
+				if (!updateLoginAdmUser.isEmpty()) {
+					BasicDBObject logiAdmQuery = new BasicDBObject();
+					logiAdmQuery.append("username", Constant.BROKER_USER_PREFIX + brokerCode);
+					
+					BasicDBObject loginAdmUpdate = new BasicDBObject();
+					loginAdmUpdate.append("$set", updateLoginAdmUser);
+					
+					MongoCollection<Document> loginAdmCollection = database.getCollection("login_admin_users");
+					loginAdmCollection.updateOne(logiAdmQuery, loginAdmUpdate);
+				}
 				
 				if (isStatusUpdated) {
 					// update status of broker user
@@ -995,8 +1012,20 @@ public class BrokerService {
 				throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
 			}
 		} else {
-			AMLogger.logMessage(className, methodName, refId, "Invalid input data");
-			throw new CustomException(ErrorMessage.INVALID_REQUEST, HttpStatus.BAD_REQUEST);
+			Document query = new Document();
+			query.append("code", brokerCode);
+			
+			Document updateBroker = new Document();
+			updateBroker.append("commodities", null);
+			updateBroker.append("lastModifiedUser", Utility.getCurrentUsername());
+			updateBroker.append("lastModifiedDate", System.currentTimeMillis());
+			
+			Document update = new Document();
+			update.append("$set", updateBroker);
+			
+			MongoDatabase database = MongoDBConnection.getMongoDatabase();
+			MongoCollection<Document> collection = database.getCollection("brokers");
+			collection.updateOne(query, update);
 		}
 	}
 	

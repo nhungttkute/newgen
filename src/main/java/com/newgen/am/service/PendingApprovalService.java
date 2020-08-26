@@ -49,19 +49,20 @@ public class PendingApprovalService {
     	try {
     		PendingApproval pendingApproval = pendingApprovalRepo.findById(approvalId).get();
     		
-    		// check authorization
-    		if (AuthorityUtils.authorityListToSet(SecurityContextHolder.getContext().getAuthentication().getAuthorities()).contains(pendingApproval.getFunctionCode())) {
-    			invokeMethod (request, pendingApproval, refId);
-    			
-    			//update pending approval status
-    			pendingApproval.setStatus(Constant.APPROVAL_STATUS_APPROVED);
-    			pendingApproval.setApprovalUser(Utility.getCurrentUsername());
-    			pendingApproval.setApprovalDate(System.currentTimeMillis());
-    			pendingApprovalRepo.save(pendingApproval);
-    	    } else {
-    	    	throw new CustomException(ErrorMessage.ACCESS_DENIED, HttpStatus.FORBIDDEN);
-    	    }
-    		
+    		if (Constant.STATUS_PENDING.equals(pendingApproval.getStatus())) {
+    			// check authorization
+        		if (AuthorityUtils.authorityListToSet(SecurityContextHolder.getContext().getAuthentication().getAuthorities()).contains(pendingApproval.getFunctionCode())) {
+        			invokeMethod (request, pendingApproval, refId);
+        			
+        			//update pending approval status
+        			pendingApproval.setStatus(Constant.APPROVAL_STATUS_APPROVED);
+        			pendingApproval.setApprovalUser(Utility.getCurrentUsername());
+        			pendingApproval.setApprovalDate(System.currentTimeMillis());
+        			pendingApprovalRepo.save(pendingApproval);
+        	    } else {
+        	    	throw new CustomException(ErrorMessage.ACCESS_DENIED, HttpStatus.FORBIDDEN);
+        	    }
+    		}
     	} catch (CustomException e) {
     		throw e;
     	} catch (Exception e) {
@@ -75,19 +76,20 @@ public class PendingApprovalService {
     	try {
     		InvestorMarginTransApproval marginTransApproval = invMarginTransApprovalRepo.findById(approvalId).get();
     		
-    		// check authorization
-    		if (AuthorityUtils.authorityListToSet(SecurityContextHolder.getContext().getAuthentication().getAuthorities()).contains(marginTransApproval.getFunctionCode())) {
-    			invokeMethod2(request, marginTransApproval, refId);
-    			
-    			//update pending approval status
-    			marginTransApproval.setStatus(Constant.APPROVAL_STATUS_APPROVED);
-    			marginTransApproval.setApprovalUser(Utility.getCurrentUsername());
-    			marginTransApproval.setApprovalDate(System.currentTimeMillis());
-    			invMarginTransApprovalRepo.save(marginTransApproval);
-    	    } else {
-    	    	throw new CustomException(ErrorMessage.ACCESS_DENIED, HttpStatus.FORBIDDEN);
-    	    }
-    		
+    		if (Constant.STATUS_PENDING.equals(marginTransApproval.getStatus())) {
+    			// check authorization
+        		if (AuthorityUtils.authorityListToSet(SecurityContextHolder.getContext().getAuthentication().getAuthorities()).contains(marginTransApproval.getFunctionCode())) {
+        			invokeMethod2(request, marginTransApproval, refId);
+        			
+        			//update pending approval status
+        			marginTransApproval.setStatus(Constant.APPROVAL_STATUS_APPROVED);
+        			marginTransApproval.setApprovalUser(Utility.getCurrentUsername());
+        			marginTransApproval.setApprovalDate(System.currentTimeMillis());
+        			invMarginTransApprovalRepo.save(marginTransApproval);
+        	    } else {
+        	    	throw new CustomException(ErrorMessage.ACCESS_DENIED, HttpStatus.FORBIDDEN);
+        	    }
+    		}
     	} catch (CustomException e) {
     		throw e;
     	} catch (Exception e) {

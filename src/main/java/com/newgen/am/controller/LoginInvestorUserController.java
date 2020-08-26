@@ -14,6 +14,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -23,6 +24,7 @@ import com.newgen.am.common.AMLogger;
 import com.newgen.am.common.Constant;
 import com.newgen.am.common.ErrorMessage;
 import com.newgen.am.common.Utility;
+import com.newgen.am.dto.AdminResponseObj;
 import com.newgen.am.dto.ChangePasswordDTO;
 import com.newgen.am.dto.DataObj;
 import com.newgen.am.dto.ListUserDTO;
@@ -66,7 +68,7 @@ public class LoginInvestorUserController {
         AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(logResponse));
         return response;
     }
-
+    
     @GetMapping("/users/refresh")
     @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_CLIENT')")
     public ResponseObj refresh(HttpServletRequest req) {

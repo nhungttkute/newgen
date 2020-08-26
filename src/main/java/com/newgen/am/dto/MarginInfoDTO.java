@@ -4,16 +4,18 @@ import java.io.Serializable;
 
 import javax.validation.constraints.Positive;
 
+import org.springframework.format.annotation.NumberFormat;
+
 public class MarginInfoDTO implements Serializable {
 	private static final long serialVersionUID = 1L;
 	private String investorCode;
 	private String investorName;
 	private String currency;
-	@Positive(message = "Invalid format.")
+	@NumberFormat
     private double marginSurplusInterestRate;
-	@Positive(message = "Invalid format.")
+	@NumberFormat
     private double marginDeficitInterestRate;
-    private long availableBalance; // So du kha dung
+    private double availableBalance; // So du kha dung
 	public String getInvestorCode() {
 		return investorCode;
 	}
@@ -44,10 +46,11 @@ public class MarginInfoDTO implements Serializable {
 	public void setMarginDeficitInterestRate(double marginDeficitInterestRate) {
 		this.marginDeficitInterestRate = marginDeficitInterestRate;
 	}
-	public long getAvailableBalance() {
+	public double getAvailableBalance() {
 		return availableBalance;
 	}
-	public void setAvailableBalance(long availableBalance) {
+	public void setAvailableBalance(double availableBalance) {
 		this.availableBalance = availableBalance;
 	}
+	
 }

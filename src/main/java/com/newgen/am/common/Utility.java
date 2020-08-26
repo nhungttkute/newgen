@@ -87,6 +87,14 @@ public class Utility {
         return obj;
     }
 
+    public static long convertStringToLong(String str) {
+    	try {
+    		return Long.parseLong(str);
+    	} catch (Exception e) {
+			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+    }
+    
     public static JsonWriterSettings getJsonWriterSettings() {
         JsonWriterSettings settings = JsonWriterSettings.builder()
                 .int64Converter((value, writer) -> writer.writeNumber(String.valueOf(value)))
@@ -225,6 +233,7 @@ public class Utility {
     
     public static void setRedisUserInfo(RedisTemplate template, String accessToken, UserInfoDTO userInfo, long refId) {
         UserInfoDTO redisUserInfo = (UserInfoDTO) SerializationUtils.clone(userInfo);
+        redisUserInfo.setTableSetting(null);
         redisUserInfo.setWatchLists(null);
         redisUserInfo.setLayout(null);
         redisUserInfo.setTheme(null);
@@ -462,4 +471,64 @@ public class Utility {
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
     }
+    
+    public static String getJsonFieldValue(String jsonFieldName, String resp) {
+        jsonFieldName = "\"" + jsonFieldName + "\"";
+        String jsonFieldValue = null;
+        int index = resp.indexOf(jsonFieldName);
+        if (index != -1) {
+            int startIndex = resp.indexOf("\"", index + jsonFieldName.length());
+            int endIndex = resp.indexOf("\"", startIndex + 1);
+            jsonFieldValue = resp.substring(startIndex + 1, endIndex);
+        }
+        return jsonFieldValue;
+    }
+    
+    public static void sendChangePasswordEmail(String toEmail, String username, String password, long refId) {
+		String methodName = "sendChangePasswordEmail";
+		try {
+			LocalServiceConnection serviceCon = new LocalServiceConnection();
+			EmailDTO email = new EmailDTO();
+			email.setSettingType(Constant.SERVICE_NOTIFICATION_SETTING_TYPE_RESET_PASSWORD);
+			email.setSendingObject(Constant.SERVICE_NOTIFICATION_SENDING_OBJ);
+			email.setTo(toEmail);
+			email.setSubject(FileUtility.CHANGE_PASSWORD_EMAIL_SUBJECT);
+
+			String emailBody = String.format(
+					FileUtility.loadFileContent(
+							ConfigLoader.getMainConfig().getString(FileUtility.CHANGE_PASSWORD_EMAIL_FILE), refId),
+					username, password);
+			email.setBodyStr(emailBody);
+			String emailJson = new Gson().toJson(email);
+			AMLogger.logMessage(className, methodName, refId, "Email: " + emailJson);
+			serviceCon.sendPostRequest(serviceCon.getEmailNotificationServiceURL(), emailJson);
+		} catch (Exception e) {
+			AMLogger.logError(className, methodName, refId, e);
+			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
+    public static void sendChangePINEmail(String toEmail, String username, String pin, long refId) {
+		String methodName = "sendChangePINEmail";
+		try {
+			LocalServiceConnection serviceCon = new LocalServiceConnection();
+			EmailDTO email = new EmailDTO();
+			email.setSettingType(Constant.SERVICE_NOTIFICATION_SETTING_TYPE_RESET_PIN);
+			email.setSendingObject(Constant.SERVICE_NOTIFICATION_SENDING_OBJ);
+			email.setTo(toEmail);
+			email.setSubject(FileUtility.CHANGE_PIN_EMAIL_SUBJECT);
+
+			String emailBody = String.format(
+					FileUtility.loadFileContent(
+							ConfigLoader.getMainConfig().getString(FileUtility.CHANGE_PIN_EMAIL_FILE), refId),
+					username, pin);
+			email.setBodyStr(emailBody);
+			String emailJson = new Gson().toJson(email);
+			AMLogger.logMessage(className, methodName, refId, "Email: " + emailJson);
+			serviceCon.sendPostRequest(serviceCon.getEmailNotificationServiceURL(), emailJson);
+		} catch (Exception e) {
+			AMLogger.logError(className, methodName, refId, e);
+			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
 }

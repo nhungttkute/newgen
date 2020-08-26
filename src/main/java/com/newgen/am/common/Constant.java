@@ -58,12 +58,25 @@ public class Constant {
     public static final String APPROVAL_ACTION_UPDATE = "update";
     public static final String APPROVAL_ACTION_ACTIVATE_INVESTOR = "activate_investor";
     
+    public static final String DOMAIN = "DOMAIN";
     public static final String SERVICE_CONNECTION_TIMEOUT = "SERVICE_CONNECTION_TIMEOUT";
     public static final String SERVICE_SOCKET_TIMEOUT = "SERVICE_SOCKET_TIMEOUT";
     public static final String SERVICE_ACTIVITY_LOG = "SERVICE_ACTIVITY_LOG";
     public static final String SERVICE_NOTIFICATION_EMAIL = "SERVICE_NOTIFICATION_EMAIL";
     public static final String SERVICE_NOTIFICATION_SMS = "SERVICE_NOTIFICATION_SMS";
     public static final String SERVICE_NOTIFICATION_LOGOUT = "SERVICE_NOTIFICATION_LOGOUT";
+    public static final String SERVICE_CONFIG_SESSION_DATE = "SERVICE_CONFIG_SESSION_DATE";
+    public static final String SERVICE_MARGIN_WITHDRAWAL_AMOUNT = "SERVICE_MARGIN_WITHDRAWAL_AMOUNT";
+    
+    public static final String SERVICE_CMS_CUSTOMER = "SERVICE_CMS_CUSTOMER";
+    public static final String SERVICE_CMS_TRADER = "SERVICE_CMS_TRADER";
+    public static final String SERVICE_CMS_ACCOUNT = "SERVICE_CMS_ACCOUNT";
+    public static final String SERVICE_CMS_ACCOUNT_ROUTES = "SERVICE_CMS_ACCOUNT_ROUTES";
+    public static final String SERVICE_CMS_ACCOUNT_BALANCE = "SERVICE_CMS_ACCOUNT_BALANCE";
+    public static final String SERVICE_CMS_ACCOUNT_RISK_PARAMS = "SERVICE_CMS_ACCOUNT_RISK_PARAMS";
+    public static final String SERVICE_CMS_ACCOUNT_USER_AUTH_LIST = "SERVICE_CMS_ACCOUNT_USER_AUTH_LIST";
+    public static final String SERVICE_CMS_ACCOUNT_USER_MARKET_LIMITS = "SERVICE_CMS_ACCOUNT_USER_MARKET_LIMITS";
+    
     public static final String SERVICE_NOTIFICATION_SETTING_TYPE_CREATE_USER="Tạo mới người dùng";
     public static final String SERVICE_NOTIFICATION_SETTING_TYPE_RESET_PASSWORD="Làm mới mật khẩu";
     public static final String SERVICE_NOTIFICATION_SETTING_TYPE_RESET_PIN="Làm mới mã PIN";
@@ -87,6 +100,7 @@ public class Constant {
     public static final String CSV_COLLABORATORS = "collaborators.csv";
     public static final String CSV_INVESTORS = "investors.csv";
     public static final String CSV_INVESTOR_USERS = "investor_users.csv";
+    public static final String CSV_INVESTOR_MARGIN_TRANS = "investor_margin_transactions.csv";
     
     public static final String POSITION_LIMITED = "LIMITED";
     public static final String POSITION_INHERITED = "INHERITED";
@@ -113,6 +127,8 @@ public class Constant {
     
     public static final String INVESTOR_DEFAULT_ROLE = "TKGD";
     public static final String INVESTOR_USER_PREFIX = "TKGD_";
+    public static final String CQG_ACCOUNT_NAME_PREFIX = "SIM";
+    public static final String CQG_ACCOUNT_NUMBER_PREFIX = "PS";
     
     public static final String INVESTOR_TYPE_INNER_TRADING_COMPANY = "P";
     public static final String INVESTOR_TYPE_LOCAL_INDIVIDUAL = "C";
@@ -137,4 +153,6 @@ public class Constant {
     public static final String EXCHANGE_PRICE_REALTIME = "REALTIME";
     public static final String EXCHANGE_PRICE_DELAYED = "DELAYED";
     public static final String EXCHANGE_PRICE_NONE = "NONE";
+    
+    public static final String CQG_CMS_TRADER_ID = "CQG_CMS_TRADER_ID";
 }

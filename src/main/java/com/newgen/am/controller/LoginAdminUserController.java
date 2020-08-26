@@ -129,40 +129,37 @@ public class LoginAdminUserController {
         return response;
     }
     
-    @PostMapping("/admin/users/{userId}/layout")
+    @PostMapping("/admin/users/layout")
     public AdminResponseObj saveLayout(@PathVariable String userId, @RequestBody LoginUserDataInputDTO input) {
         String methodName = "saveLayout";
         long refId = System.currentTimeMillis();
-        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: " + String.format("[POST]/admin/users/%s/layout", userId));
+        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [POST]/admin/users/layout");
         AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(input));
         
         AdminResponseObj response = new AdminResponseObj();
         try {
-            LoginAdminUser user = loginAdmUserService.search(userId, refId);
-            if (user != null) {
-                if (Utility.isNotNull(input.getLayout())) {
-                    user.setLayout(input.getLayout());
-                }
-                if (Utility.isNotNull(input.getLanguage())) {
-                    user.setLanguage(input.getLanguage());
-                }
-                if (Utility.isNotNull(input.getTheme())) {
-                    user.setTheme(input.getTheme());
-                }
-                if (Utility.isNotNull(input.getFontSize()) && input.getFontSize() > 0) {
-                    user.setFontSize(input.getFontSize());
-                }
-                LoginAdminUser newUser = loginAdmUserService.save(user, refId);
-                response.setStatus(Constant.RESPONSE_OK);
-                response.setData(new AdminDataObj());
-                response.getData().setLayout(newUser.getLayout());
-                response.getData().setLanguage(newUser.getLanguage());
-                response.getData().setTheme(newUser.getTheme());
-                response.getData().setFontSize(newUser.getFontSize());
-            } else {
-                response.setStatus(Constant.RESPONSE_ERROR);
-                response.setErrMsg(ErrorMessage.USER_DOES_NOT_EXIST);
-            }
+            loginAdmUserService.saveAdmUserLayout(input.getLayout(), refId);
+            response.setStatus(Constant.RESPONSE_OK);
+        } catch (Exception ex) {
+            AMLogger.logError(className, methodName, refId, ex);
+            throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        
+        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+        return response;
+    }
+    
+    @PostMapping("/admin/users/tableSetting")
+    public AdminResponseObj saveTableSetting(@RequestBody LoginUserDataInputDTO input) {
+        String methodName = "saveLayout";
+        long refId = System.currentTimeMillis();
+        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [POST]/admin/users/tableSetting");
+        AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(input));
+        
+        AdminResponseObj response = new AdminResponseObj();
+        try {
+            loginAdmUserService.saveAdmUserTableSetting(input.getTableSetting(), refId);
+            response.setStatus(Constant.RESPONSE_OK);
         } catch (Exception ex) {
             AMLogger.logError(className, methodName, refId, ex);
             throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -225,6 +222,38 @@ public class LoginAdminUserController {
         AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(userDto));
         
         loginAdmUserService.resetAdminUserPin(request, userDto, refId);
+        
+        AdminResponseObj response = new AdminResponseObj();
+        response.setStatus(Constant.RESPONSE_OK);
+        
+        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+        return response;
+    }
+    
+    @PutMapping("/admin/users/resetInvestorUserPassword")
+    public AdminResponseObj resetInvestorUserPassword(HttpServletRequest request, @Validated(ValidationSequence.class) @RequestBody LoginUserDataInputDTO userDto) {
+        String methodName = "resetInvestorUserPassword";
+        long refId = System.currentTimeMillis();
+        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [PUT]/admin/users/resetInvestorUserPassword");
+        AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(userDto));
+        
+        loginAdmUserService.resetInvestorUserPassword(request, userDto, refId);
+        
+        AdminResponseObj response = new AdminResponseObj();
+        response.setStatus(Constant.RESPONSE_OK);
+        
+        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+        return response;
+    }
+    
+    @PutMapping("/admin/users/resetInvestorUserPin")
+    public AdminResponseObj resetInvestorUserPin(HttpServletRequest request, @Validated(ValidationSequence.class) @RequestBody LoginUserDataInputDTO userDto) {
+        String methodName = "resetPin";
+        long refId = System.currentTimeMillis();
+        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [PUT]/admin/users/resetInvestorUserPin");
+        AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(userDto));
+        
+        loginAdmUserService.resetInvestorUserPin(request, userDto, refId);
         
         AdminResponseObj response = new AdminResponseObj();
         response.setStatus(Constant.RESPONSE_OK);

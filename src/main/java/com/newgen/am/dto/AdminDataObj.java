@@ -87,6 +87,12 @@ public class AdminDataObj implements Serializable {
     private List<ExchangeSettingDTO> investorUserExchanges;
     
     private ExchangeSettingDTO exchangeSetting;
+    
+    // investor withdrawal amount
+    private long amount;
+    
+    // session date
+    private String date;
 
     public LoginAdminUserOutputDTO getUser() {
         return user;
@@ -487,4 +493,21 @@ public class AdminDataObj implements Serializable {
 	public void setInvestorUserExchanges(List<ExchangeSettingDTO> investorUserExchanges) {
 		this.investorUserExchanges = investorUserExchanges;
 	}
+
+	public long getAmount() {
+		return amount;
+	}
+
+	public void setAmount(long amount) {
+		this.amount = amount;
+	}
+
+	public String getDate() {
+		return date;
+	}
+
+	public void setDate(String date) {
+		this.date = date;
+	}
+	
 }

@@ -115,7 +115,22 @@ public class BrokerController {
 		String methodName = "createBroker";
 		long refId = System.currentTimeMillis();
 		AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [POST]/admin/brokers");
-		AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(brokerDto));
+		
+		// set null for image data
+		BrokerDTO logRequest = (BrokerDTO) SerializationUtils.clone(brokerDto);
+		if (logRequest.getCompany() != null && logRequest.getCompany().getDelegate() != null) {
+			logRequest.getCompany().getDelegate().setScannedBackIdCard(null);
+			logRequest.getCompany().getDelegate().setScannedFrontIdCard(null);
+			logRequest.getCompany().getDelegate().setScannedSignature(null);
+		}
+		
+		if (logRequest.getIndividual() != null) {
+			logRequest.getIndividual().setScannedBackIdCard(null);
+			logRequest.getIndividual().setScannedFrontIdCard(null);
+			logRequest.getIndividual().setScannedSignature(null);
+		}
+		
+		AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(logRequest));
 
 		brokerService.createBrokerPA(request, brokerDto, refId);
 
@@ -133,7 +148,22 @@ public class BrokerController {
 		String methodName = "updateBroker";
 		long refId = System.currentTimeMillis();
 		AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [PUT]/admin/brokers/" + brokerCode);
-		AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(brokerDto));
+		
+		// set null for image data
+		ApprovalUpdateBrokerDTO logRequest = (ApprovalUpdateBrokerDTO) SerializationUtils.clone(brokerDto);
+		if (logRequest.getPendingData().getCompany() != null && logRequest.getPendingData().getCompany().getDelegate() != null) {
+			logRequest.getPendingData().getCompany().getDelegate().setScannedBackIdCard(null);
+			logRequest.getPendingData().getCompany().getDelegate().setScannedFrontIdCard(null);
+			logRequest.getPendingData().getCompany().getDelegate().setScannedSignature(null);
+		}
+		
+		if (logRequest.getPendingData().getIndividual() != null) {
+			logRequest.getPendingData().getIndividual().setScannedBackIdCard(null);
+			logRequest.getPendingData().getIndividual().setScannedFrontIdCard(null);
+			logRequest.getPendingData().getIndividual().setScannedSignature(null);
+		}
+				
+		AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(logRequest));
 
 		brokerService.updateBrokerPA(request, brokerCode, brokerDto, refId);
 

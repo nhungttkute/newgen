@@ -112,7 +112,16 @@ private String className = "CollaboratorController";
 		String methodName = "createCollaborator";
 		long refId = System.currentTimeMillis();
 		AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [POST]/admin/collaborators");
-		AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(collaboratorDto));
+		
+		// set null for image data
+		CollaboratorDTO logRequest = (CollaboratorDTO) SerializationUtils.clone(collaboratorDto);
+		if (logRequest.getDelegate() != null) {
+			logRequest.getDelegate().setScannedBackIdCard(null);
+			logRequest.getDelegate().setScannedFrontIdCard(null);
+			logRequest.getDelegate().setScannedSignature(null);
+		}
+		
+		AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(logRequest));
 
 		collaboratorService.createCollaboratorPA(request, collaboratorDto, refId);
 
@@ -130,7 +139,16 @@ private String className = "CollaboratorController";
 		String methodName = "updateCollaborator";
 		long refId = System.currentTimeMillis();
 		AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [PUT]/admin/collaborators/" + collaboratorCode);
-		AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(collaboratorDto));
+		
+		// set null for image data
+		ApprovalUpdateCollaboratorDTO logRequest = (ApprovalUpdateCollaboratorDTO) SerializationUtils.clone(collaboratorDto);
+		if (logRequest.getPendingData().getDelegate() != null) {
+			logRequest.getPendingData().getDelegate().setScannedBackIdCard(null);
+			logRequest.getPendingData().getDelegate().setScannedFrontIdCard(null);
+			logRequest.getPendingData().getDelegate().setScannedSignature(null);
+		}
+				
+		AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(logRequest));
 
 		collaboratorService.updateCollaboratorPA(request, collaboratorCode, collaboratorDto, refId);
 

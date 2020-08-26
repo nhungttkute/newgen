@@ -53,4 +53,40 @@ public class BaseConnection {
         }
         return responseBody;
     }
+    
+    public String[] sendGetRequest(String requestUrl, String accessToken) throws Exception {
+        String[] responseBody = new String[2];
+        try {
+            getMethod.setURI(new URI(requestUrl));
+            if (Utility.isNotNull(accessToken)) {
+            	getMethod.setRequestHeader("Authorization", "Bearer " + accessToken);
+            }
+            
+            httpClient.executeMethod(getMethod);
+            responseBody[0] = String.valueOf(getMethod.getStatusCode());
+            responseBody[1] = getMethod.getResponseBodyAsString();
+        } catch (Exception e) {
+            throw e;
+        } finally {
+            getMethod.releaseConnection();
+        }
+        return responseBody;
+    }
+    
+    public String[] sendPutRequest(String requestUrl, String requestBody) throws Exception {
+        String[] responseBody = new String[2];
+        try {
+            StringRequestEntity entity = new StringRequestEntity(requestBody, "application/json", "UTF-8");
+            putMethod.setURI(new URI(requestUrl));
+            putMethod.setRequestEntity(entity);
+            httpClient.executeMethod(putMethod);
+            responseBody[0] = String.valueOf(putMethod.getStatusCode());
+            responseBody[1] = putMethod.getResponseBodyAsString();
+        } catch (Exception e) {
+            throw e;
+        } finally {
+            putMethod.releaseConnection();
+        }
+        return responseBody;
+    }
 }

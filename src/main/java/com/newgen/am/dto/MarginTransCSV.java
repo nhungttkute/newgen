@@ -1,34 +1,59 @@
-package com.newgen.am.model;
+package com.newgen.am.dto;
 
-import java.io.Serializable;
+import com.opencsv.bean.CsvBindByName;
+import com.opencsv.bean.CsvBindByPosition;
 
-import org.springframework.data.mongodb.core.mapping.Document;
-
-@Document(collection = "investor_margin_trans")
-public class InvestorMarginTransaction extends AuditModel implements Serializable {
-
-	private static final long serialVersionUID = 1L;
-	private String id;
+public class MarginTransCSV {
+	@CsvBindByName(column = "ID")
+	@CsvBindByPosition(position = 0)
+    private String _id;
+	@CsvBindByName(column = "MEMBER_CODE")
+	@CsvBindByPosition(position = 1)
     private String memberCode;
+	@CsvBindByName(column = "MEMBER_NAME")
+	@CsvBindByPosition(position = 2)
     private String memberName;
+	@CsvBindByName(column = "BROKER_CODE")
+	@CsvBindByPosition(position = 3)
     private String brokerCode;
+	@CsvBindByName(column = "BROKER_NAME")
+	@CsvBindByPosition(position = 4)
     private String brokerName;
+	@CsvBindByName(column = "COLLABORATOR_CODE")
+	@CsvBindByPosition(position = 5)
     private String collaboratorCode;
+	@CsvBindByName(column = "COLLABORATOR_NAME")
+	@CsvBindByPosition(position = 6)
     private String collaboratorName;
+	@CsvBindByName(column = "INVESTOR_CODE")
+	@CsvBindByPosition(position = 7)
     private String investorCode;
+	@CsvBindByName(column = "INVESTOR_NAME")
+	@CsvBindByPosition(position = 8)
     private String investorName;
-    private String transactionType;
-    private long amount;
-    private String currency;
-    private String approvalUser;
-    private long approvalDate;
-    private String note;
-    private String sessionDate;
-	public String getId() {
-		return id;
+	@CsvBindByName(column = "TRANSACTION_TYPE")
+	@CsvBindByPosition(position = 9)
+	private String transactionType;
+	@CsvBindByName(column = "AMOUNT")
+	@CsvBindByPosition(position = 10)
+	private long amount;
+	@CsvBindByName(column = "CURRENCY")
+	@CsvBindByPosition(position = 11)
+	private String currency;
+	@CsvBindByName(column = "APPROVAL_USER")
+	@CsvBindByPosition(position = 12)
+	private String approvalUser;
+	@CsvBindByName(column = "APPROVAL_DATE")
+	@CsvBindByPosition(position = 13)
+	private String approvalDate;
+	@CsvBindByName(column = "NOTE")
+	@CsvBindByPosition(position = 14)
+	private String note;
+	public String get_id() {
+		return _id;
 	}
-	public void setId(String id) {
-		this.id = id;
+	public void set_id(String _id) {
+		this._id = _id;
 	}
 	public String getMemberCode() {
 		return memberCode;
@@ -102,10 +127,10 @@ public class InvestorMarginTransaction extends AuditModel implements Serializabl
 	public void setApprovalUser(String approvalUser) {
 		this.approvalUser = approvalUser;
 	}
-	public long getApprovalDate() {
+	public String getApprovalDate() {
 		return approvalDate;
 	}
-	public void setApprovalDate(long approvalDate) {
+	public void setApprovalDate(String approvalDate) {
 		this.approvalDate = approvalDate;
 	}
 	public String getNote() {
@@ -113,11 +138,5 @@ public class InvestorMarginTransaction extends AuditModel implements Serializabl
 	}
 	public void setNote(String note) {
 		this.note = note;
-	}
-	public String getSessionDate() {
-		return sessionDate;
-	}
-	public void setSessionDate(String sessionDate) {
-		this.sessionDate = sessionDate;
 	}
 }

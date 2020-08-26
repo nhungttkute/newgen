@@ -1,8 +1,11 @@
 package com.newgen.am.dto;
 
+import java.io.Serializable;
+
 import javax.validation.Valid;
 
-public class ApprovalUpdateCollaboratorDTO {
+public class ApprovalUpdateCollaboratorDTO implements Serializable {
+	private static final long serialVersionUID = 1L;
 	private CollaboratorDTO oldData;
 	@Valid
 	private UpdateCollaboratorDTO pendingData;

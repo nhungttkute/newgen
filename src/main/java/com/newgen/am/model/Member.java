@@ -44,6 +44,7 @@ public class Member extends AuditModel implements Serializable {
     private List<Commodity> commodities;
     private List<CommodityFee> commodityFees;
     private List<MemberUser> users;
+    private CqgInfo cqgInfo;
 
     public String getId() {
 		return id;
@@ -196,4 +197,13 @@ public class Member extends AuditModel implements Serializable {
 	public void setCommodityFees(List<CommodityFee> commodityFees) {
 		this.commodityFees = commodityFees;
 	}
+
+	public CqgInfo getCqgInfo() {
+		return cqgInfo;
+	}
+
+	public void setCqgInfo(CqgInfo cqgInfo) {
+		this.cqgInfo = cqgInfo;
+	}
+	
 }

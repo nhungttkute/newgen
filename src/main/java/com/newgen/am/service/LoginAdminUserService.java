@@ -631,7 +631,7 @@ public class LoginAdminUserService {
 			collection.updateOne(query, update);
 
 			// send email
-			sendChangePasswordEmail(user.getEmail(), user.getUsername(), newPassword, refId);
+			Utility.sendChangePasswordEmail(user.getEmail(), user.getUsername(), newPassword, refId);
 
 			// get redis user info
 			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
@@ -665,7 +665,7 @@ public class LoginAdminUserService {
 			collection.updateOne(query, update);
 
 			// send email
-			sendChangePINEmail(user.getEmail(), user.getUsername(), newPin, refId);
+			Utility.sendChangePINEmail(user.getEmail(), user.getUsername(), newPin, refId);
 
 			// get redis user info
 			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
@@ -678,54 +678,75 @@ public class LoginAdminUserService {
 		}
 	}
 
-	private void sendChangePasswordEmail(String toEmail, String username, String password, long refId) {
-		String methodName = "sendChangePasswordEmail";
+	public void resetInvestorUserPassword(HttpServletRequest request, LoginUserDataInputDTO user, long refId) {
+		String methodName = "resetInvestorUserPassword";
 		try {
-			LocalServiceConnection serviceCon = new LocalServiceConnection();
-			EmailDTO email = new EmailDTO();
-			email.setSettingType(Constant.SERVICE_NOTIFICATION_SETTING_TYPE_RESET_PASSWORD);
-			email.setSendingObject(Constant.SERVICE_NOTIFICATION_SENDING_OBJ);
-			email.setTo(toEmail);
-			email.setSubject(FileUtility.CHANGE_PASSWORD_EMAIL_SUBJECT);
+			MongoDatabase database = MongoDBConnection.getMongoDatabase();
+			MongoCollection<Document> collection = database.getCollection("login_investor_users");
 
-			String emailBody = String.format(
-					FileUtility.loadFileContent(
-							ConfigLoader.getMainConfig().getString(FileUtility.CHANGE_PASSWORD_EMAIL_FILE), refId),
-					username, password);
-			email.setBodyStr(emailBody);
-			String emailJson = new Gson().toJson(email);
-			AMLogger.logMessage(className, methodName, refId, "Email: " + emailJson);
-			serviceCon.sendPostRequest(serviceCon.getEmailNotificationServiceURL(), emailJson);
+			BasicDBObject query = new BasicDBObject();
+			query.put("username", user.getUsername());
+
+			String newPassword = Utility.generateRandomPassword();
+			BasicDBObject newDocument = new BasicDBObject();
+			newDocument.put("password", passwordEncoder.encode(newPassword));
+			newDocument.put("mustChangePassword", true);
+			newDocument.put("lastModifiedUser", Utility.getCurrentUsername());
+			newDocument.put("lastModifiedDate", System.currentTimeMillis());
+
+			BasicDBObject update = new BasicDBObject();
+			update.put("$set", newDocument);
+
+			collection.updateOne(query, update);
+
+			// send email
+			Utility.sendChangePasswordEmail(user.getEmail(), user.getUsername(), newPassword, refId);
+
+			// get redis user info
+			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
+			// send activity log
+			activityLogService.sendActivityLog(userInfo, request, ActivityLogService.ACTIVITY_RESET_PASSWORD,
+					ActivityLogService.ACTIVITY_RESET_PASSWORD_DESC, userInfo.getUsername(), "");
 		} catch (Exception e) {
 			AMLogger.logError(className, methodName, refId, e);
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 
-	private void sendChangePINEmail(String toEmail, String username, String pin, long refId) {
-		String methodName = "sendChangePINEmail";
+	public void resetInvestorUserPin(HttpServletRequest request, LoginUserDataInputDTO user, long refId) {
+		String methodName = "resetInvestorUserPin";
 		try {
-			LocalServiceConnection serviceCon = new LocalServiceConnection();
-			EmailDTO email = new EmailDTO();
-			email.setSettingType(Constant.SERVICE_NOTIFICATION_SETTING_TYPE_RESET_PIN);
-			email.setSendingObject(Constant.SERVICE_NOTIFICATION_SENDING_OBJ);
-			email.setTo(toEmail);
-			email.setSubject(FileUtility.CHANGE_PIN_EMAIL_SUBJECT);
+			MongoDatabase database = MongoDBConnection.getMongoDatabase();
+			MongoCollection<Document> collection = database.getCollection("login_investor_users");
 
-			String emailBody = String.format(
-					FileUtility.loadFileContent(
-							ConfigLoader.getMainConfig().getString(FileUtility.CHANGE_PIN_EMAIL_FILE), refId),
-					username, pin);
-			email.setBodyStr(emailBody);
-			String emailJson = new Gson().toJson(email);
-			AMLogger.logMessage(className, methodName, refId, "Email: " + emailJson);
-			serviceCon.sendPostRequest(serviceCon.getEmailNotificationServiceURL(), emailJson);
+			BasicDBObject query = new BasicDBObject();
+			query.put("username", user.getUsername());
+
+			String newPin = Utility.generateRandomPin();
+			BasicDBObject newDocument = new BasicDBObject();
+			newDocument.put("pin", passwordEncoder.encode(newPin));
+			newDocument.put("lastModifiedUser", Utility.getCurrentUsername());
+			newDocument.put("lastModifiedDate", System.currentTimeMillis());
+
+			BasicDBObject update = new BasicDBObject();
+			update.put("$set", newDocument);
+
+			collection.updateOne(query, update);
+
+			// send email
+			Utility.sendChangePINEmail(user.getEmail(), user.getUsername(), newPin, refId);
+
+			// get redis user info
+			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
+			// send activity log
+			activityLogService.sendActivityLog(userInfo, request, ActivityLogService.ACTIVITY_RESET_PIN,
+					ActivityLogService.ACTIVITY_RESET_PIN_DESC, userInfo.getUsername(), "");
 		} catch (Exception e) {
 			AMLogger.logError(className, methodName, refId, e);
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
-
+	
 	public BasePagination<LoginAdminUsersDTO> listAdminUsers(HttpServletRequest request, long refId) {
 		String methodName = "list";
 		BasePagination<LoginAdminUsersDTO> pagination = null;
@@ -757,5 +778,57 @@ public class LoginAdminUserService {
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 		return pagination;
+	}
+	
+	public void saveAdmUserLayout(String layout, long refId) {
+		String methodName = "saveAdmUserLayout";
+		try {
+			String username = Utility.getCurrentUsername();
+			
+			MongoDatabase database = MongoDBConnection.getMongoDatabase();
+			MongoCollection<Document> collection = database.getCollection("login_admin_users");
+
+			BasicDBObject query = new BasicDBObject();
+			query.put("username", username);
+
+			BasicDBObject updateDoc = new BasicDBObject();
+			updateDoc.put("layout", layout);
+			updateDoc.put("lastModifiedUser", username);
+			updateDoc.put("lastModifiedDate", System.currentTimeMillis());
+
+			BasicDBObject update = new BasicDBObject();
+			update.put("$set", updateDoc);
+
+			collection.updateOne(query, update);
+		} catch (Exception e) {
+			AMLogger.logError(className, methodName, refId, e);
+			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+	
+	public void saveAdmUserTableSetting(String tableSetting, long refId) {
+		String methodName = "saveAdmUserTableSetting";
+		try {
+			String username = Utility.getCurrentUsername();
+			
+			MongoDatabase database = MongoDBConnection.getMongoDatabase();
+			MongoCollection<Document> collection = database.getCollection("login_admin_users");
+
+			BasicDBObject query = new BasicDBObject();
+			query.put("username", username);
+
+			BasicDBObject updateDoc = new BasicDBObject();
+			updateDoc.put("tableSetting", tableSetting);
+			updateDoc.put("lastModifiedUser", username);
+			updateDoc.put("lastModifiedDate", System.currentTimeMillis());
+
+			BasicDBObject update = new BasicDBObject();
+			update.put("$set", updateDoc);
+
+			collection.updateOne(query, update);
+		} catch (Exception e) {
+			AMLogger.logError(className, methodName, refId, e);
+			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
 	}
 }

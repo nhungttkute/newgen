@@ -64,6 +64,7 @@ public class LoginAdminUser extends AuditModel implements Serializable {
     private int fontSize;
     private List<WatchList> watchlists;
     private List<Exchange> exchanges;
+    private String tableSetting;
 
     public String getId() {
 		return id;
@@ -295,5 +296,13 @@ public class LoginAdminUser extends AuditModel implements Serializable {
 
 	public void setExchanges(List<Exchange> exchanges) {
 		this.exchanges = exchanges;
+	}
+
+	public String getTableSetting() {
+		return tableSetting;
+	}
+
+	public void setTableSetting(String tableSetting) {
+		this.tableSetting = tableSetting;
 	}
 }

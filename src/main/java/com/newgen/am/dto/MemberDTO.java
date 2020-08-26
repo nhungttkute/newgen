@@ -12,6 +12,7 @@ import com.newgen.am.model.Commodity;
 import com.newgen.am.model.CommodityFee;
 import com.newgen.am.model.Company;
 import com.newgen.am.model.Contact;
+import com.newgen.am.model.CqgInfo;
 import com.newgen.am.model.GeneralFee;
 import com.newgen.am.model.MarginRatioAlert;
 import com.newgen.am.model.MemberUser;
@@ -58,6 +59,7 @@ public class MemberDTO implements Serializable{
     private List<Commodity> commodities;
     private List<CommodityFee> commodityFees;
     private List<MemberUser> users;
+    private CqgInfo cqgInfo;
     
 	public String get_id() {
 		return _id;
@@ -179,5 +181,11 @@ public class MemberDTO implements Serializable{
 	}
 	public void setCommodityFees(List<CommodityFee> commodityFees) {
 		this.commodityFees = commodityFees;
+	}
+	public CqgInfo getCqgInfo() {
+		return cqgInfo;
+	}
+	public void setCqgInfo(CqgInfo cqgInfo) {
+		this.cqgInfo = cqgInfo;
 	}
 }

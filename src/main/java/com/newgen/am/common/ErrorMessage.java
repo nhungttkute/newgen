@@ -24,4 +24,5 @@ public class ErrorMessage {
     public static final String WITHDRAWAL_DENIED = "Withdrawal denied.";
     public static final String AUTHENTICATION_FAILED = "Authentication failed.";
     public static final String INACTIVE_USER = "Inactive User.";
+    public static final String CQG_INFO_CREATED_UNSUCCESSFULLY = "Cannot create cqg info.";
 }

@@ -26,6 +26,7 @@ public class LoginUserDataInputDTO {
     @Email(message = "Invalid format.", groups = FormatGroup.class)
     private String email;
     private String phoneNumber;
+    private String tableSetting;
 
     public String getUsername() {
         return username;
@@ -122,5 +123,13 @@ public class LoginUserDataInputDTO {
     public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
     }
+
+	public String getTableSetting() {
+		return tableSetting;
+	}
+
+	public void setTableSetting(String tableSetting) {
+		this.tableSetting = tableSetting;
+	}
     
 }

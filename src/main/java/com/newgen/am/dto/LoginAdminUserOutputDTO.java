@@ -47,6 +47,7 @@ public class LoginAdminUserOutputDTO implements Serializable {
     @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     private int fontSize;
     private List<String> functions;
+    private String tableSetting;
 
     public String getUsername() {
         return username;
@@ -254,5 +255,13 @@ public class LoginAdminUserOutputDTO implements Serializable {
 
 	public void setInvestorName(String investorName) {
 		this.investorName = investorName;
+	}
+
+	public String getTableSetting() {
+		return tableSetting;
+	}
+
+	public void setTableSetting(String tableSetting) {
+		this.tableSetting = tableSetting;
 	}
 }

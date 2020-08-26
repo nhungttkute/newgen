@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -53,15 +51,14 @@ import com.newgen.am.dto.ApprovalUserRolesDTO;
 import com.newgen.am.dto.BasePagination;
 import com.newgen.am.dto.BrokerCommodity;
 import com.newgen.am.dto.BrokerDTO;
+import com.newgen.am.dto.CQGResponseObj;
 import com.newgen.am.dto.ChangeGroupDTO;
 import com.newgen.am.dto.CommoditiesDTO;
 import com.newgen.am.dto.CommodityFeesDTO;
 import com.newgen.am.dto.DefaultPositionLimitDTO;
-import com.newgen.am.dto.DefaultSettingDTO;
 import com.newgen.am.dto.EmailDTO;
 import com.newgen.am.dto.FunctionsDTO;
 import com.newgen.am.dto.GeneralFeeDTO;
-import com.newgen.am.dto.GeneralFeesDTO;
 import com.newgen.am.dto.InvestorDTO;
 import com.newgen.am.dto.ListElementDTO;
 import com.newgen.am.dto.MarginMultiplierDTO;
@@ -70,7 +67,6 @@ import com.newgen.am.dto.MemberCSV;
 import com.newgen.am.dto.MemberCommoditiesDTO;
 import com.newgen.am.dto.MemberDTO;
 import com.newgen.am.dto.OrderLimitDTO;
-import com.newgen.am.dto.OtherFeeDTO;
 import com.newgen.am.dto.RiskParametersDTO;
 import com.newgen.am.dto.RoleFunctionsDTO;
 import com.newgen.am.dto.UpdateMemberDTO;
@@ -102,16 +98,16 @@ public class MemberService {
 	private String className = "MemberService";
 
 	@Autowired
-	ModelMapper modelMapper;
+	private ModelMapper modelMapper;
 	
 	@Autowired
-	MemberRepository memberRepository;
+	private MemberRepository memberRepository;
 	
 	@Autowired
-	PendingApprovalRepository pendingApprovalRepo;
+	private PendingApprovalRepository pendingApprovalRepo;
 
 	@Autowired
-	LoginAdminUserRepository loginAdmUserRepo;
+	private LoginAdminUserRepository loginAdmUserRepo;
 
 	@Autowired
 	private MongoTemplate mongoTemplate;
@@ -132,7 +128,10 @@ public class MemberService {
 	private DBSequenceRepository dbSeqRepository;
 
 	@Autowired
-	PasswordEncoder passwordEncoder;
+	private PasswordEncoder passwordEncoder;
+	
+	@Autowired
+	private CQGConnectorService cqgService;
 	
 	private Document getQueryDocument(RequestParamsParser.SearchCriteria searchCriteria, UserInfoDTO userInfo) {
 		Document query = new Document();
@@ -328,6 +327,35 @@ public class MemberService {
 			newMember.append("role", memberRole);
 			newMember.append("riskParameters", riskParameters);
 			
+			// create a new cqg customer
+			CQGResponseObj customerResult = cqgService.createCQGCustomer(memberDto, refId);
+			if (customerResult != null) {
+				String customerId = customerResult.getData().getCustomerId();
+				String profileId = customerResult.getData().getProfileId();
+				
+//				// create a new cqg trader
+//				CQGResponseObj traderResult = cqgService.createCQGTrader(memberDto.getCode(), customerId, profileId, refId);
+//				if (traderResult != null) {
+//					String userId = traderResult.getData().getUserId();
+//					Document cqgInfo = new Document();
+//					cqgInfo.append("customerId", customerId);
+//					cqgInfo.append("profileId", profileId);
+//					cqgInfo.append("userId", userId);
+//					
+//					newMember.append("cqgInfo", cqgInfo);
+//				} else {
+//					throw new CustomException(ErrorMessage.CQG_INFO_CREATED_UNSUCCESSFULLY, HttpStatus.OK);
+//				}
+				
+				Document cqgInfo = new Document();
+				cqgInfo.append("customerId", customerId);
+				cqgInfo.append("profileId", profileId);
+				
+				newMember.append("cqgInfo", cqgInfo);
+			} else {
+				throw new CustomException(ErrorMessage.CQG_INFO_CREATED_UNSUCCESSFULLY, HttpStatus.OK);
+			}
+						
 			// insert new member
 			MongoDatabase database = MongoDBConnection.getMongoDatabase();
 			MongoCollection<Document> collection = database.getCollection("members");
@@ -342,6 +370,9 @@ public class MemberService {
 			
 			// insert new member's master user to login_admin_users
 			createMasterMemberUser(request, memberDto, memberDto.getCode(), memberRole, refId);
+			
+			// set member to redis
+			setMemberInfoRedis(collection, memberDto.getCode(), refId);
 		} catch (CustomException e) {
 			throw e;
 		} catch (Exception e) {
@@ -530,6 +561,8 @@ public class MemberService {
 					ActivityLogService.ACTIVITY_APPROVAL_UPDATE_MEMBER_DESC, memberCode, pendingApproval.getId());
 			
 			BasicDBObject updateMember = new BasicDBObject();
+			BasicDBObject updateLoginAdmUser = new BasicDBObject();
+			
 			boolean isUserUpdated = false;
 			boolean isStatusUpdated = false;
 			
@@ -556,6 +589,7 @@ public class MemberService {
 						updateMember.append("company.delegate.fullName", memberDto.getCompany().getDelegate().getFullName());
 						updateMember.append("users.$.fullName", memberDto.getCompany().getDelegate().getFullName());
 						updateMember.append("contact.fullName", memberDto.getCompany().getDelegate().getFullName());
+						updateLoginAdmUser.append("fullName", memberDto.getCompany().getDelegate().getFullName());
 						isUserUpdated = true;
 					}
 					if (Utility.isNotNull(memberDto.getCompany().getDelegate().getBirthDay())) updateMember.append("company.delegate.birthDay", memberDto.getCompany().getDelegate().getBirthDay());
@@ -566,12 +600,14 @@ public class MemberService {
 						updateMember.append("company.delegate.email", memberDto.getCompany().getDelegate().getEmail());
 						updateMember.append("users.$.email", memberDto.getCompany().getDelegate().getEmail());
 						updateMember.append("contact.email", memberDto.getCompany().getDelegate().getEmail());
+						updateLoginAdmUser.append("email", memberDto.getCompany().getDelegate().getEmail());
 						isUserUpdated = true;
 					}
 					if (Utility.isNotNull(memberDto.getCompany().getDelegate().getPhoneNumber()))  {
 						updateMember.append("company.delegate.phoneNumber", memberDto.getCompany().getDelegate().getPhoneNumber());
 						updateMember.append("users.$.phoneNumber", memberDto.getCompany().getDelegate().getPhoneNumber());
 						updateMember.append("contact.phoneNumber", memberDto.getCompany().getDelegate().getPhoneNumber());
+						updateLoginAdmUser.append("phoneNumber", memberDto.getCompany().getDelegate().getPhoneNumber());
 						isUserUpdated = true;
 					}
 					if (Utility.isNotNull(memberDto.getCompany().getDelegate().getAddress()))  updateMember.append("company.delegate.address", memberDto.getCompany().getDelegate().getAddress());
@@ -603,7 +639,23 @@ public class MemberService {
 				MongoCollection<Document> collection = database.getCollection("members");
 				collection.updateOne(query, update);
 				
-				// if status is changed, update all 
+				// if status is changed, update all
+				if (isStatusUpdated) {
+					// set member to redis
+					setMemberInfoRedis(collection, memberCode, refId);
+				}
+				
+				// update login_admin_users if there's any change
+				if (!updateLoginAdmUser.isEmpty()) {
+					BasicDBObject logiAdmQuery = new BasicDBObject();
+					logiAdmQuery.append("username", Constant.MEMBER_MASTER_USER_PREFIX + memberCode);
+					
+					BasicDBObject loginAdmUpdate = new BasicDBObject();
+					loginAdmUpdate.append("$set", updateLoginAdmUser);
+					
+					MongoCollection<Document> loginAdmCollection = database.getCollection("login_admin_users");
+					loginAdmCollection.updateOne(logiAdmQuery, loginAdmUpdate);
+				}
 			}
 		} catch (CustomException e) {
 			throw e;
@@ -851,16 +903,15 @@ public class MemberService {
 		try {
 			String memberCode = pendingApproval.getPendingData().getQueryValue();
 			CommoditiesDTO memberDto = new Gson().fromJson(pendingApproval.getPendingData().getPendingValue(), CommoditiesDTO.class);
+			// get redis user info
+			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
+			// send activity log
+			activityLogService.sendActivityLog(userInfo, request,
+					ActivityLogService.ACTIVITY_APPROVAL_MEMBER_COMMODITIES_ASSIGN,
+					ActivityLogService.ACTIVITY_APPROVAL_MEMBER_COMMODITIES_ASSIGN_DESC, memberCode,
+					pendingApproval.getId());
 			
 			if (memberDto.getCommodities() != null && memberDto.getCommodities().size() > 0) {
-				// get redis user info
-				UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
-				// send activity log
-				activityLogService.sendActivityLog(userInfo, request,
-						ActivityLogService.ACTIVITY_APPROVAL_MEMBER_COMMODITIES_ASSIGN,
-						ActivityLogService.ACTIVITY_APPROVAL_MEMBER_COMMODITIES_ASSIGN_DESC, memberCode,
-						pendingApproval.getId());
-				
 				List<Document> commodities = new ArrayList<Document>();
 				
 				for (Commodity comm : memberDto.getCommodities()) {
@@ -879,6 +930,21 @@ public class MemberService {
 				
 				Document updateMember = new Document();
 				updateMember.append("commodities", commodities);
+				updateMember.append("lastModifiedUser", Utility.getCurrentUsername());
+				updateMember.append("lastModifiedDate", System.currentTimeMillis());
+				
+				Document update = new Document();
+				update.append("$set", updateMember);
+				
+				MongoDatabase database = MongoDBConnection.getMongoDatabase();
+				MongoCollection<Document> collection = database.getCollection("members");
+				collection.updateOne(query, update);
+			} else {
+				Document query = new Document();
+				query.append("code", memberCode);
+				
+				Document updateMember = new Document();
+				updateMember.append("commodities", null);
 				updateMember.append("lastModifiedUser", Utility.getCurrentUsername());
 				updateMember.append("lastModifiedDate", System.currentTimeMillis());
 				
@@ -1173,6 +1239,21 @@ public class MemberService {
 				update.append("$set", updateDocument);
 				
 				collection.updateOne(query, update);
+				
+				// update to all investors
+				BasicDBObject investorQuery = new BasicDBObject();
+				investorQuery.append("memberCode", memberCode);
+				
+				BasicDBObject invUpdateDoc = new BasicDBObject();
+				invUpdateDoc.append("orderLimit", memberDto.getOrderLimit());
+				invUpdateDoc.append("lastModifiedUser", Utility.getCurrentUsername());
+				invUpdateDoc.append("lastModifiedDate", System.currentTimeMillis());
+				
+				BasicDBObject invUpdate = new BasicDBObject();
+				invUpdate.append("$set", invUpdateDoc);
+
+				MongoCollection<Document> invCollection = database.getCollection("investors");
+				invCollection.updateMany(investorQuery, invUpdate);
 			}
 		} catch (CustomException e) {
 			throw e;
@@ -1670,6 +1751,7 @@ public class MemberService {
 			// insert new redis info
 			Document projection = new Document();
 			projection.append("_id", 0.0);
+			projection.append("status", 1.0);
 			projection.append("riskParameters", 1.0);
 			projection.append("commodities", 1.0);
 			
@@ -1941,10 +2023,6 @@ public class MemberService {
 				
 				MongoCollection<Document> invCollection = database.getCollection("investors");
 				invCollection.updateMany(investorQuery, Updates.addToSet("generalFees", feeDoc));
-				
-				// add new fee in investor_margin_info
-				MongoCollection<Document> marginCollection = database.getCollection("investor_margin_info");
-				marginCollection.updateMany(investorQuery, Updates.addToSet("generalFees", feeDoc));
 			}
 		} catch (CustomException e) {
 			throw e;
@@ -2076,12 +2154,6 @@ public class MemberService {
 				invCollection.updateMany(investorQuery, investorUpdate);
 				
 				invCollection.updateMany(investorQuery, Updates.addToSet("generalFees", updateFeeDoc));
-				
-				// update generalFess in investor_margin_info
-				MongoCollection<Document> marginCollection = database.getCollection("investor_margin_info");
-				marginCollection.updateMany(investorQuery, investorUpdate);
-				
-				marginCollection.updateMany(investorQuery, Updates.addToSet("generalFees", updateFeeDoc));
 			}
 		} catch (CustomException e) {
 			throw e;

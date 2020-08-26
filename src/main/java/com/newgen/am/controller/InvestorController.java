@@ -47,6 +47,7 @@ import com.newgen.am.dto.InvestorDetailDTO;
 import com.newgen.am.dto.MarginInfoDTO;
 import com.newgen.am.dto.MarginMultiplierDTO;
 import com.newgen.am.dto.MarginRatioAlertDTO;
+import com.newgen.am.dto.MarginTransCSV;
 import com.newgen.am.dto.MarginTransactionDTO;
 import com.newgen.am.dto.ResponseObj;
 import com.newgen.am.dto.UserCSV;
@@ -231,7 +232,21 @@ public class InvestorController {
 		String methodName = "createInvestor";
 		long refId = System.currentTimeMillis();
 		AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [POST]/admin/investors");
-		AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(investorDto));
+		// set null for image data
+		InvestorDTO logRequest = (InvestorDTO) SerializationUtils.clone(investorDto);
+		if (logRequest.getCompany() != null && logRequest.getCompany().getDelegate() != null) {
+			logRequest.getCompany().getDelegate().setScannedBackIdCard(null);
+			logRequest.getCompany().getDelegate().setScannedFrontIdCard(null);
+			logRequest.getCompany().getDelegate().setScannedSignature(null);
+		}
+		
+		if (logRequest.getIndividual() != null) {
+			logRequest.getIndividual().setScannedBackIdCard(null);
+			logRequest.getIndividual().setScannedFrontIdCard(null);
+			logRequest.getIndividual().setScannedSignature(null);
+		}
+		
+		AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(logRequest));
 
 		investorService.createInvestorPA(request, investorDto, refId);
 
@@ -249,7 +264,22 @@ public class InvestorController {
 		String methodName = "updateInvestor";
 		long refId = System.currentTimeMillis();
 		AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [PUT]/admin/investors/" + investorCode);
-		AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(investorDto));
+		
+		// set null for image data
+		ApprovalUpdateInvestorDTO logRequest = (ApprovalUpdateInvestorDTO) SerializationUtils.clone(investorDto);
+		if (logRequest.getPendingData().getCompany() != null && logRequest.getPendingData().getCompany().getDelegate() != null) {
+			logRequest.getPendingData().getCompany().getDelegate().setScannedBackIdCard(null);
+			logRequest.getPendingData().getCompany().getDelegate().setScannedFrontIdCard(null);
+			logRequest.getPendingData().getCompany().getDelegate().setScannedSignature(null);
+		}
+		
+		if (logRequest.getPendingData().getIndividual() != null) {
+			logRequest.getPendingData().getIndividual().setScannedBackIdCard(null);
+			logRequest.getPendingData().getIndividual().setScannedFrontIdCard(null);
+			logRequest.getPendingData().getIndividual().setScannedSignature(null);
+		}
+				
+		AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(logRequest));
 
 		investorService.updateInvestorPA(request, investorCode, investorDto, refId);
 
@@ -666,6 +696,37 @@ public class InvestorController {
 		
 		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
 		return response;
+	}
+	
+	@GetMapping("/admin/investors/marginTransactionHistory/csv")
+	@PreAuthorize("hasAuthority('clientManagement.marginMoneyTransHistory')")
+	public void downloadMarginTransCsv(HttpServletRequest request, HttpServletResponse response) {
+		String methodName = "downloadMarginTransCsv";
+		long refId = System.currentTimeMillis();
+		AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [GET]/admin/investors/marginTransactionHistory/csv");
+
+		try {
+			// set file name and content type
+			String filename = Constant.CSV_INVESTOR_MARGIN_TRANS;
+
+			response.setContentType("text/csv");
+			response.setCharacterEncoding("UTF-8");
+			response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"");
+
+			// create a csv writer
+			CustomMappingStrategy<MarginTransCSV> mappingStrategy = new CustomMappingStrategy<MarginTransCSV>();
+			mappingStrategy.setType(MarginTransCSV.class);
+
+			StatefulBeanToCsv<MarginTransCSV> writer = new StatefulBeanToCsvBuilder<MarginTransCSV>(response.getWriter())
+					.withMappingStrategy(mappingStrategy).withQuotechar(CSVWriter.NO_QUOTE_CHARACTER)
+					.withSeparator(CSVWriter.DEFAULT_SEPARATOR).withOrderedResults(false).build();
+
+			// write all users to csv file
+			writer.write(investorService.listMarginTransactionsCsv(request, refId));
+		} catch (Exception e) {
+			AMLogger.logError(className, methodName, refId, e);
+			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
 	}
 	
 	@PostMapping("/admin/investors/refundMarginDeposit/{approvalId}")

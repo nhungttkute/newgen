@@ -1,6 +1,7 @@
 package com.newgen.am.service;
 
 import com.google.gson.Gson;
+import com.mongodb.BasicDBObject;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.newgen.am.common.AMLogger;
@@ -9,6 +10,7 @@ import com.newgen.am.common.ErrorMessage;
 import com.newgen.am.common.MongoDBConnection;
 import com.newgen.am.common.Utility;
 import com.newgen.am.dto.LoginInvestorUserOutputDTO;
+import com.newgen.am.dto.LoginUserDataInputDTO;
 import com.newgen.am.dto.UserInfoDTO;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -129,7 +131,7 @@ public class LoginInvestorUserService {
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
-
+	
 	public LoginInvestorUser save(LoginInvestorUser user, long refId) throws CustomException {
 		String methodName = "save";
 		try {

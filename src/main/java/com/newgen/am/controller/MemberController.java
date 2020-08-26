@@ -131,7 +131,14 @@ public class MemberController {
 		String methodName = "createMember";
 		long refId = System.currentTimeMillis();
 		AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [POST]/admin/members");
-		AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(memberDto));
+		
+		// set null image data
+		MemberDTO logRequest = (MemberDTO) SerializationUtils.clone(memberDto);
+		logRequest.getCompany().getDelegate().setScannedBackIdCard(null);
+		logRequest.getCompany().getDelegate().setScannedFrontIdCard(null);
+		logRequest.getCompany().getDelegate().setScannedSignature(null);
+		
+		AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(logRequest));
 
 		memberService.createMemberPA(request, memberDto, refId);
 
@@ -149,7 +156,16 @@ public class MemberController {
 		String methodName = "updateMember";
 		long refId = System.currentTimeMillis();
 		AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [PUT]/admin/members/" + memberCode);
-		AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(memberDto));
+		
+		// set null image data
+		ApprovalUpdateMemberDTO logRequest = (ApprovalUpdateMemberDTO) SerializationUtils.clone(memberDto);
+		if (logRequest.getPendingData().getCompany() != null && logRequest.getPendingData().getCompany().getDelegate() != null) {
+			logRequest.getPendingData().getCompany().getDelegate().setScannedBackIdCard(null);
+			logRequest.getPendingData().getCompany().getDelegate().setScannedFrontIdCard(null);
+			logRequest.getPendingData().getCompany().getDelegate().setScannedSignature(null);
+		}
+		
+		AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(logRequest));
 
 		memberService.updateMemberPA(request, memberCode, memberDto, refId);
 

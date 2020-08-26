@@ -60,6 +60,7 @@ public class UserInfoDTO implements Serializable {
     private CqgInfo cqgInfo;
     private RiskParameters riskParameters;
     private List<Exchange> exchanges;
+    private String tableSetting;
 
     public String getId() {
 		return id;
@@ -339,5 +340,13 @@ public class UserInfoDTO implements Serializable {
 
 	public void setExchanges(List<Exchange> exchanges) {
 		this.exchanges = exchanges;
+	}
+
+	public String getTableSetting() {
+		return tableSetting;
+	}
+
+	public void setTableSetting(String tableSetting) {
+		this.tableSetting = tableSetting;
 	}
 }

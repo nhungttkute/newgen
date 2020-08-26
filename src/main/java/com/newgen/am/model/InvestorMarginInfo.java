@@ -15,11 +15,9 @@ public class InvestorMarginInfo extends AuditModel implements Serializable{
     private String collaboratorName;
     private String investorCode;
     private String investorName;
-	private long sodBalance; //So du TK dau ngay
-    private long changedAmount; //Nop rut trong phien
-    private long generalFee; // Thue/phi
-    private long pendingWithdrawalAmount; // Rút ký quỹ treo (chờ approve)
-    private long otherFee; // Phi khac
+	private double sodBalance; //So du TK dau ngay
+    private double changedAmount; //Nop rut trong phien
+    private double pendingWithdrawalAmount; // Rút ký quỹ treo (chờ approve)
     private double marginSurplusInterestRate; //Lãi suất dư thừa ký quỹ
     private double marginDeficitInterestRate; //Lãi suất thiếu hụt ký quỹ
     private long initialRequiredMargin; // Ky quy ban dau yeu cau
@@ -34,30 +32,6 @@ public class InvestorMarginInfo extends AuditModel implements Serializable{
 	}
 	public void setInvestorCode(String investorCode) {
 		this.investorCode = investorCode;
-	}
-	public long getSodBalance() {
-		return sodBalance;
-	}
-	public void setSodBalance(long sodBalance) {
-		this.sodBalance = sodBalance;
-	}
-	public long getChangedAmount() {
-		return changedAmount;
-	}
-	public void setChangedAmount(long changedAmount) {
-		this.changedAmount = changedAmount;
-	}
-	public long getGeneralFee() {
-		return generalFee;
-	}
-	public void setGeneralFee(long generalFee) {
-		this.generalFee = generalFee;
-	}
-	public long getOtherFee() {
-		return otherFee;
-	}
-	public void setOtherFee(long otherFee) {
-		this.otherFee = otherFee;
 	}
 	public double getMarginSurplusInterestRate() {
 		return marginSurplusInterestRate;
@@ -94,12 +68,6 @@ public class InvestorMarginInfo extends AuditModel implements Serializable{
 	}
 	public void setTransactionFee(long transactionFee) {
 		this.transactionFee = transactionFee;
-	}
-	public long getPendingWithdrawalAmount() {
-		return pendingWithdrawalAmount;
-	}
-	public void setPendingWithdrawalAmount(long pendingWithdrawalAmount) {
-		this.pendingWithdrawalAmount = pendingWithdrawalAmount;
 	}
 	public String getMemberCode() {
 		return memberCode;
@@ -154,6 +122,24 @@ public class InvestorMarginInfo extends AuditModel implements Serializable{
 	}
 	public void setPendingTransactionFee(long pendingTransactionFee) {
 		this.pendingTransactionFee = pendingTransactionFee;
+	}
+	public double getSodBalance() {
+		return sodBalance;
+	}
+	public void setSodBalance(double sodBalance) {
+		this.sodBalance = sodBalance;
+	}
+	public double getChangedAmount() {
+		return changedAmount;
+	}
+	public void setChangedAmount(double changedAmount) {
+		this.changedAmount = changedAmount;
+	}
+	public double getPendingWithdrawalAmount() {
+		return pendingWithdrawalAmount;
+	}
+	public void setPendingWithdrawalAmount(double pendingWithdrawalAmount) {
+		this.pendingWithdrawalAmount = pendingWithdrawalAmount;
 	}
     
 }

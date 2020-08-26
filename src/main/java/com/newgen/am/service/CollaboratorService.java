@@ -472,6 +472,8 @@ public class CollaboratorService {
 					ActivityLogService.ACTIVITY_APPROVAL_UPDATE_COLLABORATOR_DESC, collaboratorCode, pendingApproval.getId());
 
 			BasicDBObject collaboratorMember = new BasicDBObject();
+			BasicDBObject updateLoginAdmUser = new BasicDBObject();
+			
 			boolean isUserUpdated = false;
 			boolean isStatusUpdated = false;
 			
@@ -490,6 +492,7 @@ public class CollaboratorService {
 					collaboratorMember.append("delegate.fullName", collaboratorDto.getDelegate().getFullName());
 					collaboratorMember.append("user.fullName", collaboratorDto.getDelegate().getFullName());
 					collaboratorMember.append("contact.fullName", collaboratorDto.getDelegate().getFullName());
+					updateLoginAdmUser.append("fullName", collaboratorDto.getDelegate().getFullName());
 					isUserUpdated = true;
 				}
 				if (Utility.isNotNull(collaboratorDto.getDelegate().getBirthDay())) collaboratorMember.append("delegate.birthDay", collaboratorDto.getDelegate().getBirthDay());
@@ -500,12 +503,14 @@ public class CollaboratorService {
 					collaboratorMember.append("delegate.email", collaboratorDto.getDelegate().getEmail());
 					collaboratorMember.append("user.email", collaboratorDto.getDelegate().getEmail());
 					collaboratorMember.append("contact.email", collaboratorDto.getDelegate().getEmail());
+					updateLoginAdmUser.append("email", collaboratorDto.getDelegate().getEmail());
 					isUserUpdated = true;
 				}
 				if (Utility.isNotNull(collaboratorDto.getDelegate().getPhoneNumber()))  {
 					collaboratorMember.append("delegate.phoneNumber", collaboratorDto.getDelegate().getPhoneNumber());
 					collaboratorMember.append("user.phoneNumber", collaboratorDto.getDelegate().getPhoneNumber());
 					collaboratorMember.append("contact.phoneNumber", collaboratorDto.getDelegate().getPhoneNumber());
+					updateLoginAdmUser.append("phoneNumber", collaboratorDto.getDelegate().getPhoneNumber());
 					isUserUpdated = true;
 				}
 				if (Utility.isNotNull(collaboratorDto.getDelegate().getAddress()))  collaboratorMember.append("delegate.address", collaboratorDto.getDelegate().getAddress());
@@ -534,6 +539,18 @@ public class CollaboratorService {
 				MongoDatabase database = MongoDBConnection.getMongoDatabase();
 				MongoCollection<Document> collection = database.getCollection("collaborators");
 				collection.updateOne(query, update);
+				
+				// update login_admin_users if there's any change
+				if (!updateLoginAdmUser.isEmpty()) {
+					BasicDBObject logiAdmQuery = new BasicDBObject();
+					logiAdmQuery.append("username", Constant.COLLABORATOR_USER_PREFIX + collaboratorCode);
+					
+					BasicDBObject loginAdmUpdate = new BasicDBObject();
+					loginAdmUpdate.append("$set", updateLoginAdmUser);
+					
+					MongoCollection<Document> loginAdmCollection = database.getCollection("login_admin_users");
+					loginAdmCollection.updateOne(logiAdmQuery, loginAdmUpdate);
+				}
 				
 				if (isStatusUpdated) {
 					// update status of broker user
