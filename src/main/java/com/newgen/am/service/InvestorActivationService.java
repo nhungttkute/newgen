@@ -55,26 +55,34 @@ public class InvestorActivationService {
         			MongoDatabase database = MongoDBConnection.getMongoDatabase();
         			InvestorDTO investorDto = getInvestorInfo(database, investorCode, refId);
         			
-        			// create cqg account
-        			CqgInfo cqgInfo = getMemberCQGInfo(database, investorDto.getMemberCode(), refId);
-        			if (cqgInfo != null) {
-        				CQGResponseObj cmsResponse = cqgService.createCQGAccount(investorCode, cqgInfo.getCustomerId(), refId);
-            			if (cmsResponse != null) {
-            				String accountId = cmsResponse.getData().getAccountId();
-            				
-    	        			// add cqg account auth list
-            				String traderId = ConfigLoader.getMainConfig().getString(Constant.CQG_CMS_TRADER_ID);
-            				boolean result = cqgService.updateCQGAccountAuthList(Utility.convertStringToLong(accountId), traderId, refId);
-//            				boolean result = cqgService.updateCQGAccountAuthList(Utility.convertStringToLong(accountId), cqgInfo.getUserId(), refId);
-            				
-            				if (!result) {
-            					throw new CustomException(ErrorMessage.CQG_INFO_CREATED_UNSUCCESSFULLY, HttpStatus.OK);
-            				}
+        			if (Utility.isCQGSyncOn()) {
+        				// create cqg account
+            			CqgInfo cqgInfo = getMemberCQGInfo(database, investorDto.getMemberCode(), refId);
+            			if (cqgInfo != null) {
+            				// create cqg customer
+            				CQGResponseObj customerRes = cqgService.createCQGCustomer(investorDto, cqgInfo.getProfileId(), refId);
+            				if (customerRes != null) {
+            					// create cqg account
+                				CQGResponseObj accountRes = cqgService.createCQGAccount(investorCode, customerRes.getData().getCustomerId(), refId);
+                    			if (accountRes != null) {
+                    				String accountId = accountRes.getData().getAccountId();
+                    				
+            	        			// add cqg account auth list
+                    				String traderId = ConfigLoader.getMainConfig().getString(Constant.CQG_CMS_TRADER_ID);
+                    				boolean result = cqgService.updateCQGAccountAuthList(Utility.convertStringToLong(accountId), traderId, refId);
+                    				
+                    				if (!result) {
+                    					throw new CustomException(ErrorMessage.CQG_INFO_CREATED_UNSUCCESSFULLY, HttpStatus.OK);
+                    				}
+                    			} else {
+                    				throw new CustomException(ErrorMessage.CQG_INFO_CREATED_UNSUCCESSFULLY, HttpStatus.OK);
+                    			}
+            				} else {
+                				throw new CustomException(ErrorMessage.CQG_INFO_CREATED_UNSUCCESSFULLY, HttpStatus.OK);
+                			}
             			} else {
             				throw new CustomException(ErrorMessage.CQG_INFO_CREATED_UNSUCCESSFULLY, HttpStatus.OK);
             			}
-        			} else {
-        				throw new CustomException(ErrorMessage.CQG_INFO_CREATED_UNSUCCESSFULLY, HttpStatus.OK);
         			}
         			
         			// update investor status to ACTIVE
@@ -122,6 +130,8 @@ public class InvestorActivationService {
 			projection.append("collaboratorName", 1.0);
 			projection.append("investorCode", 1.0);
 			projection.append("investorName", 1.0);
+			projection.append("company", 1.0);
+			projection.append("individual", 1.0);
 			
 			Document result = collection.find(query).projection(projection).first();
 			InvestorDTO investorDto = mongoTemplate.getConverter().read(InvestorDTO.class, result);

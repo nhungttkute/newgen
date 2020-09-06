@@ -5,14 +5,17 @@
  */
 package com.newgen.am.dto;
 
+import java.io.Serializable;
+
 import com.newgen.am.validation.ValidUpdateStringField;
 
 /**
  *
  * @author nhungtt
  */
-public class UpdateRoleDTO {
-    @ValidUpdateStringField
+public class UpdateRoleDTO implements Serializable {
+	private static final long serialVersionUID = 1L;
+	@ValidUpdateStringField
     private String name;
     @ValidUpdateStringField
     private String description;

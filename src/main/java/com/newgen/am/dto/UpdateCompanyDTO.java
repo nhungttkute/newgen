@@ -1,5 +1,7 @@
 package com.newgen.am.dto;
 
+import java.io.Serializable;
+
 import javax.validation.Valid;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;
@@ -15,7 +17,8 @@ import com.newgen.am.validation.ValidNumber;
 import com.newgen.am.validation.ValidPhoneNumber;
 import com.newgen.am.validation.ValidUpdateStringField;
 
-public class UpdateCompanyDTO {
+public class UpdateCompanyDTO implements Serializable {
+	private static final long serialVersionUID = 1L;
 	@ValidUpdateStringField
 	@Size(max = 200, message = "Invalid format.", groups = LengthGroup.class)
     private String name;

@@ -531,4 +531,9 @@ public class Utility {
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
+    
+    public static boolean isCQGSyncOn() {
+    	if("1".equals(ConfigLoader.getMainConfig().getString(Constant.CQG_SYNC_FLAG))) return true;
+    	return false;
+    }
 }

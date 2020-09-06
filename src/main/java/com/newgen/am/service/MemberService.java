@@ -327,33 +327,19 @@ public class MemberService {
 			newMember.append("role", memberRole);
 			newMember.append("riskParameters", riskParameters);
 			
-			// create a new cqg customer
-			CQGResponseObj customerResult = cqgService.createCQGCustomer(memberDto, refId);
-			if (customerResult != null) {
-				String customerId = customerResult.getData().getCustomerId();
-				String profileId = customerResult.getData().getProfileId();
-				
-//				// create a new cqg trader
-//				CQGResponseObj traderResult = cqgService.createCQGTrader(memberDto.getCode(), customerId, profileId, refId);
-//				if (traderResult != null) {
-//					String userId = traderResult.getData().getUserId();
-//					Document cqgInfo = new Document();
-//					cqgInfo.append("customerId", customerId);
-//					cqgInfo.append("profileId", profileId);
-//					cqgInfo.append("userId", userId);
-//					
-//					newMember.append("cqgInfo", cqgInfo);
-//				} else {
-//					throw new CustomException(ErrorMessage.CQG_INFO_CREATED_UNSUCCESSFULLY, HttpStatus.OK);
-//				}
-				
-				Document cqgInfo = new Document();
-				cqgInfo.append("customerId", customerId);
-				cqgInfo.append("profileId", profileId);
-				
-				newMember.append("cqgInfo", cqgInfo);
-			} else {
-				throw new CustomException(ErrorMessage.CQG_INFO_CREATED_UNSUCCESSFULLY, HttpStatus.OK);
+			if (Utility.isCQGSyncOn()) {
+				// create a new cqg customer
+				CQGResponseObj saleSeriesResult = cqgService.createCQGSaleSeries(memberDto, refId);
+				if (saleSeriesResult != null) {
+					String profileId = saleSeriesResult.getData().getProfileId();
+					
+					Document cqgInfo = new Document();
+					cqgInfo.append("profileId", profileId);
+					
+					newMember.append("cqgInfo", cqgInfo);
+				} else {
+					throw new CustomException(ErrorMessage.CQG_INFO_CREATED_UNSUCCESSFULLY, HttpStatus.OK);
+				}
 			}
 						
 			// insert new member

@@ -5,6 +5,8 @@
  */
 package com.newgen.am.dto;
 
+import java.io.Serializable;
+
 import javax.validation.constraints.Size;
 
 import com.newgen.am.validation.LengthGroup;
@@ -13,8 +15,9 @@ import com.newgen.am.validation.ValidUpdateStringField;
 /**
  *
  * @author nhungtt
- */public class UpdateDepartmentDTO {
-    @ValidUpdateStringField
+ */public class UpdateDepartmentDTO implements Serializable {
+	private static final long serialVersionUID = 1L;
+	@ValidUpdateStringField
     @Size(max = 200, message = "Invalid format.", groups = LengthGroup.class)
     private String name;
     @ValidUpdateStringField

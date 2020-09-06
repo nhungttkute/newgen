@@ -5,6 +5,8 @@
  */
 package com.newgen.am.dto;
 
+import java.io.Serializable;
+
 import javax.validation.constraints.Email;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -20,7 +22,8 @@ import com.newgen.am.validation.ValidUpdateStringField;
  * @author E7470
  *
  */
-public class UpdateUserDTO {
+public class UpdateUserDTO implements Serializable {
+	private static final long serialVersionUID = 1L;
 	@ValidUpdateStringField
     private String fullName;
 	@ValidUpdateStringField

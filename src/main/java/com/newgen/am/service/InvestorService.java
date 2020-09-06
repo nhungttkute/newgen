@@ -1657,12 +1657,14 @@ public class InvestorService {
 					commodities.add(commDoc);
 				}
 
-				// update cqg account market limits
-				InvestorDTO investorDto = getInvestorInfo(investorCode, refId);
-				boolean result = cqgService.updateCQGAccountMarketLimits(investorDto.getCqgInfo().getAccountId(),
-						cqgCommodities, refId);
-				if (!result) {
-					throw new CustomException(ErrorMessage.CQG_INFO_CREATED_UNSUCCESSFULLY, HttpStatus.OK);
+				if (Utility.isCQGSyncOn()) {
+					// update cqg account market limits
+					InvestorDTO investorDto = getInvestorInfo(investorCode, refId);
+					boolean result = cqgService.updateCQGAccountMarketLimits(investorDto.getCqgInfo().getAccountId(),
+							cqgCommodities, refId);
+					if (!result) {
+						throw new CustomException(ErrorMessage.CQG_INFO_CREATED_UNSUCCESSFULLY, HttpStatus.OK);
+					}
 				}
 
 				Document query = new Document();
@@ -2428,22 +2430,24 @@ public class InvestorService {
 			InvestorMarginInfo marginInfo = marginInfoService.getInvestorMarginInfo(investorCode, refId);
 			double changedAmount = marginInfo.getChangedAmount() + marginTransDto.getAmount();
 
-			// update cqg balance
-			InvestorDTO investorDto = getInvestorInfo(investorCode, refId);
-			double currentBalance = investorDto.getAccount().getAvailableBalance() + marginTransDto.getAmount();
-			if (Utility.isNull(investorDto.getCqgInfo().getBalanceId())) {
-				// create cqg balance
-				boolean result = cqgService.createCQGAccountBalance(investorCode,
-						investorDto.getCqgInfo().getAccountId(), Constant.CURRENCY_VND, currentBalance, refId);
-				if (!result) {
-					throw new CustomException(ErrorMessage.CQG_INFO_CREATED_UNSUCCESSFULLY, HttpStatus.OK);
-				}
-			} else {
+			if (Utility.isCQGSyncOn()) {
 				// update cqg balance
-				boolean result = cqgService.updateCQGAccountBalance(investorCode,
-						Utility.convertStringToLong(investorDto.getCqgInfo().getBalanceId()), currentBalance, refId);
-				if (!result) {
-					throw new CustomException(ErrorMessage.CQG_INFO_CREATED_UNSUCCESSFULLY, HttpStatus.OK);
+				InvestorDTO investorDto = getInvestorInfo(investorCode, refId);
+				double currentBalance = investorDto.getAccount().getAvailableBalance() + marginTransDto.getAmount();
+				if (Utility.isNull(investorDto.getCqgInfo().getBalanceId())) {
+					// create cqg balance
+					boolean result = cqgService.createCQGAccountBalance(investorCode,
+							investorDto.getCqgInfo().getAccountId(), Constant.CURRENCY_VND, currentBalance, refId);
+					if (!result) {
+						throw new CustomException(ErrorMessage.CQG_INFO_CREATED_UNSUCCESSFULLY, HttpStatus.OK);
+					}
+				} else {
+					// update cqg balance
+					boolean result = cqgService.updateCQGAccountBalance(investorCode,
+							Utility.convertStringToLong(investorDto.getCqgInfo().getBalanceId()), currentBalance, refId);
+					if (!result) {
+						throw new CustomException(ErrorMessage.CQG_INFO_CREATED_UNSUCCESSFULLY, HttpStatus.OK);
+					}
 				}
 			}
 
@@ -2559,17 +2563,19 @@ public class InvestorService {
 			double changedAmount = marginInfo.getChangedAmount() - marginTransDto.getAmount();
 			double pendingWithdrawalAmount = marginInfo.getPendingWithdrawalAmount() - marginTransDto.getAmount();
 
-			// update cqg balance
-			InvestorDTO investorDto = getInvestorInfo(investorCode, refId);
-			double currentBalance = investorDto.getAccount().getAvailableBalance() - marginTransDto.getAmount();
-			if (Utility.isNotNull(investorDto.getCqgInfo().getBalanceId())) {
-				boolean result = cqgService.updateCQGAccountBalance(investorCode,
-						Utility.convertStringToLong(investorDto.getCqgInfo().getBalanceId()), currentBalance, refId);
-				if (!result) {
-					throw new CustomException(ErrorMessage.CQG_INFO_CREATED_UNSUCCESSFULLY, HttpStatus.OK);
+			if (Utility.isCQGSyncOn()) {
+				// update cqg balance
+				InvestorDTO investorDto = getInvestorInfo(investorCode, refId);
+				double currentBalance = investorDto.getAccount().getAvailableBalance() - marginTransDto.getAmount();
+				if (Utility.isNotNull(investorDto.getCqgInfo().getBalanceId())) {
+					boolean result = cqgService.updateCQGAccountBalance(investorCode,
+							Utility.convertStringToLong(investorDto.getCqgInfo().getBalanceId()), currentBalance, refId);
+					if (!result) {
+						throw new CustomException(ErrorMessage.CQG_INFO_CREATED_UNSUCCESSFULLY, HttpStatus.OK);
+					}
+				} else {
+					throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
 				}
-			} else {
-				throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
 			}
 
 			marginInfoService.updateChangedAmountAndPendingWithdrawalAmount(investorCode, changedAmount,

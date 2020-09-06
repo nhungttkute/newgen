@@ -16,6 +16,7 @@ import com.newgen.am.common.Constant;
 import com.newgen.am.common.ErrorMessage;
 import com.newgen.am.common.LocalServiceConnection;
 import com.newgen.am.common.MongoDBConnection;
+import com.newgen.am.common.Utility;
 import com.newgen.am.dto.CQGCMSAccountAuthDTO;
 import com.newgen.am.dto.CQGCMSCommodityDTO;
 import com.newgen.am.dto.CQGCMSRequestDTO;
@@ -23,23 +24,60 @@ import com.newgen.am.dto.CQGResponseObj;
 import com.newgen.am.dto.InvestorDTO;
 import com.newgen.am.dto.MemberDTO;
 import com.newgen.am.exception.CustomException;
-import com.newgen.am.model.Commodity;
 
 @Service
 public class CQGConnectorService {
 	private String className = "CQGConnectorService";
 	
-	public CQGResponseObj createCQGCustomer(MemberDTO memberDto, long refId) {
-		String methodName = "createCQGCustomer";
+	public CQGResponseObj createCQGSaleSeries(MemberDTO memberDto, long refId) {
+		String methodName = "createCQGSaleSeries";
 		try {
 			LocalServiceConnection serviceCon = new LocalServiceConnection();
 			CQGCMSRequestDTO cqgRequest = new CQGCMSRequestDTO();
 			cqgRequest.setName(memberDto.getName());
+			cqgRequest.setNumber(memberDto.getCode());
 			cqgRequest.setEmail(memberDto.getCompany().getEmail());
 			cqgRequest.setPhone(memberDto.getCompany().getPhoneNumber());
-			cqgRequest.setFax(memberDto.getCompany().getFax());
 			cqgRequest.setFullName(memberDto.getCompany().getDelegate().getFullName());
 			cqgRequest.setAddress(memberDto.getCompany().getAddress());
+			
+			String input = new Gson().toJson(cqgRequest);
+			AMLogger.logMessage(className, methodName, refId, "INPUT: " + input);
+			
+			String[] res = serviceCon.sendPostRequest(serviceCon.getCMSServiceURL(ConfigLoader.getMainConfig().getString(Constant.SERVICE_CMS_CUSTOMER)), input);
+			if (res.length >=2 && "200".equals(res[0])) {
+				AMLogger.logMessage(className, methodName, refId, "OUTPUT: " + res[1]);
+				CQGResponseObj cmsResponse = new Gson().fromJson(res[1], CQGResponseObj.class);
+				if (cmsResponse != null && Constant.RESPONSE_OK.equalsIgnoreCase(cmsResponse.getStatus())) {
+					return cmsResponse;
+				}
+			}
+			return null;
+		} catch (Exception e) {
+			AMLogger.logError(className, methodName, refId, e);
+			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+	
+	public CQGResponseObj createCQGCustomer(InvestorDTO investorDto, String saleSeriesId, long refId) {
+		String methodName = "createCQGCustomer";
+		try {
+			LocalServiceConnection serviceCon = new LocalServiceConnection();
+			CQGCMSRequestDTO cqgRequest = new CQGCMSRequestDTO();
+			cqgRequest.setName(investorDto.getInvestorName());
+			cqgRequest.setSaleSeriesId(saleSeriesId);
+			if (Utility.isNotNull(investorDto.getCompany())) {
+				cqgRequest.setEmail(investorDto.getCompany().getEmail());
+				cqgRequest.setPhone(investorDto.getCompany().getPhoneNumber());
+				cqgRequest.setFullName(investorDto.getCompany().getDelegate().getFullName());
+				cqgRequest.setAddress(investorDto.getCompany().getAddress());
+			} else if (Utility.isNotNull(investorDto.getIndividual())) {
+				cqgRequest.setEmail(investorDto.getIndividual().getEmail());
+				cqgRequest.setPhone(investorDto.getIndividual().getPhoneNumber());
+				cqgRequest.setFullName(investorDto.getIndividual().getFullName());
+				cqgRequest.setAddress(investorDto.getIndividual().getAddress());
+			}
+			
 			
 			String input = new Gson().toJson(cqgRequest);
 			AMLogger.logMessage(className, methodName, refId, "INPUT: " + input);

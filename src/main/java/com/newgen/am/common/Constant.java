@@ -12,6 +12,7 @@ package com.newgen.am.common;
 public class Constant {
     public static final String CONFIG_DIR = "/opt/account-management/settings/properties/";
 //    public static final String CONFIG_DIR = "C:/u01/apps/AM/settings/properties/";
+    public static final String CQG_SYNC_FLAG = "CQG_SYNC_FLAG";
     
     public static final String DATE_TIME_PATTERN = "dd/MM/yyyy HH:mm:ss";
     
@@ -68,6 +69,7 @@ public class Constant {
     public static final String SERVICE_CONFIG_SESSION_DATE = "SERVICE_CONFIG_SESSION_DATE";
     public static final String SERVICE_MARGIN_WITHDRAWAL_AMOUNT = "SERVICE_MARGIN_WITHDRAWAL_AMOUNT";
     
+    public static final String SERVICE_CMS_SALE_SERIES = "SERVICE_CMS_SALE_SERIES";
     public static final String SERVICE_CMS_CUSTOMER = "SERVICE_CMS_CUSTOMER";
     public static final String SERVICE_CMS_TRADER = "SERVICE_CMS_TRADER";
     public static final String SERVICE_CMS_ACCOUNT = "SERVICE_CMS_ACCOUNT";

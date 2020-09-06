@@ -20,6 +20,7 @@ public class CQGCMSRequestDTO {
 	private String currency;
 	private double balance;
 	private long balanceId;
+	private String saleSeriesId;
 	private List<CQGCMSCommodityDTO> commodities;
 	private List<CQGCMSAccountAuthDTO> linksToSet;
 	
@@ -118,5 +119,11 @@ public class CQGCMSRequestDTO {
 	}
 	public void setLinksToSet(List<CQGCMSAccountAuthDTO> linksToSet) {
 		this.linksToSet = linksToSet;
+	}
+	public String getSaleSeriesId() {
+		return saleSeriesId;
+	}
+	public void setSaleSeriesId(String saleSeriesId) {
+		this.saleSeriesId = saleSeriesId;
 	}
 }
