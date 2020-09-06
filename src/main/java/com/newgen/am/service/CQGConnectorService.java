@@ -44,7 +44,7 @@ public class CQGConnectorService {
 			String input = new Gson().toJson(cqgRequest);
 			AMLogger.logMessage(className, methodName, refId, "INPUT: " + input);
 			
-			String[] res = serviceCon.sendPostRequest(serviceCon.getCMSServiceURL(ConfigLoader.getMainConfig().getString(Constant.SERVICE_CMS_CUSTOMER)), input);
+			String[] res = serviceCon.sendPostRequest(serviceCon.getCMSServiceURL(ConfigLoader.getMainConfig().getString(Constant.SERVICE_CMS_SALE_SERIES)), input);
 			if (res.length >=2 && "200".equals(res[0])) {
 				AMLogger.logMessage(className, methodName, refId, "OUTPUT: " + res[1]);
 				CQGResponseObj cmsResponse = new Gson().fromJson(res[1], CQGResponseObj.class);
