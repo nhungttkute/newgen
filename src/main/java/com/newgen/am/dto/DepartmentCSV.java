@@ -8,10 +8,13 @@ package com.newgen.am.dto;
 import com.opencsv.bean.CsvBindByName;
 import com.opencsv.bean.CsvBindByPosition;
 
+import lombok.Data;
+
 /**
  *
  * @author nhungtt
  */
+@Data
 public class DepartmentCSV {
 	@CsvBindByName(column = "ID")
 	@CsvBindByPosition(position = 0)
@@ -31,53 +34,4 @@ public class DepartmentCSV {
 	@CsvBindByName(column = "CREATED_DATE")
 	@CsvBindByPosition(position = 4)
 	private String createdDate;
-
-    public String get_id() {
-		return _id;
-	}
-
-	public void set_id(String _id) {
-		this._id = _id;
-	}
-
-	public String getCode() {
-        return code;
-    }
-
-    public void setCode(String code) {
-        this.code = code;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public String getNote() {
-        return note;
-    }
-
-    public void setNote(String note) {
-        this.note = note;
-    }
-
-	public String getCreatedDate() {
-		return createdDate;
-	}
-
-	public void setCreatedDate(String createdDate) {
-		this.createdDate = createdDate;
-	}
-    
 }

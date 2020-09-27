@@ -11,10 +11,13 @@ import java.util.List;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import lombok.Data;
+
 /**
  *
  * @author nhungtt
  */
+@Data
 @Document(collection = "member_roles")
 public class MemberRole extends AuditModel implements Serializable {
 	private static final long serialVersionUID = 1L;
@@ -26,52 +29,4 @@ public class MemberRole extends AuditModel implements Serializable {
     private List<RoleFunction> functions;
     private String memberCode;
 
-    public String getId() {
-		return id;
-	}
-
-	public void setId(String id) {
-		this.id = id;
-	}
-
-	public String getMemberCode() {
-		return memberCode;
-	}
-
-	public void setMemberCode(String memberCode) {
-		this.memberCode = memberCode;
-	}
-
-	public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public List<RoleFunction> getFunctions() {
-        return functions;
-    }
-
-    public void setFunctions(List<RoleFunction> functions) {
-        this.functions = functions;
-    }
-    
 }

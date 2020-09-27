@@ -5,17 +5,21 @@
  */
 package com.newgen.am.model;
 
-import com.mongodb.lang.NonNull;
 import java.io.Serializable;
 import java.util.List;
+
 import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.Document;
+
+import com.mongodb.lang.NonNull;
+
+import lombok.Data;
 
 /**
  *
  * @author nhungtt
  */
+@Data
 @Document(collection = "departments")
 public class Department extends AuditModel implements Serializable {
 	private static final long serialVersionUID = 1L;
@@ -28,53 +32,4 @@ public class Department extends AuditModel implements Serializable {
     private String status;
     private String note;
     private List<DeptUser> users;
-
-    public String getId() {
-		return id;
-	}
-
-	public void setId(String id) {
-		this.id = id;
-	}
-
-	public String getCode() {
-        return code;
-    }
-
-    public void setCode(String code) {
-        this.code = code;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public String getNote() {
-        return note;
-    }
-
-    public void setNote(String note) {
-        this.note = note;
-    }
-
-    public List<DeptUser> getUsers() {
-        return users;
-    }
-
-    public void setUsers(List<DeptUser> users) {
-        this.users = users;
-    }
-    
 }

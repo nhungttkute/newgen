@@ -376,6 +376,7 @@ public class MemberRoleService {
 				Document funcDoc = new Document();
 				funcDoc.append("code", func.getCode());
 				funcDoc.append("name", func.getName());
+				funcDoc.append("orderNumber", func.getOrderNumber());
 				functions.add(funcDoc);
 			}
 			BasicDBObject query = new BasicDBObject();

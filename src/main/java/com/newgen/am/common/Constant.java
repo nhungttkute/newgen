@@ -68,6 +68,7 @@ public class Constant {
     public static final String SERVICE_NOTIFICATION_LOGOUT = "SERVICE_NOTIFICATION_LOGOUT";
     public static final String SERVICE_CONFIG_SESSION_DATE = "SERVICE_CONFIG_SESSION_DATE";
     public static final String SERVICE_MARGIN_WITHDRAWAL_AMOUNT = "SERVICE_MARGIN_WITHDRAWAL_AMOUNT";
+    public static final String SERVICE_EXCHANGE_RATE = "SERVICE_EXCHANGE_RATE";
     
     public static final String SERVICE_CMS_SALE_SERIES = "SERVICE_CMS_SALE_SERIES";
     public static final String SERVICE_CMS_CUSTOMER = "SERVICE_CMS_CUSTOMER";
@@ -78,6 +79,7 @@ public class Constant {
     public static final String SERVICE_CMS_ACCOUNT_RISK_PARAMS = "SERVICE_CMS_ACCOUNT_RISK_PARAMS";
     public static final String SERVICE_CMS_ACCOUNT_USER_AUTH_LIST = "SERVICE_CMS_ACCOUNT_USER_AUTH_LIST";
     public static final String SERVICE_CMS_ACCOUNT_USER_MARKET_LIMITS = "SERVICE_CMS_ACCOUNT_USER_MARKET_LIMITS";
+    public static final String SERVICE_CMS_REQUEST_ACC_BALANCE = "SERVICE_CMS_REQUEST_ACC_BALANCE";
     
     public static final String SERVICE_NOTIFICATION_SETTING_TYPE_CREATE_USER="Tạo mới người dùng";
     public static final String SERVICE_NOTIFICATION_SETTING_TYPE_RESET_PASSWORD="Làm mới mật khẩu";
@@ -123,6 +125,7 @@ public class Constant {
     public static final String COLLABORATOR_USER_PREFIX = "CTVMG_";
     
     public static final String CURRENCY_VND = "VND";
+    public static final String CURRENCY_USD = "USD";
     
     public static final String BROKER_TYPE_INDIVIDUAL = "INDIVIDUAL";
     public static final String BROKER_TYPE_COMPANY = "COMPANY";

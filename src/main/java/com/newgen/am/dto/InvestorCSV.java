@@ -3,6 +3,9 @@ package com.newgen.am.dto;
 import com.opencsv.bean.CsvBindByName;
 import com.opencsv.bean.CsvBindByPosition;
 
+import lombok.Data;
+
+@Data
 public class InvestorCSV {
 	@CsvBindByName(column = "ID")
 	@CsvBindByPosition(position = 0)
@@ -40,77 +43,4 @@ public class InvestorCSV {
 	@CsvBindByName(column = "CREATED_DATE")
 	@CsvBindByPosition(position = 11)
 	private String createdDate;
-	public String get_id() {
-		return _id;
-	}
-	public void set_id(String _id) {
-		this._id = _id;
-	}
-	public String getMemberCode() {
-		return memberCode;
-	}
-	public void setMemberCode(String memberCode) {
-		this.memberCode = memberCode;
-	}
-	public String getMemberName() {
-		return memberName;
-	}
-	public void setMemberName(String memberName) {
-		this.memberName = memberName;
-	}
-	public String getBrokerCode() {
-		return brokerCode;
-	}
-	public void setBrokerCode(String brokerCode) {
-		this.brokerCode = brokerCode;
-	}
-	public String getBrokerName() {
-		return brokerName;
-	}
-	public void setBrokerName(String brokerName) {
-		this.brokerName = brokerName;
-	}
-	public String getCollaboratorCode() {
-		return collaboratorCode;
-	}
-	public void setCollaboratorCode(String collaboratorCode) {
-		this.collaboratorCode = collaboratorCode;
-	}
-	public String getCollaboratorName() {
-		return collaboratorName;
-	}
-	public void setCollaboratorName(String collaboratorName) {
-		this.collaboratorName = collaboratorName;
-	}
-	public String getInvestorCode() {
-		return investorCode;
-	}
-	public void setInvestorCode(String investorCode) {
-		this.investorCode = investorCode;
-	}
-	public String getInvestorName() {
-		return investorName;
-	}
-	public void setInvestorName(String investorName) {
-		this.investorName = investorName;
-	}
-	public String getStatus() {
-		return status;
-	}
-	public void setStatus(String status) {
-		this.status = status;
-	}
-	public String getNote() {
-		return note;
-	}
-	public void setNote(String note) {
-		this.note = note;
-	}
-	public String getCreatedDate() {
-		return createdDate;
-	}
-	public void setCreatedDate(String createdDate) {
-		this.createdDate = createdDate;
-	}
-	
 }

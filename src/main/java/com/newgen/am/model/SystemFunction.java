@@ -6,45 +6,23 @@
 package com.newgen.am.model;
 
 import java.io.Serializable;
+
 import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.Document;
+
+import lombok.Data;
 
 /**
  *
  * @author nhungtt
  */
+@Data
 @Document(collection = "system_functions")
 public class SystemFunction extends AuditModel implements Serializable {
 	private static final long serialVersionUID = 1L;
-	@Transient
-    public static final String SEQUENCE_NAME = "system_function_seq";
-    @Id
-    private long id;
+	@Id
+    private String id;
     private String code;
     private String name;
-    
-    public long getId() {
-        return id;
-    }
-
-    public void setId(long id) {
-        this.id = id;
-    }
-
-    public String getCode() {
-        return code;
-    }
-
-    public void setCode(String code) {
-        this.code = code;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }    
+    private String orderNumber;
 }

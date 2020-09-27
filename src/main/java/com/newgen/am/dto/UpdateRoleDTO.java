@@ -9,10 +9,13 @@ import java.io.Serializable;
 
 import com.newgen.am.validation.ValidUpdateStringField;
 
+import lombok.Data;
+
 /**
  *
  * @author nhungtt
  */
+@Data
 public class UpdateRoleDTO implements Serializable {
 	private static final long serialVersionUID = 1L;
 	@ValidUpdateStringField
@@ -21,29 +24,4 @@ public class UpdateRoleDTO implements Serializable {
     private String description;
     @ValidUpdateStringField
     private String status;
-
-	public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-    
 }

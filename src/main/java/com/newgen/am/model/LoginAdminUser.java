@@ -5,21 +5,25 @@
  */
 package com.newgen.am.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.Serializable;
-import org.springframework.data.mongodb.core.mapping.Field;
-import com.mongodb.lang.NonNull;
 import java.util.List;
+
 import org.hibernate.validator.constraints.Length;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.mongodb.lang.NonNull;
+
+import lombok.Data;
 
 /**
  *
  * @author nhungtt
  */
+@Data
 @Document(collection = "login_admin_users")
 public class LoginAdminUser extends AuditModel implements Serializable {
 	private static final long serialVersionUID = 1L;
@@ -65,244 +69,4 @@ public class LoginAdminUser extends AuditModel implements Serializable {
     private List<WatchList> watchlists;
     private List<Exchange> exchanges;
     private String tableSetting;
-
-    public String getId() {
-		return id;
-	}
-
-	public void setId(String id) {
-		this.id = id;
-	}
-
-	public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public String getFullName() {
-		return fullName;
-	}
-
-	public void setFullName(String fullName) {
-		this.fullName = fullName;
-	}
-
-	public String getEmail() {
-		return email;
-	}
-
-	public void setEmail(String email) {
-		this.email = email;
-	}
-
-	public String getPhoneNumber() {
-		return phoneNumber;
-	}
-
-	public void setPhoneNumber(String phoneNumber) {
-		this.phoneNumber = phoneNumber;
-	}
-
-	public Boolean getCheckPin() {
-        return checkPin;
-    }
-
-    public void setCheckPin(Boolean checkPin) {
-        this.checkPin = checkPin;
-    }
-
-    public String getPin() {
-        return pin;
-    }
-
-    public void setPin(String pin) {
-        this.pin = pin;
-    }
-
-    public String getAccessToken() {
-        return accessToken;
-    }
-
-    public void setAccessToken(String accessToken) {
-        this.accessToken = accessToken;
-    }
-
-    public long getTokenExpiration() {
-        return tokenExpiration;
-    }
-
-    public void setTokenExpiration(long tokenExpiration) {
-        this.tokenExpiration = tokenExpiration;
-    }
-
-    public Boolean getLogined() {
-        return logined;
-    }
-
-    public void setLogined(Boolean logined) {
-        this.logined = logined;
-    }
-
-	public String getLayout() {
-        return layout;
-    }
-
-    public void setLayout(String layout) {
-        this.layout = layout;
-    }
-
-    public String getLanguage() {
-        return language;
-    }
-
-    public void setLanguage(String language) {
-        this.language = language;
-    }
-
-    public String getTheme() {
-        return theme;
-    }
-
-    public void setTheme(String theme) {
-        this.theme = theme;
-    }
-
-    public int getFontSize() {
-        return fontSize;
-    }
-
-    public void setFontSize(int fontSize) {
-        this.fontSize = fontSize;
-    }
-
-	public int getLogonCounts() {
-        return logonCounts;
-    }
-
-    public void setLogonCounts(int logonCounts) {
-        this.logonCounts = logonCounts;
-    }
-
-    public long getLogonTime() {
-        return logonTime;
-    }
-
-    public void setLogonTime(long logonTime) {
-        this.logonTime = logonTime;
-    }
-
-    public Boolean getMustChangePassword() {
-        return mustChangePassword;
-    }
-
-    public void setMustChangePassword(Boolean mustChangePassword) {
-        this.mustChangePassword = mustChangePassword;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public List<WatchList> getWatchlists() {
-        return watchlists;
-    }
-
-    public void setWatchlists(List<WatchList> watchlists) {
-        this.watchlists = watchlists;
-    }
-
-	public String getMemberCode() {
-		return memberCode;
-	}
-
-	public void setMemberCode(String memberCode) {
-		this.memberCode = memberCode;
-	}
-
-	public String getBrokerCode() {
-		return brokerCode;
-	}
-
-	public void setBrokerCode(String brokerCode) {
-		this.brokerCode = brokerCode;
-	}
-
-	public String getCollaboratorCode() {
-		return collaboratorCode;
-	}
-
-	public void setCollaboratorCode(String collaboratorCode) {
-		this.collaboratorCode = collaboratorCode;
-	}
-
-	public String getDeptCode() {
-		return deptCode;
-	}
-
-	public String getDeptName() {
-		return deptName;
-	}
-
-	public void setDeptName(String deptName) {
-		this.deptName = deptName;
-	}
-
-	public String getMemberName() {
-		return memberName;
-	}
-
-	public void setMemberName(String memberName) {
-		this.memberName = memberName;
-	}
-
-	public String getBrokerName() {
-		return brokerName;
-	}
-
-	public void setBrokerName(String brokerName) {
-		this.brokerName = brokerName;
-	}
-
-	public String getCollaboratorName() {
-		return collaboratorName;
-	}
-
-	public void setCollaboratorName(String collaboratorName) {
-		this.collaboratorName = collaboratorName;
-	}
-
-	public void setDeptCode(String deptCode) {
-		this.deptCode = deptCode;
-	}
-
-	public List<Exchange> getExchanges() {
-		return exchanges;
-	}
-
-	public void setExchanges(List<Exchange> exchanges) {
-		this.exchanges = exchanges;
-	}
-
-	public String getTableSetting() {
-		return tableSetting;
-	}
-
-	public void setTableSetting(String tableSetting) {
-		this.tableSetting = tableSetting;
-	}
 }

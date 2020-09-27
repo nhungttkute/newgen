@@ -12,10 +12,13 @@ import javax.validation.constraints.NotEmpty;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.newgen.am.common.Constant;
 
+import lombok.Data;
+
 /**
  *
  * @author nhungtt
  */
+@Data
 @JsonInclude(JsonInclude.Include.NON_DEFAULT)
 public class CommodityFee extends AuditModel implements Serializable {
 	private static final long serialVersionUID = 1L;
@@ -26,44 +29,4 @@ public class CommodityFee extends AuditModel implements Serializable {
     private long brokerCommodityFee;
     private long investorCommodityFee;
     private String currency = Constant.CURRENCY_VND;
-
-    public String getCommodityCode() {
-		return commodityCode;
-	}
-
-	public void setCommodityCode(String commodityCode) {
-		this.commodityCode = commodityCode;
-	}
-
-	public String getCommodityName() {
-		return commodityName;
-	}
-
-	public void setCommodityName(String commodityName) {
-		this.commodityName = commodityName;
-	}
-
-	public String getCurrency() {
-		return currency;
-	}
-
-	public void setCurrency(String currency) {
-		this.currency = currency;
-	}
-
-	public long getBrokerCommodityFee() {
-		return brokerCommodityFee;
-	}
-
-	public void setBrokerCommodityFee(long brokerCommodityFee) {
-		this.brokerCommodityFee = brokerCommodityFee;
-	}
-
-	public long getInvestorCommodityFee() {
-		return investorCommodityFee;
-	}
-
-	public void setInvestorCommodityFee(long investorCommodityFee) {
-		this.investorCommodityFee = investorCommodityFee;
-	}
 }

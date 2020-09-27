@@ -11,6 +11,7 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.math3.util.Precision;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
@@ -51,6 +52,8 @@ import com.newgen.am.dto.ChangeGroupDTO;
 import com.newgen.am.dto.CommoditiesDTO;
 import com.newgen.am.dto.DefaultSettingDTO;
 import com.newgen.am.dto.EmailDTO;
+import com.newgen.am.dto.ExchangeRateDTO;
+import com.newgen.am.dto.ExchangeRateReponseDTO;
 import com.newgen.am.dto.GeneralFeeDTO;
 import com.newgen.am.dto.InvestorActivationDTO;
 import com.newgen.am.dto.InvestorCSV;
@@ -819,7 +822,7 @@ public class InvestorService {
 			email.setBodyStr(emailBody);
 			String emailJson = new Gson().toJson(email);
 			AMLogger.logMessage(className, methodName, refId, "Email: " + emailJson);
-			serviceCon.sendPostRequest(serviceCon.getEmailNotificationServiceURL(), emailJson);
+			serviceCon.sendPostRequest(serviceCon.getEmailNotificationServiceURL(), emailJson, null);
 		} catch (Exception e) {
 			AMLogger.logError(className, methodName, refId, e);
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -1532,6 +1535,15 @@ public class InvestorService {
 			if (updateDocument.isEmpty()) {
 				throw new CustomException(ErrorMessage.INVALID_REQUEST, HttpStatus.BAD_REQUEST);
 			} else {
+				// update cqg risk params
+				if (Utility.isCQGSyncOn()) {
+					InvestorDTO investorInfo = getInvestorInfo(investorCode, refId);
+					boolean result = cqgService.updateCQGRiskParams(investorInfo.getCqgInfo().getAccountId(), 0, 0, investorDto.getDefaultPositionLimit(), refId);
+					if (!result) {
+						throw new CustomException(ErrorMessage.CQG_INFO_CREATED_UNSUCCESSFULLY, HttpStatus.OK);
+					}
+				}
+				
 				MongoDatabase database = MongoDBConnection.getMongoDatabase();
 				MongoCollection<Document> collection = database.getCollection("investors");
 
@@ -1951,6 +1963,15 @@ public class InvestorService {
 				throw new CustomException(ErrorMessage.RESULT_NOT_FOUND, HttpStatus.OK);
 			}
 
+			// update cqg risk params
+			if (Utility.isCQGSyncOn()) {
+				InvestorDTO investorInfo = getInvestorInfo(investorCode, refId);
+				boolean result = cqgService.updateCQGRiskParams(investorInfo.getCqgInfo().getAccountId(), marginMultDto.getMarginMultiplier(), 0, 0, refId);
+				if (!result) {
+					throw new CustomException(ErrorMessage.CQG_INFO_CREATED_UNSUCCESSFULLY, HttpStatus.OK);
+				}
+			}
+						
 			Document updateDocument = new Document();
 			updateDocument.append("marginMultiplier", marginMultDto.getMarginMultiplier());
 			updateDocument.append("lastModifiedUser", Utility.getCurrentUsername());
@@ -2433,21 +2454,20 @@ public class InvestorService {
 			if (Utility.isCQGSyncOn()) {
 				// update cqg balance
 				InvestorDTO investorDto = getInvestorInfo(investorCode, refId);
-				double currentBalance = investorDto.getAccount().getAvailableBalance() + marginTransDto.getAmount();
-				if (Utility.isNull(investorDto.getCqgInfo().getBalanceId())) {
-					// create cqg balance
-					boolean result = cqgService.createCQGAccountBalance(investorCode,
-							investorDto.getCqgInfo().getAccountId(), Constant.CURRENCY_VND, currentBalance, refId);
+//				double currentBalance = investorDto.getAccount().getAvailableBalance() + marginTransDto.getAmount();
+				double exchangeRate = getExchangeRate(refId);
+				double usdChangedAmt = Precision.round(marginTransDto.getAmount()/exchangeRate, 2);
+
+				if (Utility.isNotNull(investorDto.getCqgInfo().getBalanceId())) {
+					// update cqg balance
+					boolean result = cqgService.updateCQGAccountBalance(investorCode,
+							investorDto.getCqgInfo().getAccountId(), usdChangedAmt, refId);
 					if (!result) {
 						throw new CustomException(ErrorMessage.CQG_INFO_CREATED_UNSUCCESSFULLY, HttpStatus.OK);
 					}
 				} else {
-					// update cqg balance
-					boolean result = cqgService.updateCQGAccountBalance(investorCode,
-							Utility.convertStringToLong(investorDto.getCqgInfo().getBalanceId()), currentBalance, refId);
-					if (!result) {
-						throw new CustomException(ErrorMessage.CQG_INFO_CREATED_UNSUCCESSFULLY, HttpStatus.OK);
-					}
+					AMLogger.logMessage(className, methodName, refId, "Cannot find balance id of the investor: " + investorCode);
+					throw new CustomException(ErrorMessage.CQG_INFO_CREATED_UNSUCCESSFULLY, HttpStatus.OK);
 				}
 			}
 
@@ -2566,15 +2586,19 @@ public class InvestorService {
 			if (Utility.isCQGSyncOn()) {
 				// update cqg balance
 				InvestorDTO investorDto = getInvestorInfo(investorCode, refId);
-				double currentBalance = investorDto.getAccount().getAvailableBalance() - marginTransDto.getAmount();
+//				double currentBalance = investorDto.getAccount().getAvailableBalance() - marginTransDto.getAmount();
+				double exchangeRate = getExchangeRate(refId);
+				double usdChangedAmt = - Precision.round(marginTransDto.getAmount()/exchangeRate, 2);
+				
 				if (Utility.isNotNull(investorDto.getCqgInfo().getBalanceId())) {
 					boolean result = cqgService.updateCQGAccountBalance(investorCode,
-							Utility.convertStringToLong(investorDto.getCqgInfo().getBalanceId()), currentBalance, refId);
+							investorDto.getCqgInfo().getAccountId(), usdChangedAmt, refId);
 					if (!result) {
 						throw new CustomException(ErrorMessage.CQG_INFO_CREATED_UNSUCCESSFULLY, HttpStatus.OK);
 					}
 				} else {
-					throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+					AMLogger.logMessage(className, methodName, refId, "Cannot find balance id of the investor: " + investorCode);
+					throw new CustomException(ErrorMessage.CQG_INFO_CREATED_UNSUCCESSFULLY, HttpStatus.OK);
 				}
 			}
 
@@ -2649,6 +2673,34 @@ public class InvestorService {
 				}
 			}
 			return withdrawalAmount;
+		} catch (Exception e) {
+			AMLogger.logError(className, methodName, refId, e);
+			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+	
+	private double getExchangeRate(long refId) {
+		String methodName = "getExchangeRate";
+		double exchangeRate = 1;
+		try {
+			LocalServiceConnection serviceCon = new LocalServiceConnection();
+			String serviceURL = serviceCon.getExchangeRateServiceURL();
+			AMLogger.logMessage(className, methodName, refId, "Exchange Rate Serivce URL: " + serviceURL);
+			String[] res = serviceCon.sendGetRequest(serviceCon.getExchangeRateServiceURL(),
+					ConfigLoader.getMainConfig().getString(Constant.LOCAL_SECRET_KEY));
+			AMLogger.logMessage(className, methodName, refId, "Exchange Rate Serivce Reseponse: " + res[0] + " => " + res[1]);
+			if (res.length >= 2 && "200".equals(res[0])) { 
+				ExchangeRateReponseDTO response = new Gson().fromJson(res[1], ExchangeRateReponseDTO.class);
+				if (response != null && Constant.RESPONSE_OK.equalsIgnoreCase(response.getStatus())) {
+					for (ExchangeRateDTO exRate : response.getData()) {
+						if (Constant.CURRENCY_USD.equals(exRate.getMonetaryBase()) && Constant.STATUS_ACTIVE.equalsIgnoreCase(exRate.getStatus())) {
+							exchangeRate = exRate.getExchangeRate();
+							break;
+						}
+					}
+				}
+			}
+			return exchangeRate;
 		} catch (Exception e) {
 			AMLogger.logError(className, methodName, refId, e);
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);

@@ -12,10 +12,14 @@ import javax.validation.constraints.Size;
 import com.newgen.am.validation.LengthGroup;
 import com.newgen.am.validation.ValidUpdateStringField;
 
+import lombok.Data;
+
 /**
  *
  * @author nhungtt
- */public class UpdateDepartmentDTO implements Serializable {
+ */
+@Data
+public class UpdateDepartmentDTO implements Serializable {
 	private static final long serialVersionUID = 1L;
 	@ValidUpdateStringField
     @Size(max = 200, message = "Invalid format.", groups = LengthGroup.class)
@@ -25,29 +29,4 @@ import com.newgen.am.validation.ValidUpdateStringField;
     private String status;
     @Size(max = 200, message = "Invalid format.", groups = LengthGroup.class)
     private String note;
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-	public String getNote() {
-		return note;
-	}
-
-	public void setNote(String note) {
-		this.note = note;
-	}
-    
 }

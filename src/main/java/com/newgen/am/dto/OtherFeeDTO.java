@@ -2,16 +2,10 @@ package com.newgen.am.dto;
 
 import javax.validation.constraints.Positive;
 
+import lombok.Data;
+
+@Data
 public class OtherFeeDTO {
 	@Positive(message = "Invalid format.")
 	private long otherFee;
-
-	public long getOtherFee() {
-		return otherFee;
-	}
-
-	public void setOtherFee(long otherFee) {
-		this.otherFee = otherFee;
-	}
-	
 }

@@ -25,6 +25,13 @@ public class CommonController {
 	@Autowired
 	private CommonService commonSerivce;
 	
+	@GetMapping("/admin/info")
+	public AdminResponseObj getInfo(HttpServletRequest request) {
+		AdminResponseObj response = new AdminResponseObj();
+		response.setStatus(Constant.RESPONSE_OK);
+		return response;
+	}
+	
 	@GetMapping("/admin/departmentList")
 	public AdminResponseObj getDepartmentList(HttpServletRequest request) {
 		String methodName = "getDepartmentList";

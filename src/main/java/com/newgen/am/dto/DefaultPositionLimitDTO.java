@@ -2,15 +2,10 @@ package com.newgen.am.dto;
 
 import javax.validation.constraints.Positive;
 
+import lombok.Data;
+
+@Data
 public class DefaultPositionLimitDTO {
 	@Positive (message = "Invalid format.")
 	private int defaultPositionLimit;
-
-	public int getDefaultPositionLimit() {
-		return defaultPositionLimit;
-	}
-
-	public void setDefaultPositionLimit(int defaultPositionLimit) {
-		this.defaultPositionLimit = defaultPositionLimit;
-	}
 }

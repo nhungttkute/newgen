@@ -9,10 +9,13 @@ import java.io.Serializable;
 
 import javax.validation.constraints.Positive;
 
+import lombok.Data;
+
 /**
  *
  * @author nhungtt
  */
+@Data
 public class MarginRatioAlert implements Serializable {
 	private static final long serialVersionUID = 1L;
 	@Positive(message = "Invalid format.")
@@ -21,29 +24,4 @@ public class MarginRatioAlert implements Serializable {
     private int cancelOrderRatio;
 	@Positive(message = "Invalid format.")
     private int finalizationRatio;
-
-    public int getWarningRatio() {
-        return warningRatio;
-    }
-
-    public void setWarningRatio(int warningRatio) {
-        this.warningRatio = warningRatio;
-    }
-
-    public int getCancelOrderRatio() {
-        return cancelOrderRatio;
-    }
-
-    public void setCancelOrderRatio(int cancelOrderRatio) {
-        this.cancelOrderRatio = cancelOrderRatio;
-    }
-
-    public int getFinalizationRatio() {
-        return finalizationRatio;
-    }
-
-    public void setFinalizationRatio(int finalizationRatio) {
-        this.finalizationRatio = finalizationRatio;
-    }
-
 }

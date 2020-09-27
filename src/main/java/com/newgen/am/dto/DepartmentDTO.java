@@ -15,10 +15,13 @@ import com.newgen.am.validation.FormatGroup;
 import com.newgen.am.validation.LengthGroup;
 import com.newgen.am.validation.ValidCode;
 
+import lombok.Data;
+
 /**
  *
  * @author nhungtt
  */
+@Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class DepartmentDTO {
     private String _id;
@@ -34,60 +37,4 @@ public class DepartmentDTO {
     @Size(max = 200, message = "Invalid format.", groups = LengthGroup.class)
     private String note;
     private List<UserDTO> users;
-
-	public String get_id() {
-		return _id;
-	}
-
-	public void set_id(String _id) {
-		this._id = _id;
-	}
-
-	public String getCode() {
-        return code;
-    }
-
-    public void setCode(String code) {
-        this.code = code;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public String getNote() {
-        return note;
-    }
-
-    public void setNote(String note) {
-        this.note = note;
-    }
-
-    public List<UserDTO> getUsers() {
-        return users;
-    }
-
-    public void setUsers(List<UserDTO> users) {
-        this.users = users;
-    }
-
-	public long getCreatedDate() {
-		return createdDate;
-	}
-
-	public void setCreatedDate(long createdDate) {
-		this.createdDate = createdDate;
-	}
 }

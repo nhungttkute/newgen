@@ -9,10 +9,13 @@ import java.io.Serializable;
 
 import javax.validation.constraints.NotEmpty;
 
+import lombok.Data;
+
 /**
  *
  * @author nhungtt
  */
+@Data
 public class UserRole implements Serializable {
 	private static final long serialVersionUID = 1L;
 	@NotEmpty(message = "Required.")
@@ -21,28 +24,4 @@ public class UserRole implements Serializable {
     private String description;
 	@NotEmpty(message = "Required.")
     private String status;
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
 }

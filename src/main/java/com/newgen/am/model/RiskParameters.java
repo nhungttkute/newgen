@@ -4,6 +4,9 @@ import java.io.Serializable;
 
 import com.newgen.am.validation.ValidUpdateStringField;
 
+import lombok.Data;
+
+@Data
 public class RiskParameters implements Serializable {
 	private static final long serialVersionUID = 1L;
 	@ValidUpdateStringField
@@ -12,24 +15,4 @@ public class RiskParameters implements Serializable {
 	private String orderLock;
 	@ValidUpdateStringField
 	private String marginWithdrawalLock;
-	
-	public String getNewPositionOrderLock() {
-		return newPositionOrderLock;
-	}
-	public void setNewPositionOrderLock(String newPositionOrderLock) {
-		this.newPositionOrderLock = newPositionOrderLock;
-	}
-	public String getOrderLock() {
-		return orderLock;
-	}
-	public void setOrderLock(String orderLock) {
-		this.orderLock = orderLock;
-	}
-	public String getMarginWithdrawalLock() {
-		return marginWithdrawalLock;
-	}
-	public void setMarginWithdrawalLock(String marginWithdrawalLock) {
-		this.marginWithdrawalLock = marginWithdrawalLock;
-	}
-	
 }

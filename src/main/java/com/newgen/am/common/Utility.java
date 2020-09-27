@@ -465,7 +465,7 @@ public class Utility {
 			NotifyServiceDTO notifyDto = new NotifyServiceDTO();
 			notifyDto.setUserID(usernameList);
 			LocalServiceConnection serviceCon = new LocalServiceConnection();
-			serviceCon.sendPostRequest(serviceCon.getLogoutHandleServiceURL(), new Gson().toJson(notifyDto));
+			serviceCon.sendPostRequest(serviceCon.getLogoutHandleServiceURL(), new Gson().toJson(notifyDto), null);
 		} catch (Exception e) {
 			AMLogger.logError(className, methodName, refId, e);
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -501,7 +501,7 @@ public class Utility {
 			email.setBodyStr(emailBody);
 			String emailJson = new Gson().toJson(email);
 			AMLogger.logMessage(className, methodName, refId, "Email: " + emailJson);
-			serviceCon.sendPostRequest(serviceCon.getEmailNotificationServiceURL(), emailJson);
+			serviceCon.sendPostRequest(serviceCon.getEmailNotificationServiceURL(), emailJson, null);
 		} catch (Exception e) {
 			AMLogger.logError(className, methodName, refId, e);
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -525,7 +525,7 @@ public class Utility {
 			email.setBodyStr(emailBody);
 			String emailJson = new Gson().toJson(email);
 			AMLogger.logMessage(className, methodName, refId, "Email: " + emailJson);
-			serviceCon.sendPostRequest(serviceCon.getEmailNotificationServiceURL(), emailJson);
+			serviceCon.sendPostRequest(serviceCon.getEmailNotificationServiceURL(), emailJson, null);
 		} catch (Exception e) {
 			AMLogger.logError(className, methodName, refId, e);
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);

@@ -8,14 +8,14 @@ package com.newgen.am.model;
 import java.io.Serializable;
 
 import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.Positive;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
+import lombok.Data;
 
 /**
  *
  * @author nhungtt
  */
+@Data
 public class Commodity implements Serializable {
 	private static final long serialVersionUID = 1L;
 	@NotEmpty(message = "Required.")
@@ -26,54 +26,4 @@ public class Commodity implements Serializable {
     private String positionLimitType;
     private int positionLimit;
     private String currency;
-
-    public String getCommodityCode() {
-		return commodityCode;
-	}
-
-	public void setCommodityCode(String commodityCode) {
-		this.commodityCode = commodityCode;
-	}
-
-	public String getCommodityName() {
-		return commodityName;
-	}
-
-	public void setCommodityName(String commodityName) {
-		this.commodityName = commodityName;
-	}
-
-    public long getCommodityFee() {
-		return commodityFee;
-	}
-
-	public void setCommodityFee(long commodityFee) {
-		this.commodityFee = commodityFee;
-	}
-
-	public int getPositionLimit() {
-        return positionLimit;
-    }
-
-    public void setPositionLimit(int positionLimit) {
-        this.positionLimit = positionLimit;
-    }
-
-    
-    public String getPositionLimitType() {
-		return positionLimitType;
-	}
-
-	public void setPositionLimitType(String positionLimitType) {
-		this.positionLimitType = positionLimitType;
-	}
-
-	public String getCurrency() {
-		return currency;
-	}
-
-	public void setCurrency(String currency) {
-		this.currency = currency;
-	}
-	
 }

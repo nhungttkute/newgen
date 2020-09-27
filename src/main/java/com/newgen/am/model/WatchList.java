@@ -7,28 +7,14 @@ package com.newgen.am.model;
 
 import java.io.Serializable;
 
+import lombok.Data;
+
 /**
  *
  * @author nhungtt
  */
+@Data
 public class WatchList implements Serializable {
     private String name;
     private String[] contracts;
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String[] getContracts() {
-        return contracts;
-    }
-
-    public void setContracts(String[] contracts) {
-        this.contracts = contracts;
-    }
-    
 }

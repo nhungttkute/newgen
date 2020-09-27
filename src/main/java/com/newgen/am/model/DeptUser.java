@@ -6,30 +6,15 @@
 package com.newgen.am.model;
 
 import java.util.List;
-import org.springframework.data.annotation.Transient;
+
+import lombok.Data;
 
 /**
  *
  * @author nhungtt
  */
+@Data
 public class DeptUser extends BaseUser {
     private List<UserRole> roles;
     private List<RoleFunction> functions;
-
-    public List<UserRole> getRoles() {
-        return roles;
-    }
-
-    public void setRoles(List<UserRole> roles) {
-        this.roles = roles;
-    }
-
-    public List<RoleFunction> getFunctions() {
-        return functions;
-    }
-
-    public void setFunctions(List<RoleFunction> functions) {
-        this.functions = functions;
-    }
-    
 }

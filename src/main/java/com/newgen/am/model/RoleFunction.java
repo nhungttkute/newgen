@@ -21,6 +21,7 @@ public class RoleFunction implements Serializable {
     private String code;
 	@NotEmpty(message = "Required.")
     private String name;
+	private String orderNumber;
 
     public String getCode() {
         return code;
@@ -38,7 +39,15 @@ public class RoleFunction implements Serializable {
         this.name = name;
     }
 
-    @Override
+    public String getOrderNumber() {
+		return orderNumber;
+	}
+
+	public void setOrderNumber(String orderNumber) {
+		this.orderNumber = orderNumber;
+	}
+
+	@Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;

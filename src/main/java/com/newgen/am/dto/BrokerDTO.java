@@ -17,10 +17,10 @@ import com.newgen.am.validation.FormatGroup;
 import com.newgen.am.validation.LengthGroup;
 import com.newgen.am.validation.ValidNumber;
 
+import lombok.Data;
+
+@Data
 public class BrokerDTO implements Serializable {
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
 	private String _id;
 	@NotEmpty(message = "Required.")
@@ -53,108 +53,4 @@ public class BrokerDTO implements Serializable {
     private List<RoleFunction> functions;
     private long defaultCommodityFee;
     private List<BrokerCommodity> commodities;
-    
-	public String get_id() {
-		return _id;
-	}
-	public void set_id(String _id) {
-		this._id = _id;
-	}
-	public String getMemberCode() {
-		return memberCode;
-	}
-	public void setMemberCode(String memberCode) {
-		this.memberCode = memberCode;
-	}
-	public String getMemberName() {
-		return memberName;
-	}
-	public void setMemberName(String memberName) {
-		this.memberName = memberName;
-	}
-	public String getCode() {
-		return code;
-	}
-	public void setCode(String code) {
-		this.code = code;
-	}
-	public String getName() {
-		return name;
-	}
-	public void setName(String name) {
-		this.name = name;
-	}
-	public String getNote() {
-		return note;
-	}
-	public void setNote(String note) {
-		this.note = note;
-	}
-	public String getStatus() {
-		return status;
-	}
-	public void setStatus(String status) {
-		this.status = status;
-	}
-	public String getType() {
-		return type;
-	}
-	public void setType(String type) {
-		this.type = type;
-	}
-	public Company getCompany() {
-		return company;
-	}
-	public void setCompany(Company company) {
-		this.company = company;
-	}
-	public Individual getIndividual() {
-		return individual;
-	}
-	public void setIndividual(Individual individual) {
-		this.individual = individual;
-	}
-	public Contact getContact() {
-		return contact;
-	}
-	public void setContact(Contact contact) {
-		this.contact = contact;
-	}
-	public BrokerUser getUser() {
-		return user;
-	}
-	public void setUser(BrokerUser user) {
-		this.user = user;
-	}
-	public UserRole getRole() {
-		return role;
-	}
-	public void setRole(UserRole role) {
-		this.role = role;
-	}
-	public List<RoleFunction> getFunctions() {
-		return functions;
-	}
-	public void setFunctions(List<RoleFunction> functions) {
-		this.functions = functions;
-	}
-	public List<BrokerCommodity> getCommodities() {
-		return commodities;
-	}
-	public void setCommodities(List<BrokerCommodity> commodities) {
-		this.commodities = commodities;
-	}
-	public long getDefaultCommodityFee() {
-		return defaultCommodityFee;
-	}
-	public void setDefaultCommodityFee(long defaultCommodityFee) {
-		this.defaultCommodityFee = defaultCommodityFee;
-	}
-	public long getCreatedDate() {
-		return createdDate;
-	}
-	public void setCreatedDate(long createdDate) {
-		this.createdDate = createdDate;
-	}
-    
 }

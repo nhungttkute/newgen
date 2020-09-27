@@ -79,6 +79,7 @@ import com.newgen.am.exception.CustomException;
 import com.newgen.am.model.Commodity;
 import com.newgen.am.model.CommodityFee;
 import com.newgen.am.model.DBSequence;
+import com.newgen.am.model.Investor;
 import com.newgen.am.model.LoginAdminUser;
 import com.newgen.am.model.Member;
 import com.newgen.am.model.NestedObjectInfo;
@@ -527,7 +528,7 @@ public class MemberService {
 			email.setBodyStr(emailBody);
 			String emailJson = new Gson().toJson(email);
 			AMLogger.logMessage(className, methodName, refId, "Email: " + emailJson);
-			serviceCon.sendPostRequest(serviceCon.getEmailNotificationServiceURL(), emailJson);
+			serviceCon.sendPostRequest(serviceCon.getEmailNotificationServiceURL(), emailJson, null);
 		} catch (Exception e) {
 			AMLogger.logError(className, methodName, refId, e);
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -795,6 +796,7 @@ public class MemberService {
 				Document func = new Document();
 				func.append("code", function.getCode());
 				func.append("name", function.getName());
+				func.append("orderNumber", function.getOrderNumber());
 				functions.add(func);
 			}
 			MongoDatabase database = MongoDBConnection.getMongoDatabase();
@@ -1212,6 +1214,17 @@ public class MemberService {
 			if (updateDocument.isEmpty()) {
 				throw new CustomException(ErrorMessage.INVALID_REQUEST, HttpStatus.BAD_REQUEST);
 			} else {
+				// update cqg risk params
+				if (Utility.isCQGSyncOn()) {
+					List<Investor> investors = getInvestorsByMemberCode(memberCode, refId);
+					for (Investor inv : investors) {
+						boolean result = cqgService.updateCQGRiskParams(inv.getCqgInfo().getAccountId(), 0, memberDto.getOrderLimit(), 0, refId);
+						if (!result) {
+							AMLogger.logMessage(className, methodName, refId, "Cannot update trade size limit for " + inv.getInvestorCode());
+						}
+					}
+				}
+				
 				MongoDatabase database = MongoDBConnection.getMongoDatabase();
 				MongoCollection<Document> collection = database.getCollection("members");
 				
@@ -1247,6 +1260,33 @@ public class MemberService {
 			AMLogger.logError(className, methodName, refId, e);
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
+	}
+	
+	private List<Investor> getInvestorsByMemberCode(String memberCode, long refId) {
+		String methodName = "getInvestorsByMemberCode";
+		
+		List<Investor> investors = new ArrayList<Investor>();
+		try {
+			Document query = new Document();
+			query.append("memberCode", memberCode);
+			
+			Document projection = new Document();
+			projection.append("_id", 0.0);
+			projection.append("investorCode", 1.0);
+			projection.append("cqgInfo", 1.0);
+			
+			MongoDatabase database = MongoDBConnection.getMongoDatabase();
+			MongoCollection<Document> collection = database.getCollection("investors");
+			MongoCursor<Document> cur = collection.find(query).projection(projection).iterator();
+			while (cur.hasNext()) {
+				Investor inv = mongoTemplate.getConverter().read(Investor.class, cur.next());
+				if (inv != null) investors.add(inv);
+			}
+		} catch (Exception e) {
+			AMLogger.logError(className, methodName, refId, e);
+			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		return investors;
 	}
 	
 	public void createDefaultPositionLimit(HttpServletRequest request, PendingApproval pendingApproval, long refId) {

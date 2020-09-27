@@ -2,16 +2,10 @@ package com.newgen.am.dto;
 
 import javax.validation.constraints.Positive;
 
+import lombok.Data;
+
+@Data
 public class DefaultCommodityFeeDTO {
 	@Positive
 	private long defaultCommodityFee;
-
-	public long getDefaultCommodityFee() {
-		return defaultCommodityFee;
-	}
-
-	public void setDefaultCommodityFee(long defaultCommodityFee) {
-		this.defaultCommodityFee = defaultCommodityFee;
-	}
-	
 }

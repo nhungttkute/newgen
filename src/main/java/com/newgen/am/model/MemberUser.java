@@ -7,29 +7,15 @@ package com.newgen.am.model;
 
 import java.util.List;
 
+import lombok.Data;
+
 /**
  *
  * @author nhungtt
  */
+@Data
 public class MemberUser extends BaseUser {
 	private static final long serialVersionUID = 1L;
 	private List<UserRole> roles;
     private List<RoleFunction> functions;
-
-	public List<UserRole> getRoles() {
-		return roles;
-	}
-
-	public void setRoles(List<UserRole> roles) {
-		this.roles = roles;
-	}
-
-	public List<RoleFunction> getFunctions() {
-        return functions;
-    }
-
-    public void setFunctions(List<RoleFunction> functions) {
-        this.functions = functions;
-    }
-
 }

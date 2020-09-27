@@ -5,10 +5,16 @@
  */
 package com.newgen.am.model;
 
+import com.newgen.am.dto.DataObj;
+import com.newgen.am.dto.ResponseObj;
+
+import lombok.Data;
+
 /**
  *
  * @author nhungtt
  */
+@Data
 public class BaseUser extends AuditModel {
 	private static final long serialVersionUID = 1L;
 	private String _id;
@@ -21,85 +27,4 @@ public class BaseUser extends AuditModel {
     private boolean isPasswordExpiryCheck;
     private int passwordExpiryDays;
     private int expiryAlertDays;
-
-    public String get_id() {
-		return _id;
-	}
-
-	public void set_id(String _id) {
-		this._id = _id;
-	}
-
-	public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getFullName() {
-        return fullName;
-    }
-
-    public void setFullName(String fullName) {
-        this.fullName = fullName;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getPhoneNumber() {
-        return phoneNumber;
-    }
-
-    public void setPhoneNumber(String phoneNumber) {
-        this.phoneNumber = phoneNumber;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public boolean getIsPasswordExpiryCheck() {
-        return isPasswordExpiryCheck;
-    }
-    
-    public void setPasswordExpiryCheck(boolean isPasswordExpiryCheck) {
-		this.isPasswordExpiryCheck = isPasswordExpiryCheck;
-	}
-
-    public int getPasswordExpiryDays() {
-        return passwordExpiryDays;
-    }
-
-    public void setPasswordExpiryDays(int passwordExpiryDays) {
-        this.passwordExpiryDays = passwordExpiryDays;
-    }
-
-    public int getExpiryAlertDays() {
-        return expiryAlertDays;
-    }
-
-    public void setExpiryAlertDays(int expiryAlertDays) {
-        this.expiryAlertDays = expiryAlertDays;
-    }
-
-    public String getNote() {
-        return note;
-    }
-
-    public void setNote(String note) {
-        this.note = note;
-    }
-
 }

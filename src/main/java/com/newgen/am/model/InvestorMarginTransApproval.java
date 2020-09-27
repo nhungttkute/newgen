@@ -8,19 +8,16 @@ package com.newgen.am.model;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import lombok.Data;
+
 /**
  *
  * @author nhungtt
  */
+@Data
 @Document(collection = "inv_margin_trans_approvals")
 public class InvestorMarginTransApproval extends BaseApproval {
 	private static final long serialVersionUID = 1L;
 	@Id
     private String id;
-	public String getId() {
-		return id;
-	}
-	public void setId(String id) {
-		this.id = id;
-	}
 }

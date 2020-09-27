@@ -36,13 +36,16 @@ public class BaseConnection {
         deleteMethod = new DeleteMethod();
     }
     
-    public String[] sendPostRequest(String requestUrl, String requestBody) throws Exception {
+    public String[] sendPostRequest(String requestUrl, String requestBody, String accessToken) throws Exception {
         String[] responseBody = new String[2];
         try {
             StringRequestEntity entity = new StringRequestEntity(requestBody, "application/json", "UTF-8");
             postMethod.setURI(new URI(requestUrl));
             postMethod.setRequestEntity(entity);
             postMethod.addRequestHeader("Content-Type", "application/json;charset=UTF-8");
+            if (Utility.isNotNull(accessToken)) {
+            	postMethod.setRequestHeader("Authorization", "Bearer " + accessToken);
+            }
             httpClient.executeMethod(postMethod);
             responseBody[0] = String.valueOf(postMethod.getStatusCode());
             responseBody[1] = postMethod.getResponseBodyAsString();
@@ -73,12 +76,16 @@ public class BaseConnection {
         return responseBody;
     }
     
-    public String[] sendPutRequest(String requestUrl, String requestBody) throws Exception {
+    public String[] sendPutRequest(String requestUrl, String requestBody, String accessToken) throws Exception {
         String[] responseBody = new String[2];
         try {
             StringRequestEntity entity = new StringRequestEntity(requestBody, "application/json", "UTF-8");
             putMethod.setURI(new URI(requestUrl));
             putMethod.setRequestEntity(entity);
+            putMethod.addRequestHeader("Content-Type", "application/json;charset=UTF-8");
+            if (Utility.isNotNull(accessToken)) {
+            	putMethod.setRequestHeader("Authorization", "Bearer " + accessToken);
+            }
             httpClient.executeMethod(putMethod);
             responseBody[0] = String.valueOf(putMethod.getStatusCode());
             responseBody[1] = putMethod.getResponseBodyAsString();

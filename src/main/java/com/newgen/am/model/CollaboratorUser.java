@@ -5,8 +5,6 @@
  */
 package com.newgen.am.model;
 
-import org.springframework.data.annotation.Transient;
-
 /**
  *
  * @author nhungtt

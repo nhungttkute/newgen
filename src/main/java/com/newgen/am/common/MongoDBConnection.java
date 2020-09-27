@@ -5,8 +5,10 @@
  */
 package com.newgen.am.common;
 
+import com.fasterxml.jackson.databind.ext.NioPathSerializer;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientOptions;
+import com.mongodb.MongoClientURI;
 import com.mongodb.MongoCredential;
 import com.mongodb.ServerAddress;
 import com.mongodb.WriteConcern;
@@ -53,8 +55,19 @@ public class MongoDBConnection {
         		.heartbeatConnectTimeout(heartbeatConnectTimeout)
         		.writeConcern(WriteConcern.ACKNOWLEDGED).build();
         
+        List<ServerAddress> hostList = new ArrayList<ServerAddress>();
+        try {
+			String[] hosts = host.split(";");
+			for (String h : hosts) {
+				ServerAddress serverAdd = new ServerAddress(h, port);
+				hostList.add(serverAdd);
+			}
+		} catch (Exception e) {
+			AMLogger.logError("MongoDBConnection", "getMongoDatabase", System.currentTimeMillis(), e);
+		}
+        
         if (mongoClient == null) {
-        	mongoClient = new MongoClient(new ServerAddress(host, port), credential, options);
+        	mongoClient = new MongoClient(hostList, credential, options);
         }
         
         return mongoClient.getDatabase(database);

@@ -5,16 +5,11 @@ import javax.validation.constraints.NotNull;
 
 import com.newgen.am.model.RiskParameters;
 
+import lombok.Data;
+
+@Data
 public class RiskParametersDTO {
 	@NotNull(message = "Required.")
     @Valid
 	private RiskParameters riskParameters;
-
-	public RiskParameters getRiskParameters() {
-		return riskParameters;
-	}
-
-	public void setRiskParameters(RiskParameters riskParameters) {
-		this.riskParameters = riskParameters;
-	}
 }
