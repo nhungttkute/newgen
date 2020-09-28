@@ -2454,19 +2454,12 @@ public class InvestorService {
 			if (Utility.isCQGSyncOn()) {
 				// update cqg balance
 				InvestorDTO investorDto = getInvestorInfo(investorCode, refId);
-//				double currentBalance = investorDto.getAccount().getAvailableBalance() + marginTransDto.getAmount();
 				double exchangeRate = getExchangeRate(refId);
 				double usdChangedAmt = Precision.round(marginTransDto.getAmount()/exchangeRate, 2);
-
-				if (Utility.isNotNull(investorDto.getCqgInfo().getBalanceId())) {
-					// update cqg balance
-					boolean result = cqgService.updateCQGAccountBalance(investorCode,
-							investorDto.getCqgInfo().getAccountId(), usdChangedAmt, refId);
-					if (!result) {
-						throw new CustomException(ErrorMessage.CQG_INFO_CREATED_UNSUCCESSFULLY, HttpStatus.OK);
-					}
-				} else {
-					AMLogger.logMessage(className, methodName, refId, "Cannot find balance id of the investor: " + investorCode);
+				// update cqg balance
+				boolean result = cqgService.updateCQGAccountBalance(investorCode,
+						investorDto.getCqgInfo().getAccountId(), usdChangedAmt, refId);
+				if (!result) {
 					throw new CustomException(ErrorMessage.CQG_INFO_CREATED_UNSUCCESSFULLY, HttpStatus.OK);
 				}
 			}
@@ -2586,18 +2579,11 @@ public class InvestorService {
 			if (Utility.isCQGSyncOn()) {
 				// update cqg balance
 				InvestorDTO investorDto = getInvestorInfo(investorCode, refId);
-//				double currentBalance = investorDto.getAccount().getAvailableBalance() - marginTransDto.getAmount();
 				double exchangeRate = getExchangeRate(refId);
 				double usdChangedAmt = - Precision.round(marginTransDto.getAmount()/exchangeRate, 2);
-				
-				if (Utility.isNotNull(investorDto.getCqgInfo().getBalanceId())) {
-					boolean result = cqgService.updateCQGAccountBalance(investorCode,
-							investorDto.getCqgInfo().getAccountId(), usdChangedAmt, refId);
-					if (!result) {
-						throw new CustomException(ErrorMessage.CQG_INFO_CREATED_UNSUCCESSFULLY, HttpStatus.OK);
-					}
-				} else {
-					AMLogger.logMessage(className, methodName, refId, "Cannot find balance id of the investor: " + investorCode);
+				boolean result = cqgService.updateCQGAccountBalance(investorCode,
+						investorDto.getCqgInfo().getAccountId(), usdChangedAmt, refId);
+				if (!result) {
 					throw new CustomException(ErrorMessage.CQG_INFO_CREATED_UNSUCCESSFULLY, HttpStatus.OK);
 				}
 			}

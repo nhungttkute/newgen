@@ -1802,6 +1802,17 @@ public class MemberService {
 			activityLogService.sendActivityLog(userInfo, request, ActivityLogService.ACTIVITY_APPROVAL_CREATE_MEMBER_MARGIN_MULTIPLIER_BULK,
 					ActivityLogService.ACTIVITY_APPROVAL_CREATE_MEMBER_MARGIN_MULTIPLIER_BULK_DESC, memberCode, pendingApproval.getId());
 			
+			// update cqg risk params
+			if (Utility.isCQGSyncOn()) {
+				List<Investor> investors = getInvestorsByMemberCode(memberCode, refId);
+				for (Investor inv : investors) {
+					boolean result = cqgService.updateCQGRiskParams(inv.getCqgInfo().getAccountId(), memberDto.getMarginMultiplier(), 0, 0, refId);
+					if (!result) {
+						AMLogger.logMessage(className, methodName, refId, "Cannot update trade size limit for " + inv.getInvestorCode());
+					}
+				}
+			}
+			
 			Document memberUpdateDoc = new Document();
 			memberUpdateDoc.append("marginMultiplier", memberDto.getMarginMultiplier());
 			memberUpdateDoc.append("lastModifiedUser", Utility.getCurrentUsername());
