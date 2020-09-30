@@ -1535,15 +1535,6 @@ public class InvestorService {
 			if (updateDocument.isEmpty()) {
 				throw new CustomException(ErrorMessage.INVALID_REQUEST, HttpStatus.BAD_REQUEST);
 			} else {
-				// update cqg risk params
-				if (Utility.isCQGSyncOn()) {
-					InvestorDTO investorInfo = getInvestorInfo(investorCode, refId);
-					boolean result = cqgService.updateCQGRiskParams(investorInfo.getCqgInfo().getAccountId(), 0, 0, investorDto.getDefaultPositionLimit(), refId);
-					if (!result) {
-						throw new CustomException(ErrorMessage.CQG_INFO_CREATED_UNSUCCESSFULLY, HttpStatus.OK);
-					}
-				}
-				
 				MongoDatabase database = MongoDBConnection.getMongoDatabase();
 				MongoCollection<Document> collection = database.getCollection("investors");
 
@@ -1555,7 +1546,8 @@ public class InvestorService {
 
 				// update default position litmit and fee for all commodities
 				List<Document> newCommodities = new ArrayList<Document>();
-
+				List<CQGCMSCommodityDTO> cqgCommodities = new ArrayList<CQGCMSCommodityDTO>();
+				
 				Document projection = new Document();
 				projection.append("_id", 0.0);
 				projection.append("commodities", 1.0);
@@ -1572,6 +1564,11 @@ public class InvestorService {
 							if (investorDto.getDefaultPositionLimit() > 0) {
 								newComm.append("positionLimitType", Constant.POSITION_INHERITED);
 								newComm.append("positionLimit", investorDto.getDefaultPositionLimit());
+								
+								CQGCMSCommodityDTO cqgComm = new CQGCMSCommodityDTO();
+								cqgComm.setSymbol(comm.getCommodityCode());
+								cqgComm.setPositionLimit(investorDto.getDefaultPositionLimit());
+								cqgCommodities.add(cqgComm);
 							} else {
 								newComm.append("positionLimitType", Constant.POSITION_INHERITED);
 								newComm.append("positionLimit", comm.getPositionLimit());
@@ -1590,6 +1587,24 @@ public class InvestorService {
 				Document update = new Document();
 				update.append("$set", updateDocument);
 
+				// sync to CQG
+				if (Utility.isCQGSyncOn()) {
+					// update cqg risk params
+					InvestorDTO investorInfo = getInvestorInfo(investorCode, refId);
+					boolean result = cqgService.updateCQGRiskParams(investorInfo.getCqgInfo().getAccountId(), 0, 0, investorDto.getDefaultPositionLimit(), refId);
+					if (!result) {
+						throw new CustomException(ErrorMessage.CQG_INFO_CREATED_UNSUCCESSFULLY, HttpStatus.OK);
+					}
+					
+					// update cqg account market limits
+					result = cqgService.updateCQGAccountMarketLimits(investorInfo.getCqgInfo().getAccountId(),
+							cqgCommodities, refId);
+					if (!result) {
+						throw new CustomException(ErrorMessage.CQG_INFO_CREATED_UNSUCCESSFULLY, HttpStatus.OK);
+					}
+				}
+				
+				// update to DB
 				collection.updateOne(query, update);
 			}
 		} catch (CustomException e) {
@@ -1672,6 +1687,7 @@ public class InvestorService {
 				if (Utility.isCQGSyncOn()) {
 					// update cqg account market limits
 					InvestorDTO investorDto = getInvestorInfo(investorCode, refId);
+					setRemovedCommoditiesMarkerLimits(cqgCommodities, investorDto);
 					boolean result = cqgService.updateCQGAccountMarketLimits(investorDto.getCqgInfo().getAccountId(),
 							cqgCommodities, refId);
 					if (!result) {
@@ -1752,7 +1768,31 @@ public class InvestorService {
 
 		return null;
 	}
+	
+	private boolean existCommodityInCQGCommodities(List<CQGCMSCommodityDTO> commodities, String code) {
+		if (commodities != null && commodities.size() > 0) {
+			for (CQGCMSCommodityDTO comm : commodities) {
+				if (code.equals(comm.getSymbol()))
+					return true;
+			}
+		}
 
+		return false;
+	}
+
+	private void setRemovedCommoditiesMarkerLimits(List<CQGCMSCommodityDTO> cqgCommodities, InvestorDTO investorDto) {
+		for (Commodity comm: investorDto.getCommodities()) {
+			if (!existCommodityInCQGCommodities(cqgCommodities, comm.getCommodityCode())) {
+				CQGCMSCommodityDTO cqgComm = new CQGCMSCommodityDTO();
+				cqgComm.setSymbol(comm.getCommodityCode());
+				cqgComm.setPositionLimit(0);
+				cqgCommodities.add(cqgComm);
+			} else {
+				continue;
+			}
+		}
+	}
+	
 	public void setInvestorNewPositionOrderLock(HttpServletRequest request, PendingApproval pendingApproval,
 			long refId) {
 		String methodName = "setInvestorNewPositionOrderLock";

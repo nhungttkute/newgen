@@ -1269,6 +1269,7 @@ public class MemberService {
 		try {
 			Document query = new Document();
 			query.append("memberCode", memberCode);
+			query.append("status", Constant.STATUS_ACTIVE);
 			
 			Document projection = new Document();
 			projection.append("_id", 0.0);
