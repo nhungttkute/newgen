@@ -2489,38 +2489,49 @@ public class InvestorService {
 					pendingApproval.getId());
 
 			if (Utility.isCQGSyncOn()) {
-				// update cqg balance
-				InvestorDTO investorDto = getInvestorInfo(investorCode, refId);
-				double exchangeRate = getExchangeRate(refId);
-				double usdChangedAmt = Precision.round(marginTransDto.getAmount()/exchangeRate, 2);
-				// update cqg balance
-				boolean result = cqgService.updateCQGAccountBalance(investorCode,
-						investorDto.getCqgInfo().getAccountId(), usdChangedAmt, refId);
-				if (!result) {
-					throw new CustomException(ErrorMessage.CQG_INFO_CREATED_UNSUCCESSFULLY, HttpStatus.OK);
-				}
+				updateCQGBalance(investorCode, marginTransDto.getAmount(), refId);
 			}
-			
-			// update changedAmount in investor_margin_info
-			InvestorMarginInfo marginInfo = marginInfoService.getInvestorMarginInfo(investorCode, refId);
-			double changedAmount = marginInfo.getChangedAmount() + marginTransDto.getAmount();
+			try {
+				// update changedAmount in investor_margin_info
+				InvestorMarginInfo marginInfo = marginInfoService.getInvestorMarginInfo(investorCode, refId);
+				double changedAmount = marginInfo.getChangedAmount() + marginTransDto.getAmount();
 
-			marginInfoService.updateChangedAmount(investorCode, changedAmount, refId);
+				marginInfoService.updateChangedAmount(investorCode, changedAmount, refId);
 
-			// update investor_margin_trans
-			InvestorMarginTransaction marginTrans = modelMapper.map(marginTransDto, InvestorMarginTransaction.class);
-			marginTrans.setCurrency(Constant.CURRENCY_VND);
-			marginTrans.setApprovalDate(System.currentTimeMillis());
-			marginTrans.setApprovalUser(userInfo.getUsername());
-			marginTrans.setSessionDate(getSessionDate(refId));
-			invMarginTransRepo.save(marginTrans);
-
+				// update investor_margin_trans
+				InvestorMarginTransaction marginTrans = modelMapper.map(marginTransDto, InvestorMarginTransaction.class);
+				marginTrans.setCurrency(Constant.CURRENCY_VND);
+				marginTrans.setApprovalDate(System.currentTimeMillis());
+				marginTrans.setApprovalUser(userInfo.getUsername());
+				marginTrans.setSessionDate(getSessionDate(refId));
+				invMarginTransRepo.save(marginTrans);
+			} catch (Exception e) {
+				// rollback CQG balance
+				if (Utility.isCQGSyncOn()) {
+					updateCQGBalance(investorCode, - marginTransDto.getAmount(), refId);
+				}
+				throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+			}
 		} catch (Exception e) {
 			AMLogger.logError(className, methodName, refId, e);
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 
+	private boolean updateCQGBalance(String investorCode, long vndAmount, long refId) {
+		// update cqg balance
+		InvestorDTO investorDto = getInvestorInfo(investorCode, refId);
+		double exchangeRate = getExchangeRate(refId);
+		double usdChangedAmt = Precision.round(vndAmount/exchangeRate, 2);
+
+		boolean result = cqgService.updateCQGAccountBalance(investorCode,
+				investorDto.getCqgInfo().getAccountId(), usdChangedAmt, refId);
+		if (!result) {
+			throw new CustomException(ErrorMessage.CQG_INFO_CREATED_UNSUCCESSFULLY, HttpStatus.OK);
+		}
+		return result;
+	}
+	
 	private String getSessionDate(long refId) {
 		String methodName = "getSessionDate";
 		String sessionDate = "";
@@ -2544,15 +2555,21 @@ public class InvestorService {
 	public void depositMarginPA(HttpServletRequest request, MarginTransactionDTO marginTransDto, long refId) {
 		String methodName = "depositMarginPA";
 		try {
-			// get redis user info
-			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
-			// insert data to inv_margin_trans_approvals
-			String approvalId = insertInvestorMarginDepositPA(userInfo, marginTransDto, refId);
-			// send activity log
-			activityLogService.sendActivityLog(userInfo, request,
-					ActivityLogService.ACTIVITY_CREATE_INVESTOR_DEPOSIT_MONEY,
-					ActivityLogService.ACTIVITY_CREATE_INVESTOR_DEPOSIT_MONEY_DESC, marginTransDto.getInvestorCode(),
-					approvalId);
+			// check if investor is activated
+			InvestorDTO investorDto = getInvestorInfo(marginTransDto.getInvestorCode(), refId);
+			if (Utility.isNotNull(investorDto.getCqgInfo())) {
+				// get redis user info
+				UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
+				// insert data to inv_margin_trans_approvals
+				String approvalId = insertInvestorMarginDepositPA(userInfo, marginTransDto, refId);
+				// send activity log
+				activityLogService.sendActivityLog(userInfo, request,
+						ActivityLogService.ACTIVITY_CREATE_INVESTOR_DEPOSIT_MONEY,
+						ActivityLogService.ACTIVITY_CREATE_INVESTOR_DEPOSIT_MONEY_DESC, marginTransDto.getInvestorCode(),
+						approvalId);
+			} else {
+				throw new CustomException(ErrorMessage.INVESTOR_IS_NOT_ACTIVATED, HttpStatus.OK);
+			}
 		} catch (CustomException e) {
 			throw e;
 		} catch (Exception e) {
@@ -2612,36 +2629,37 @@ public class InvestorService {
 					pendingApproval.getId());
 
 			if (Utility.isCQGSyncOn()) {
-				// update cqg balance
-				InvestorDTO investorDto = getInvestorInfo(investorCode, refId);
-				double exchangeRate = getExchangeRate(refId);
-				double usdChangedAmt = - Precision.round(marginTransDto.getAmount()/exchangeRate, 2);
-				boolean result = cqgService.updateCQGAccountBalance(investorCode,
-						investorDto.getCqgInfo().getAccountId(), usdChangedAmt, refId);
-				if (!result) {
-					throw new CustomException(ErrorMessage.CQG_INFO_CREATED_UNSUCCESSFULLY, HttpStatus.OK);
-				}
+				updateCQGBalance(investorCode, - marginTransDto.getAmount(), refId);
 			}
 			
-			// update changedAmount, pendingWithdrawalAmount in investor_margin_info
-			InvestorMarginInfo marginInfo = marginInfoService.getInvestorMarginInfo(investorCode, refId);
-			double changedAmount = marginInfo.getChangedAmount() - marginTransDto.getAmount();
-			double pendingWithdrawalAmount = marginInfo.getPendingWithdrawalAmount() - marginTransDto.getAmount();
+			try {
+				// update changedAmount, pendingWithdrawalAmount in investor_margin_info
+				InvestorMarginInfo marginInfo = marginInfoService.getInvestorMarginInfo(investorCode, refId);
+				double changedAmount = marginInfo.getChangedAmount() - marginTransDto.getAmount();
+				double pendingWithdrawalAmount = marginInfo.getPendingWithdrawalAmount() - marginTransDto.getAmount();
 
-			marginInfoService.updateChangedAmountAndPendingWithdrawalAmount(investorCode, changedAmount,
-					pendingWithdrawalAmount, refId);
+				marginInfoService.updateChangedAmountAndPendingWithdrawalAmount(investorCode, changedAmount,
+						pendingWithdrawalAmount, refId);
 
-			// insert new investor_margin_trans
-			InvestorMarginTransaction marginTrans = modelMapper.map(marginTransDto, InvestorMarginTransaction.class);
-			marginTrans.setCurrency(Constant.CURRENCY_VND);
-			marginTrans.setApprovalDate(System.currentTimeMillis());
-			marginTrans.setApprovalUser(userInfo.getUsername());
-			marginTrans.setSessionDate(getSessionDate(refId));
-			invMarginTransRepo.save(marginTrans);
-			
-			// call checking maring ratio
-			LocalServiceConnection localServcieConn = new LocalServiceConnection();
-			localServcieConn.sendPostRequest(localServcieConn.getProcessMarginServiceURL(investorCode), "", ConfigLoader.getMainConfig().getString(Constant.LOCAL_SECRET_KEY));
+				// insert new investor_margin_trans
+				InvestorMarginTransaction marginTrans = modelMapper.map(marginTransDto, InvestorMarginTransaction.class);
+				marginTrans.setCurrency(Constant.CURRENCY_VND);
+				marginTrans.setApprovalDate(System.currentTimeMillis());
+				marginTrans.setApprovalUser(userInfo.getUsername());
+				marginTrans.setSessionDate(getSessionDate(refId));
+				invMarginTransRepo.save(marginTrans);
+				
+				// call checking maring ratio
+				LocalServiceConnection localServcieConn = new LocalServiceConnection();
+				localServcieConn.sendPostRequest(localServcieConn.getProcessMarginServiceURL(investorCode), "", ConfigLoader.getMainConfig().getString(Constant.LOCAL_SECRET_KEY));
+			} catch (Exception e) {
+				// rollback CQG balance
+				if (Utility.isCQGSyncOn()) {
+					updateCQGBalance(investorCode, marginTransDto.getAmount(), refId);
+				}
+				
+				throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+			}
 		} catch (Exception e) {
 			AMLogger.logError(className, methodName, refId, e);
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -2654,29 +2672,35 @@ public class InvestorService {
 			if (marginTransDto.getAmount() > getInvestorWithdrawalAmount(marginTransDto.getInvestorCode(), refId)) {
 				throw new CustomException(ErrorMessage.INVALID_REQUEST, HttpStatus.BAD_REQUEST);
 			}
-
+			
 			// check if member can withdraw money
 			String memberCode = marginTransDto.getMemberCode();
 			Member member = memberRepo.findByCode(memberCode);
 
 			if ("N".equals(member.getRiskParameters().getMarginWithdrawalLock())) {
-				// get redis user info
-				UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
-				// insert data to inv_margin_trans_approvals
-				String approvalId = insertInvestorMarginWithdrawPA(userInfo, marginTransDto, refId);
-				// send activity log
-				activityLogService.sendActivityLog(userInfo, request,
-						ActivityLogService.ACTIVITY_CREATE_INVESTOR_WITHDRAWAL_MONEY,
-						ActivityLogService.ACTIVITY_CREATE_INVESTOR_WITHDRAWAL_MONEY_DESC,
-						marginTransDto.getInvestorCode(), approvalId);
+				// check if investor is activated
+				InvestorDTO investorDto = getInvestorInfo(marginTransDto.getInvestorCode(), refId);
+				if (Utility.isNotNull(investorDto.getCqgInfo())) {
+					// get redis user info
+					UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
+					// insert data to inv_margin_trans_approvals
+					String approvalId = insertInvestorMarginWithdrawPA(userInfo, marginTransDto, refId);
+					// send activity log
+					activityLogService.sendActivityLog(userInfo, request,
+							ActivityLogService.ACTIVITY_CREATE_INVESTOR_WITHDRAWAL_MONEY,
+							ActivityLogService.ACTIVITY_CREATE_INVESTOR_WITHDRAWAL_MONEY_DESC,
+							marginTransDto.getInvestorCode(), approvalId);
 
-				// update pendingWithdrawalAmount in investor_margin_info
-				InvestorMarginInfo marginInfo = marginInfoService
-						.getInvestorMarginInfo(marginTransDto.getInvestorCode(), refId);
-				double pendingWithdrawalAmount = marginInfo.getPendingWithdrawalAmount() + marginTransDto.getAmount();
+					// update pendingWithdrawalAmount in investor_margin_info
+					InvestorMarginInfo marginInfo = marginInfoService
+							.getInvestorMarginInfo(marginTransDto.getInvestorCode(), refId);
+					double pendingWithdrawalAmount = marginInfo.getPendingWithdrawalAmount() + marginTransDto.getAmount();
 
-				marginInfoService.updatePendingWithdrawalAmount(marginTransDto.getInvestorCode(),
-						pendingWithdrawalAmount, refId);
+					marginInfoService.updatePendingWithdrawalAmount(marginTransDto.getInvestorCode(),
+							pendingWithdrawalAmount, refId);
+				} else {
+					throw new CustomException(ErrorMessage.INVESTOR_IS_NOT_ACTIVATED, HttpStatus.OK);
+				}
 			} else {
 				throw new CustomException(ErrorMessage.WITHDRAWAL_DENIED, HttpStatus.OK);
 			}
