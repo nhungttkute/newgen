@@ -11,6 +11,7 @@ import com.mongodb.client.MongoDatabase;
 import com.newgen.am.common.AMLogger;
 import com.newgen.am.common.ErrorMessage;
 import com.newgen.am.common.MongoDBConnection;
+import com.newgen.am.common.Utility;
 import com.newgen.am.dto.InterestRateDTO;
 import com.newgen.am.dto.InvestorDTO;
 import com.newgen.am.exception.CustomException;
@@ -55,6 +56,8 @@ public class InvestorMarginInfoService {
 			
 			Document updateDoc = new Document();
 			updateDoc.append("changedAmount", changedAmount);
+			updateDoc.append("lastModifiedUser", Utility.getCurrentUsername());
+			updateDoc.append("lastModifiedDate", System.currentTimeMillis());
 			
 			Document update = new Document();
 			update.append("$set", updateDoc);
@@ -126,6 +129,8 @@ public class InvestorMarginInfoService {
 			marginInfo.append("sodBalance", 0);
 			marginInfo.append("changedAmount", 0);
 			marginInfo.append("pendingWithdrawalAmount", 0);
+			marginInfo.append("createdUser", Utility.getCurrentUsername());
+			marginInfo.append("createdDate", System.currentTimeMillis());
 			
 			MongoDatabase database = MongoDBConnection.getMongoDatabase();
 			MongoCollection<Document> collection = database.getCollection("investor_margin_info");

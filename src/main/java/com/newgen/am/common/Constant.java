@@ -69,6 +69,7 @@ public class Constant {
     public static final String SERVICE_CONFIG_SESSION_DATE = "SERVICE_CONFIG_SESSION_DATE";
     public static final String SERVICE_MARGIN_WITHDRAWAL_AMOUNT = "SERVICE_MARGIN_WITHDRAWAL_AMOUNT";
     public static final String SERVICE_EXCHANGE_RATE = "SERVICE_EXCHANGE_RATE";
+    public static final String SERVICE_PROCESS_MARGIN = "SERVICE_PROCESS_MARGIN";
     
     public static final String SERVICE_CMS_SALE_SERIES = "SERVICE_CMS_SALE_SERIES";
     public static final String SERVICE_CMS_CUSTOMER = "SERVICE_CMS_CUSTOMER";

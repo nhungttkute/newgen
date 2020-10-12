@@ -45,6 +45,10 @@ public class LocalServiceConnection extends BaseConnection {
         return domain + ConfigLoader.getMainConfig().getString(Constant.SERVICE_EXCHANGE_RATE);
     }
     
+    public String getProcessMarginServiceURL(String investorCode) {
+        return domain + String.format(ConfigLoader.getMainConfig().getString(Constant.SERVICE_PROCESS_MARGIN), investorCode);
+    }
+    
     public String getCMSServiceURL(String cmsUrl) {
         return domain + cmsUrl;
     }
