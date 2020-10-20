@@ -115,8 +115,5 @@ public class FileUtility {
 			compressedFileStreamReader.close();
 			imageWriter.dispose();
 		}
-		
-
-		
 	}
 }

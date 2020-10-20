@@ -1379,36 +1379,18 @@ public class InvestorService {
 
 			// get redis user info
 			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
-			// insert data to pending_approvals
-			String approvalId = insertInvestorUserCreatePA(userInfo, investorCode, userDto, refId);
 			// send activity log
 			activityLogService.sendActivityLog2(userInfo, request,
 					ActivityLogService.ACTIVITY_APPROVAL_CREATE_INVESTOR_USER2,
 					ActivityLogService.ACTIVITY_APPROVAL_CREATE_INVESTOR_USER2_DESC, userDto.getUsername(),
-					investorCode, approvalId);
-
+					investorCode, pendingApproval.getId());
+			
 			MongoDatabase database = MongoDBConnection.getMongoDatabase();
 			MongoCollection<Document> collection = database.getCollection("investors");
-
-			Document newUser = new Document();
-			newUser.append("_id", new ObjectId());
-			newUser.append("username", userDto.getUsername());
-			newUser.append("fullName", userDto.getFullName());
-			newUser.append("email", userDto.getEmail());
-			newUser.append("phoneNumber", userDto.getPhoneNumber());
-			newUser.append("status", Constant.STATUS_ACTIVE);
-			newUser.append("note", userDto.getNote());
-			newUser.append("isPasswordExpiryCheck", userDto.getIsPasswordExpiryCheck());
-			newUser.append("passwordExpiryDays", userDto.getPasswordExpiryDays());
-			newUser.append("expiryAlertDays", userDto.getExpiryAlertDays());
-			newUser.append("createdUser", Utility.getCurrentUsername());
-			newUser.append("createdDate", System.currentTimeMillis());
-
+			
 			BasicDBObject query = new BasicDBObject();
 			query.append("investorCode", investorCode);
-
-			collection.updateOne(query, Updates.addToSet("users", newUser));
-
+			
 			// get memberCode, brokerCode, collaboratorCode from investor
 			Document projection = new Document();
 			projection.append("_id", 0.0);
@@ -1423,7 +1405,7 @@ public class InvestorService {
 
 			Document investorDoc = collection.find(query).projection(projection).first();
 			InvestorDTO investorDto = mongoTemplate.getConverter().read(InvestorDTO.class, investorDoc);
-
+						
 			// insert loginAdminUser
 			String password = Utility.generateRandomPassword();
 			String pin = Utility.generateRandomPin();
@@ -1431,6 +1413,23 @@ public class InvestorService {
 
 			// send email
 			sendCreateNewUserEmail(userDto.getEmail(), newLoginInvUser.getUsername(), password, pin, refId);
+			
+			// insert into investor's users
+			Document newUser = new Document();
+			newUser.append("_id", new ObjectId());
+			newUser.append("username", userDto.getUsername());
+			newUser.append("fullName", userDto.getFullName());
+			newUser.append("email", userDto.getEmail());
+			newUser.append("phoneNumber", userDto.getPhoneNumber());
+			newUser.append("status", Constant.STATUS_ACTIVE);
+			newUser.append("note", userDto.getNote());
+			newUser.append("isPasswordExpiryCheck", userDto.getIsPasswordExpiryCheck());
+			newUser.append("passwordExpiryDays", userDto.getPasswordExpiryDays());
+			newUser.append("expiryAlertDays", userDto.getExpiryAlertDays());
+			newUser.append("createdUser", Utility.getCurrentUsername());
+			newUser.append("createdDate", System.currentTimeMillis());
+
+			collection.updateOne(query, Updates.addToSet("users", newUser));
 		} catch (Exception e) {
 			AMLogger.logError(className, methodName, refId, e);
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);

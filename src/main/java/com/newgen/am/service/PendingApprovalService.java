@@ -21,7 +21,6 @@ import com.newgen.am.common.Constant;
 import com.newgen.am.common.ErrorMessage;
 import com.newgen.am.common.Utility;
 import com.newgen.am.exception.CustomException;
-import com.newgen.am.model.BaseApproval;
 import com.newgen.am.model.InvestorMarginTransApproval;
 import com.newgen.am.model.PendingApproval;
 import com.newgen.am.repository.InvestorMarginTransApprovalRepository;
