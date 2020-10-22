@@ -5,8 +5,8 @@ server:
 spring:
     data:
         mongodb:
-            uri: mongodb://application:b4dpwpr0v1d3d@mxv-ms-db-01:27017,mxv-ms-db-02:27017,mxv-ms-app-05:27017/system_am
-#            uri: mongodb://application:b4dpwpr0v1d3d@209.58.164.25:27017/system_am
+#            uri: mongodb://application:b4dpwpr0v1d3d@mxv-ms-db-01:27017,mxv-ms-db-02:27017,mxv-ms-app-05:27017/system_am
+            uri: mongodb://application:b4dpwpr0v1d3d@209.58.164.25:27017/system_am
 logging:
 #    file: C:/u01/apps/AM/log/init.log
     file: /opt/account-management/log/init.log

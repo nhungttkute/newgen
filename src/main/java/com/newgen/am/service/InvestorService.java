@@ -57,6 +57,7 @@ import com.newgen.am.dto.ExchangeRateReponseDTO;
 import com.newgen.am.dto.GeneralFeeDTO;
 import com.newgen.am.dto.InvestorActivationDTO;
 import com.newgen.am.dto.InvestorCSV;
+import com.newgen.am.dto.InvestorCommodityFeeDTO;
 import com.newgen.am.dto.InvestorDTO;
 import com.newgen.am.dto.MarginInfoDTO;
 import com.newgen.am.dto.MarginMultiplierDTO;
@@ -1384,13 +1385,13 @@ public class InvestorService {
 					ActivityLogService.ACTIVITY_APPROVAL_CREATE_INVESTOR_USER2,
 					ActivityLogService.ACTIVITY_APPROVAL_CREATE_INVESTOR_USER2_DESC, userDto.getUsername(),
 					investorCode, pendingApproval.getId());
-			
+
 			MongoDatabase database = MongoDBConnection.getMongoDatabase();
 			MongoCollection<Document> collection = database.getCollection("investors");
-			
+
 			BasicDBObject query = new BasicDBObject();
 			query.append("investorCode", investorCode);
-			
+
 			// get memberCode, brokerCode, collaboratorCode from investor
 			Document projection = new Document();
 			projection.append("_id", 0.0);
@@ -1405,7 +1406,7 @@ public class InvestorService {
 
 			Document investorDoc = collection.find(query).projection(projection).first();
 			InvestorDTO investorDto = mongoTemplate.getConverter().read(InvestorDTO.class, investorDoc);
-						
+
 			// insert loginAdminUser
 			String password = Utility.generateRandomPassword();
 			String pin = Utility.generateRandomPin();
@@ -1413,7 +1414,7 @@ public class InvestorService {
 
 			// send email
 			sendCreateNewUserEmail(userDto.getEmail(), newLoginInvUser.getUsername(), password, pin, refId);
-			
+
 			// insert into investor's users
 			Document newUser = new Document();
 			newUser.append("_id", new ObjectId());
@@ -1546,7 +1547,7 @@ public class InvestorService {
 				// update default position litmit and fee for all commodities
 				List<Document> newCommodities = new ArrayList<Document>();
 				List<CQGCMSCommodityDTO> cqgCommodities = new ArrayList<CQGCMSCommodityDTO>();
-				
+
 				Document projection = new Document();
 				projection.append("_id", 0.0);
 				projection.append("commodities", 1.0);
@@ -1563,7 +1564,7 @@ public class InvestorService {
 							if (investorDto.getDefaultPositionLimit() > 0) {
 								newComm.append("positionLimitType", Constant.POSITION_INHERITED);
 								newComm.append("positionLimit", investorDto.getDefaultPositionLimit());
-								
+
 								CQGCMSCommodityDTO cqgComm = new CQGCMSCommodityDTO();
 								cqgComm.setSymbol(comm.getCommodityCode());
 								cqgComm.setPositionLimit(investorDto.getDefaultPositionLimit());
@@ -1590,11 +1591,12 @@ public class InvestorService {
 				if (Utility.isCQGSyncOn()) {
 					// update cqg risk params
 					InvestorDTO investorInfo = getInvestorInfo(investorCode, refId);
-					boolean result = cqgService.updateCQGRiskParams(investorInfo.getCqgInfo().getAccountId(), 0, 0, investorDto.getDefaultPositionLimit(), refId);
+					boolean result = cqgService.updateCQGRiskParams(investorInfo.getCqgInfo().getAccountId(), 0, 0,
+							investorDto.getDefaultPositionLimit(), refId);
 					if (!result) {
 						throw new CustomException(ErrorMessage.CQG_INFO_CREATED_UNSUCCESSFULLY, HttpStatus.OK);
 					}
-					
+
 					// update cqg account market limits
 					result = cqgService.updateCQGAccountMarketLimits(investorInfo.getCqgInfo().getAccountId(),
 							cqgCommodities, refId);
@@ -1602,7 +1604,7 @@ public class InvestorService {
 						throw new CustomException(ErrorMessage.CQG_INFO_CREATED_UNSUCCESSFULLY, HttpStatus.OK);
 					}
 				}
-				
+
 				// update to DB
 				collection.updateOne(query, update);
 			}
@@ -1653,7 +1655,7 @@ public class InvestorService {
 			activityLogService.sendActivityLog(userInfo, request,
 					ActivityLogService.ACTIVITY_CREATE_INVESTOR_COMMODITIES_ASSIGN,
 					ActivityLogService.ACTIVITY_CREATE_INVESTOR_COMMODITIES_ASSIGN_DESC, investorCode, "");
-			
+
 			if (commoditiesDto.getCommodities() != null && commoditiesDto.getCommodities().size() > 0) {
 				List<Document> commodities = new ArrayList<Document>();
 				List<Commodity> memberCommodities = getMemberCommodities(memberCode, refId);
@@ -1767,7 +1769,7 @@ public class InvestorService {
 
 		return null;
 	}
-	
+
 	private boolean existCommodityInCQGCommodities(List<CQGCMSCommodityDTO> commodities, String code) {
 		if (commodities != null && commodities.size() > 0) {
 			for (CQGCMSCommodityDTO comm : commodities) {
@@ -1780,7 +1782,7 @@ public class InvestorService {
 	}
 
 	private void setRemovedCommoditiesMarkerLimits(List<CQGCMSCommodityDTO> cqgCommodities, InvestorDTO investorDto) {
-		for (Commodity comm: investorDto.getCommodities()) {
+		for (Commodity comm : investorDto.getCommodities()) {
 			if (!existCommodityInCQGCommodities(cqgCommodities, comm.getCommodityCode())) {
 				CQGCMSCommodityDTO cqgComm = new CQGCMSCommodityDTO();
 				cqgComm.setSymbol(comm.getCommodityCode());
@@ -1791,7 +1793,7 @@ public class InvestorService {
 			}
 		}
 	}
-	
+
 	public void setInvestorNewPositionOrderLock(HttpServletRequest request, PendingApproval pendingApproval,
 			long refId) {
 		String methodName = "setInvestorNewPositionOrderLock";
@@ -2005,12 +2007,13 @@ public class InvestorService {
 			// update cqg risk params
 			if (Utility.isCQGSyncOn()) {
 				InvestorDTO investorInfo = getInvestorInfo(investorCode, refId);
-				boolean result = cqgService.updateCQGRiskParams(investorInfo.getCqgInfo().getAccountId(), marginMultDto.getMarginMultiplier(), 0, 0, refId);
+				boolean result = cqgService.updateCQGRiskParams(investorInfo.getCqgInfo().getAccountId(),
+						marginMultDto.getMarginMultiplier(), 0, 0, refId);
 				if (!result) {
 					throw new CustomException(ErrorMessage.CQG_INFO_CREATED_UNSUCCESSFULLY, HttpStatus.OK);
 				}
 			}
-						
+
 			Document updateDocument = new Document();
 			updateDocument.append("marginMultiplier", marginMultDto.getMarginMultiplier());
 			updateDocument.append("lastModifiedUser", Utility.getCurrentUsername());
@@ -2498,7 +2501,8 @@ public class InvestorService {
 				marginInfoService.updateChangedAmount(investorCode, changedAmount, refId);
 
 				// update investor_margin_trans
-				InvestorMarginTransaction marginTrans = modelMapper.map(marginTransDto, InvestorMarginTransaction.class);
+				InvestorMarginTransaction marginTrans = modelMapper.map(marginTransDto,
+						InvestorMarginTransaction.class);
 				marginTrans.setCurrency(Constant.CURRENCY_VND);
 				marginTrans.setApprovalDate(System.currentTimeMillis());
 				marginTrans.setApprovalUser(userInfo.getUsername());
@@ -2507,7 +2511,7 @@ public class InvestorService {
 			} catch (Exception e) {
 				// rollback CQG balance
 				if (Utility.isCQGSyncOn()) {
-					updateCQGBalance(investorCode, - marginTransDto.getAmount(), refId);
+					updateCQGBalance(investorCode, -marginTransDto.getAmount(), refId);
 				}
 				throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
 			}
@@ -2521,16 +2525,16 @@ public class InvestorService {
 		// update cqg balance
 		InvestorDTO investorDto = getInvestorInfo(investorCode, refId);
 		double exchangeRate = getExchangeRate(refId);
-		double usdChangedAmt = Precision.round(vndAmount/exchangeRate, 2);
+		double usdChangedAmt = Precision.round(vndAmount / exchangeRate, 2);
 
-		boolean result = cqgService.updateCQGAccountBalance(investorCode,
-				investorDto.getCqgInfo().getAccountId(), usdChangedAmt, refId);
+		boolean result = cqgService.updateCQGAccountBalance(investorCode, investorDto.getCqgInfo().getAccountId(),
+				usdChangedAmt, refId);
 		if (!result) {
 			throw new CustomException(ErrorMessage.CQG_INFO_CREATED_UNSUCCESSFULLY, HttpStatus.OK);
 		}
 		return result;
 	}
-	
+
 	private String getSessionDate(long refId) {
 		String methodName = "getSessionDate";
 		String sessionDate = "";
@@ -2564,8 +2568,8 @@ public class InvestorService {
 				// send activity log
 				activityLogService.sendActivityLog(userInfo, request,
 						ActivityLogService.ACTIVITY_CREATE_INVESTOR_DEPOSIT_MONEY,
-						ActivityLogService.ACTIVITY_CREATE_INVESTOR_DEPOSIT_MONEY_DESC, marginTransDto.getInvestorCode(),
-						approvalId);
+						ActivityLogService.ACTIVITY_CREATE_INVESTOR_DEPOSIT_MONEY_DESC,
+						marginTransDto.getInvestorCode(), approvalId);
 			} else {
 				throw new CustomException(ErrorMessage.INVESTOR_IS_NOT_ACTIVATED, HttpStatus.OK);
 			}
@@ -2628,9 +2632,9 @@ public class InvestorService {
 					pendingApproval.getId());
 
 			if (Utility.isCQGSyncOn()) {
-				updateCQGBalance(investorCode, - marginTransDto.getAmount(), refId);
+				updateCQGBalance(investorCode, -marginTransDto.getAmount(), refId);
 			}
-			
+
 			try {
 				// update changedAmount, pendingWithdrawalAmount in investor_margin_info
 				InvestorMarginInfo marginInfo = marginInfoService.getInvestorMarginInfo(investorCode, refId);
@@ -2641,22 +2645,24 @@ public class InvestorService {
 						pendingWithdrawalAmount, refId);
 
 				// insert new investor_margin_trans
-				InvestorMarginTransaction marginTrans = modelMapper.map(marginTransDto, InvestorMarginTransaction.class);
+				InvestorMarginTransaction marginTrans = modelMapper.map(marginTransDto,
+						InvestorMarginTransaction.class);
 				marginTrans.setCurrency(Constant.CURRENCY_VND);
 				marginTrans.setApprovalDate(System.currentTimeMillis());
 				marginTrans.setApprovalUser(userInfo.getUsername());
 				marginTrans.setSessionDate(getSessionDate(refId));
 				invMarginTransRepo.save(marginTrans);
-				
+
 				// call checking maring ratio
 				LocalServiceConnection localServcieConn = new LocalServiceConnection();
-				localServcieConn.sendPostRequest(localServcieConn.getProcessMarginServiceURL(investorCode), "", ConfigLoader.getMainConfig().getString(Constant.LOCAL_SECRET_KEY));
+				localServcieConn.sendPostRequest(localServcieConn.getProcessMarginServiceURL(investorCode), "",
+						ConfigLoader.getMainConfig().getString(Constant.LOCAL_SECRET_KEY));
 			} catch (Exception e) {
 				// rollback CQG balance
 				if (Utility.isCQGSyncOn()) {
 					updateCQGBalance(investorCode, marginTransDto.getAmount(), refId);
 				}
-				
+
 				throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
 			}
 		} catch (Exception e) {
@@ -2671,7 +2677,7 @@ public class InvestorService {
 			if (marginTransDto.getAmount() > getInvestorWithdrawalAmount(marginTransDto.getInvestorCode(), refId)) {
 				throw new CustomException(ErrorMessage.INVALID_REQUEST, HttpStatus.BAD_REQUEST);
 			}
-			
+
 			// check if member can withdraw money
 			String memberCode = marginTransDto.getMemberCode();
 			Member member = memberRepo.findByCode(memberCode);
@@ -2693,7 +2699,8 @@ public class InvestorService {
 					// update pendingWithdrawalAmount in investor_margin_info
 					InvestorMarginInfo marginInfo = marginInfoService
 							.getInvestorMarginInfo(marginTransDto.getInvestorCode(), refId);
-					double pendingWithdrawalAmount = marginInfo.getPendingWithdrawalAmount() + marginTransDto.getAmount();
+					double pendingWithdrawalAmount = marginInfo.getPendingWithdrawalAmount()
+							+ marginTransDto.getAmount();
 
 					marginInfoService.updatePendingWithdrawalAmount(marginTransDto.getInvestorCode(),
 							pendingWithdrawalAmount, refId);
@@ -2730,7 +2737,7 @@ public class InvestorService {
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
-	
+
 	private double getExchangeRate(long refId) {
 		String methodName = "getExchangeRate";
 		double exchangeRate = 1;
@@ -2740,12 +2747,14 @@ public class InvestorService {
 			AMLogger.logMessage(className, methodName, refId, "Exchange Rate Serivce URL: " + serviceURL);
 			String[] res = serviceCon.sendGetRequest(serviceCon.getExchangeRateServiceURL(),
 					ConfigLoader.getMainConfig().getString(Constant.LOCAL_SECRET_KEY));
-			AMLogger.logMessage(className, methodName, refId, "Exchange Rate Serivce Reseponse: " + res[0] + " => " + res[1]);
-			if (res.length >= 2 && "200".equals(res[0])) { 
+			AMLogger.logMessage(className, methodName, refId,
+					"Exchange Rate Serivce Reseponse: " + res[0] + " => " + res[1]);
+			if (res.length >= 2 && "200".equals(res[0])) {
 				ExchangeRateReponseDTO response = new Gson().fromJson(res[1], ExchangeRateReponseDTO.class);
 				if (response != null && Constant.RESPONSE_OK.equalsIgnoreCase(response.getStatus())) {
 					for (ExchangeRateDTO exRate : response.getData()) {
-						if (Constant.CURRENCY_USD.equals(exRate.getMonetaryBase()) && Constant.STATUS_ACTIVE.equalsIgnoreCase(exRate.getStatus())) {
+						if (Constant.CURRENCY_USD.equals(exRate.getMonetaryBase())
+								&& Constant.STATUS_ACTIVE.equalsIgnoreCase(exRate.getStatus())) {
 							exchangeRate = exRate.getExchangeRate();
 							break;
 						}
@@ -2887,12 +2896,12 @@ public class InvestorService {
 					ActivityLogService.ACTIVITY_APPROVAL_REFUND_INVESTOR_DEPOSIT_MONEY,
 					ActivityLogService.ACTIVITY_APPROVAL_REFUND_INVESTOR_DEPOSIT_MONEY_DESC, investorCode,
 					pendingApproval.getId());
-			
+
 			if (Utility.isCQGSyncOn()) {
 				// update cqg balance
 				InvestorDTO investorDto = getInvestorInfo(investorCode, refId);
 				double exchangeRate = getExchangeRate(refId);
-				double usdChangedAmt = - Precision.round(marginTransDto.getAmount()/exchangeRate, 2);
+				double usdChangedAmt = -Precision.round(marginTransDto.getAmount() / exchangeRate, 2);
 				boolean result = cqgService.updateCQGAccountBalance(investorCode,
 						investorDto.getCqgInfo().getAccountId(), usdChangedAmt, refId);
 				if (!result) {
@@ -2975,5 +2984,59 @@ public class InvestorService {
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 		return approvalId;
+	}
+
+	public InvestorCommodityFeeDTO getInvestorCommodityFee(String investorCode, String commodityCode, long refId) {
+		String methodName = "getInvestorCommodityFee";
+		InvestorCommodityFeeDTO invCommodityFeeDto = new InvestorCommodityFeeDTO();
+		try {
+			MongoDatabase database = MongoDBConnection.getMongoDatabase();
+			MongoCollection<Document> collection = database.getCollection("investors");
+
+			List<? extends Bson> pipeline1 = Arrays.asList(
+					new Document().append("$match", new Document().append("investorCode", investorCode)),
+					new Document().append("$lookup",
+							new Document().append("from", "members").append("localField", "memberCode")
+									.append("foreignField", "code").append("as", "memberObj")),
+					new Document().append("$unwind", new Document().append("path", "$memberObj")),
+					new Document().append("$project",
+							new Document().append("_id", 0.0).append("memberCommodities", "$memberObj.commodities")),
+					new Document().append("$unwind", new Document().append("path", "$memberCommodities")),
+					new Document().append("$match",
+							new Document().append("memberCommodities.commodityCode", commodityCode)),
+					new Document().append("$project",
+							new Document().append("memberCommodityFee", "$memberCommodities.commodityFee")));
+
+			Document memberCommFeeDoc = collection.aggregate(pipeline1).first();
+			InvestorCommodityFeeDTO memberCommodityFeeDto = mongoTemplate.getConverter()
+					.read(InvestorCommodityFeeDTO.class, memberCommFeeDoc);
+			if (memberCommodityFeeDto != null) {
+				invCommodityFeeDto.setMemberCommodityFee(memberCommodityFeeDto.getMemberCommodityFee());
+			}
+
+			List<? extends Bson> pipeline2 = Arrays.asList(
+					new Document().append("$match", new Document().append("investorCode", investorCode)),
+					new Document().append("$lookup",
+							new Document().append("from", "brokers").append("localField", "brokerCode")
+									.append("foreignField", "code").append("as", "brokerObj")),
+					new Document().append("$unwind", new Document().append("path", "$brokerObj")),
+					new Document().append("$project",
+							new Document().append("_id", 0.0).append("brokerCommodities", "$brokerObj.commodities")),
+					new Document().append("$unwind", new Document().append("path", "$brokerCommodities")),
+					new Document().append("$match", new Document().append("brokerCommodities.commodityCode", commodityCode)),
+					new Document().append("$project",
+							new Document().append("brokerCommodityFee", "$brokerCommodities.commodityFee")));
+			Document brokerCommFeeDoc = collection.aggregate(pipeline2).first();
+			InvestorCommodityFeeDTO brokerCommodityFeeDto = mongoTemplate.getConverter()
+					.read(InvestorCommodityFeeDTO.class, brokerCommFeeDoc);
+			if (brokerCommodityFeeDto != null) {
+				invCommodityFeeDto.setBrokerCommodityFee(brokerCommodityFeeDto.getBrokerCommodityFee());
+			}
+			
+			return invCommodityFeeDto;
+		} catch (Exception e) {
+			AMLogger.logError(className, methodName, refId, e);
+			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
 	}
 }

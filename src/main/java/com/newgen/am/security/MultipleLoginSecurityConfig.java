@@ -90,6 +90,9 @@ public class MultipleLoginSecurityConfig {
                     HttpMethod.POST,
                     "/admin/investorInfo/cqgAccount"
             ).antMatchers(
+                    HttpMethod.POST,
+                    "/admin/investors/commodityFee"
+            ).antMatchers(
                     HttpMethod.GET,
                     "/admin/info"
             );

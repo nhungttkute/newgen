@@ -42,6 +42,7 @@ import com.newgen.am.dto.DataObj;
 import com.newgen.am.dto.DefaultSettingDTO;
 import com.newgen.am.dto.GeneralFeeDTO;
 import com.newgen.am.dto.InvestorCSV;
+import com.newgen.am.dto.InvestorCommodityFeeDTO;
 import com.newgen.am.dto.InvestorDTO;
 import com.newgen.am.dto.InvestorDetailDTO;
 import com.newgen.am.dto.MarginInfoDTO;
@@ -740,6 +741,26 @@ public class InvestorController {
         
         AdminResponseObj response = new AdminResponseObj();
         response.setStatus(Constant.RESPONSE_OK);
+        
+        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+        return response;
+    }
+	
+	@PostMapping("/admin/investors/commodityFee")
+    public AdminResponseObj getCommodityFee(HttpServletRequest request, @RequestBody InvestorCommodityFeeDTO invCommdityFeeDto) {
+        String methodName = "getCommodityFee";
+        if (!Utility.isLocalRequest(request)) throw new CustomException(ErrorMessage.ACCESS_DENIED, HttpStatus.FORBIDDEN);
+        
+        long refId = System.currentTimeMillis();
+        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [POST]/am/admin/investors/commodityFee");
+        AMLogger.logMessage(className, methodName, refId, "INPUT: " + new Gson().toJson(invCommdityFeeDto));
+        
+        InvestorCommodityFeeDTO invCommFee = investorService.getInvestorCommodityFee(invCommdityFeeDto.getInvestorCode(), invCommdityFeeDto.getCommodityCode(), refId);
+        
+        AdminResponseObj response = new AdminResponseObj();
+        response.setStatus(Constant.RESPONSE_OK);
+        response.setData(new AdminDataObj());
+        response.getData().setInvCommodityFee(invCommFee);
         
         AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
         return response;

@@ -20,7 +20,7 @@ import lombok.Data;
  * @author nhungtt
  */
 @Data
-@JsonInclude(JsonInclude.Include.NON_EMPTY)
+@JsonInclude(JsonInclude.Include.NON_DEFAULT)
 public class AdminDataObj implements Serializable {
 	private static final long serialVersionUID = 1L;
 	private LoginAdminUserOutputDTO user;
@@ -96,4 +96,7 @@ public class AdminDataObj implements Serializable {
     
     // session date
     private String date;
+    
+    // investor's member, broker commodity fee
+    private InvestorCommodityFeeDTO invCommodityFee;
 }
