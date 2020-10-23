@@ -2503,6 +2503,14 @@ public class InvestorService {
 				// update investor_margin_trans
 				InvestorMarginTransaction marginTrans = modelMapper.map(marginTransDto,
 						InvestorMarginTransaction.class);
+				
+				marginTrans.setMemberCode(marginInfo.getMemberCode());
+				marginTrans.setMemberName(marginInfo.getMemberName());
+				marginTrans.setBrokerCode(marginInfo.getBrokerCode());
+				marginTrans.setBrokerName(marginInfo.getBrokerName());
+				marginTrans.setCollaboratorCode(marginInfo.getCollaboratorCode());
+				marginTrans.setCollaboratorName(marginInfo.getCollaboratorName());
+				
 				marginTrans.setCurrency(Constant.CURRENCY_VND);
 				marginTrans.setApprovalDate(System.currentTimeMillis());
 				marginTrans.setApprovalUser(userInfo.getUsername());
@@ -2647,6 +2655,14 @@ public class InvestorService {
 				// insert new investor_margin_trans
 				InvestorMarginTransaction marginTrans = modelMapper.map(marginTransDto,
 						InvestorMarginTransaction.class);
+				
+				marginTrans.setMemberCode(marginInfo.getMemberCode());
+				marginTrans.setMemberName(marginInfo.getMemberName());
+				marginTrans.setBrokerCode(marginInfo.getBrokerCode());
+				marginTrans.setBrokerName(marginInfo.getBrokerName());
+				marginTrans.setCollaboratorCode(marginInfo.getCollaboratorCode());
+				marginTrans.setCollaboratorName(marginInfo.getCollaboratorName());
+				
 				marginTrans.setCurrency(Constant.CURRENCY_VND);
 				marginTrans.setApprovalDate(System.currentTimeMillis());
 				marginTrans.setApprovalUser(userInfo.getUsername());

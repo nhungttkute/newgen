@@ -38,6 +38,12 @@ public class InvestorMarginInfoService {
             query.append("investorCode", investorCode);
             
             Document projection = new Document();
+            projection.append("memberCode", 1.0);
+            projection.append("memberName", 1.0);
+            projection.append("brokerCode", 1.0);
+            projection.append("brokerName", 1.0);
+            projection.append("collaboratorCode", 1.0);
+            projection.append("collaboratorName", 1.0);
             projection.append("sodBalance", 1.0);
             projection.append("changedAmount", 1.0);
             projection.append("pendingWithdrawalAmount", 1.0);
