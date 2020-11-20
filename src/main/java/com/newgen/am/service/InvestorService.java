@@ -5,8 +5,10 @@
  */
 package com.newgen.am.service;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -198,7 +200,7 @@ public class InvestorService {
 			if (investor != null) {
 				// get info from redis
 				String investorInfo = (String) redisTemplate.opsForValue().get(investor.getInvestorCode());
-				JsonObject jobj = new Gson().fromJson(investorInfo, JsonObject.class);
+				JsonObject jobj = Utility.getGson().fromJson(investorInfo, JsonObject.class);
 				investorAccDto.setTransactionFee(jobj.get("transactionFee").getAsLong());
 				investorAccDto.setInitialRequiredMargin(jobj.get("initialRequiredMargin").getAsLong());
 				investorAccDto.setActualProfitVND(jobj.get("actualProfitVND").getAsLong());
@@ -348,7 +350,7 @@ public class InvestorService {
 
 			MongoDatabase database = MongoDBConnection.getMongoDatabase();
 			MongoCollection<Document> collection = database.getCollection("investors");
-			Document resultDoc = collection.aggregate(pipeline).first();
+			Document resultDoc = collection.aggregate(pipeline).allowDiskUse(true).first();
 			pagination = mongoTemplate.getConverter().read(BasePagination.class, resultDoc);
 		} catch (Exception e) {
 			AMLogger.logError(className, methodName, refId, e);
@@ -380,7 +382,7 @@ public class InvestorService {
 													new Document().append("$toDate", "$createdDate"))))));
 			MongoDatabase database = MongoDBConnection.getMongoDatabase();
 			MongoCollection<Document> collection = database.getCollection("investors");
-			MongoCursor<Document> cur = collection.aggregate(pipeline).iterator();
+			MongoCursor<Document> cur = collection.aggregate(pipeline).allowDiskUse(true).iterator();
 			while (cur.hasNext()) {
 				InvestorCSV investorCsv = mongoTemplate.getConverter().read(InvestorCSV.class, cur.next());
 				if (investorCsv != null)
@@ -396,7 +398,7 @@ public class InvestorService {
 	public void createInvestor(HttpServletRequest request, PendingApproval pendingApproval, long refId) {
 		String methodName = "createInvestor";
 		try {
-			InvestorDTO investorDto = new Gson().fromJson(pendingApproval.getPendingData().getPendingValue(),
+			InvestorDTO investorDto = Utility.getGson().fromJson(pendingApproval.getPendingData().getPendingValue(),
 					InvestorDTO.class);
 
 			// get redis user info
@@ -591,7 +593,7 @@ public class InvestorService {
 		pendingData.setAction(Constant.APPROVAL_ACTION_ACTIVATE_INVESTOR);
 		pendingData.setQueryField("investorCode");
 		pendingData.setQueryValue(investorDto.getInvestorCode());
-		pendingData.setPendingValue(new Gson().toJson(invActivationDto));
+		pendingData.setPendingValue(Utility.getGson().toJson(invActivationDto));
 
 		InvestorActivationApproval invActivationApproval = new InvestorActivationApproval();
 		invActivationApproval.setInvestorCode(investorDto.getInvestorCode());
@@ -661,7 +663,7 @@ public class InvestorService {
 			pendingData.setServiceFunctionName(ApprovalConstant.INVESTOR_CREATE);
 			pendingData.setCollectionName("investors");
 			pendingData.setAction(Constant.APPROVAL_ACTION_CREATE);
-			pendingData.setPendingValue(new Gson().toJson(investorDto));
+			pendingData.setPendingValue(Utility.getGson().toJson(investorDto));
 
 			PendingApproval pendingApproval = new PendingApproval();
 			pendingApproval.setApiUrl(String.format(ApprovalConstant.APPROVAL_PENDING_URL, approvalId));
@@ -821,7 +823,7 @@ public class InvestorService {
 							ConfigLoader.getMainConfig().getString(FileUtility.CREATE_NEW_USER_EMAIL_FILE), refId),
 					username, password, pin);
 			email.setBodyStr(emailBody);
-			String emailJson = new Gson().toJson(email);
+			String emailJson = Utility.getGson().toJson(email);
 			AMLogger.logMessage(className, methodName, refId, "Email: " + emailJson);
 			serviceCon.sendPostRequest(serviceCon.getEmailNotificationServiceURL(), emailJson, null);
 		} catch (Exception e) {
@@ -834,7 +836,7 @@ public class InvestorService {
 		String methodName = "updateInvestor";
 		try {
 			String investorCode = pendingApproval.getPendingData().getQueryValue();
-			UpdateInvestorDTO investorDto = new Gson().fromJson(pendingApproval.getPendingData().getPendingValue(),
+			UpdateInvestorDTO investorDto = Utility.getGson().fromJson(pendingApproval.getPendingData().getPendingValue(),
 					UpdateInvestorDTO.class);
 
 			// get redis user info
@@ -1058,6 +1060,42 @@ public class InvestorService {
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
+	
+	public void updateInvestorCQGInfo(HttpServletRequest request, String investorCode, UpdateInvestorDTO investorDto,
+			long refId) {
+		String methodName = "updateInvestorCQGInfo";
+		try {
+			if (!investorRepo.existsInvestorByInvestorCode(investorCode)) {
+				throw new CustomException(ErrorMessage.RESULT_NOT_FOUND, HttpStatus.OK);
+			}
+
+			// get redis user info
+			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
+			// send activity log
+			activityLogService.sendActivityLog(userInfo, request, ActivityLogService.ACTIVITY_UPDATE_INVESTOR_CQG,
+					ActivityLogService.ACTIVITY_UPDATE_INVESTOR_CQG_DESC, investorCode, "");
+			
+			MongoDatabase database = MongoDBConnection.getMongoDatabase();
+			MongoCollection<Document> invCollection = database.getCollection("investors");
+			
+			Document invQuery = new Document();
+			invQuery.append("investorCode", investorCode);
+			
+			Document updateDoc = new Document();
+			updateDoc.append("cqgInfo.customerId", investorDto.getCqgInfo().getCustomerId());
+			updateDoc.append("cqgInfo.accountId", investorDto.getCqgInfo().getAccountId());
+			
+			Document update = new Document();
+			update.append("$set", updateDoc);
+			
+			invCollection.updateOne(invQuery, update);
+		} catch (CustomException e) {
+			throw e;
+		} catch (Exception e) {
+			AMLogger.logError(className, methodName, refId, e);
+			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
 
 	private String insertInvestorUpdatePA(UserInfoDTO userInfo, String investorCode,
 			ApprovalUpdateInvestorDTO investorDto, long refId) {
@@ -1074,8 +1112,8 @@ public class InvestorService {
 			pendingData.setQueryField("investorCode");
 			pendingData.setQueryValue(investorCode);
 			pendingData.setAction(Constant.APPROVAL_ACTION_UPDATE);
-			pendingData.setOldValue(new Gson().toJson(investorDto.getOldData()));
-			pendingData.setPendingValue(new Gson().toJson(investorDto.getPendingData()));
+			pendingData.setOldValue(Utility.getGson().toJson(investorDto.getOldData()));
+			pendingData.setPendingValue(Utility.getGson().toJson(investorDto.getPendingData()));
 
 			PendingApproval pendingApproval = new PendingApproval();
 			pendingApproval.setApiUrl(String.format(ApprovalConstant.APPROVAL_PENDING_URL, approvalId));
@@ -1376,7 +1414,7 @@ public class InvestorService {
 		String methodName = "createInvestorUser";
 		try {
 			String investorCode = pendingApproval.getPendingData().getQueryValue();
-			UserDTO userDto = new Gson().fromJson(pendingApproval.getPendingData().getPendingValue(), UserDTO.class);
+			UserDTO userDto = Utility.getGson().fromJson(pendingApproval.getPendingData().getPendingValue(), UserDTO.class);
 
 			// get redis user info
 			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
@@ -1488,7 +1526,7 @@ public class InvestorService {
 			pendingData.setQueryField("investorCode");
 			pendingData.setQueryValue(investorCode);
 			pendingData.setAction(Constant.APPROVAL_ACTION_CREATE);
-			pendingData.setPendingValue(new Gson().toJson(userDto));
+			pendingData.setPendingValue(Utility.getGson().toJson(userDto));
 
 			PendingApproval pendingApproval = new PendingApproval();
 			pendingApproval.setApiUrl(String.format(ApprovalConstant.APPROVAL_PENDING_URL, approvalId));
@@ -1799,7 +1837,7 @@ public class InvestorService {
 		String methodName = "setInvestorNewPositionOrderLock";
 		try {
 			String investorCode = pendingApproval.getPendingData().getQueryValue();
-			RiskParametersDTO riskParamDto = new Gson().fromJson(pendingApproval.getPendingData().getPendingValue(),
+			RiskParametersDTO riskParamDto = Utility.getGson().fromJson(pendingApproval.getPendingData().getPendingValue(),
 					RiskParametersDTO.class);
 
 			// get redis user info
@@ -1873,8 +1911,8 @@ public class InvestorService {
 			pendingData.setAppliedObject(String.format(ApprovalConstant.APPLIED_OBJ_INVESTOR, investorCode));
 			pendingData.setQueryField("investorCode");
 			pendingData.setQueryValue(investorCode);
-			pendingData.setOldValue(new Gson().toJson(riskParamDto.getOldData()));
-			pendingData.setPendingValue(new Gson().toJson(riskParamDto.getPendingData()));
+			pendingData.setOldValue(Utility.getGson().toJson(riskParamDto.getOldData()));
+			pendingData.setPendingValue(Utility.getGson().toJson(riskParamDto.getPendingData()));
 
 			PendingApproval pendingApproval = new PendingApproval();
 			pendingApproval.setApiUrl(String.format(ApprovalConstant.APPROVAL_PENDING_URL, approvalId));
@@ -1897,7 +1935,7 @@ public class InvestorService {
 		String methodName = "setInvestorOrderLock";
 		try {
 			String investorCode = pendingApproval.getPendingData().getQueryValue();
-			RiskParametersDTO riskParamDto = new Gson().fromJson(pendingApproval.getPendingData().getPendingValue(),
+			RiskParametersDTO riskParamDto = Utility.getGson().fromJson(pendingApproval.getPendingData().getPendingValue(),
 					RiskParametersDTO.class);
 
 			// get redis user info
@@ -1969,8 +2007,8 @@ public class InvestorService {
 			pendingData.setAppliedObject(String.format(ApprovalConstant.APPLIED_OBJ_INVESTOR, investorCode));
 			pendingData.setQueryField("investorCode");
 			pendingData.setQueryValue(investorCode);
-			pendingData.setOldValue(new Gson().toJson(riskParamDto.getOldData()));
-			pendingData.setPendingValue(new Gson().toJson(riskParamDto.getPendingData()));
+			pendingData.setOldValue(Utility.getGson().toJson(riskParamDto.getOldData()));
+			pendingData.setPendingValue(Utility.getGson().toJson(riskParamDto.getPendingData()));
 
 			PendingApproval pendingApproval = new PendingApproval();
 			pendingApproval.setApiUrl(String.format(ApprovalConstant.APPROVAL_PENDING_URL, approvalId));
@@ -2209,7 +2247,7 @@ public class InvestorService {
 		String methodName = "changeBroker";
 		try {
 			String investorCode = pendingApproval.getPendingData().getQueryValue();
-			ChangeGroupDTO changeGroupDto = new Gson().fromJson(pendingApproval.getPendingData().getPendingValue(),
+			ChangeGroupDTO changeGroupDto = Utility.getGson().fromJson(pendingApproval.getPendingData().getPendingValue(),
 					ChangeGroupDTO.class);
 
 			// get redis user info
@@ -2299,8 +2337,8 @@ public class InvestorService {
 			pendingData.setQueryField("investorCode");
 			pendingData.setQueryValue(investorCode);
 			pendingData.setAction(Constant.APPROVAL_ACTION_UPDATE);
-			pendingData.setOldValue(new Gson().toJson(changeGroupDto.getOldData()));
-			pendingData.setPendingValue(new Gson().toJson(changeGroupDto.getPendingData()));
+			pendingData.setOldValue(Utility.getGson().toJson(changeGroupDto.getOldData()));
+			pendingData.setPendingValue(Utility.getGson().toJson(changeGroupDto.getPendingData()));
 
 			PendingApproval pendingApproval = new PendingApproval();
 			pendingApproval.setApiUrl(String.format(ApprovalConstant.APPROVAL_PENDING_URL, approvalId));
@@ -2324,7 +2362,7 @@ public class InvestorService {
 		String methodName = "changeCollaborator";
 		try {
 			String investorCode = pendingApproval.getPendingData().getQueryValue();
-			ChangeGroupDTO changeGroupDto = new Gson().fromJson(pendingApproval.getPendingData().getPendingValue(),
+			ChangeGroupDTO changeGroupDto = Utility.getGson().fromJson(pendingApproval.getPendingData().getPendingValue(),
 					ChangeGroupDTO.class);
 
 			// get redis user info
@@ -2414,8 +2452,8 @@ public class InvestorService {
 			pendingData.setQueryField("investorCode");
 			pendingData.setQueryValue(investorCode);
 			pendingData.setAction(Constant.APPROVAL_ACTION_UPDATE);
-			pendingData.setOldValue(new Gson().toJson(changeGroupDto.getOldData()));
-			pendingData.setPendingValue(new Gson().toJson(changeGroupDto.getPendingData()));
+			pendingData.setOldValue(Utility.getGson().toJson(changeGroupDto.getOldData()));
+			pendingData.setPendingValue(Utility.getGson().toJson(changeGroupDto.getPendingData()));
 
 			PendingApproval pendingApproval = new PendingApproval();
 			pendingApproval.setApiUrl(String.format(ApprovalConstant.APPROVAL_PENDING_URL, approvalId));
@@ -2479,7 +2517,7 @@ public class InvestorService {
 		String methodName = "depositMargin";
 		try {
 			String investorCode = pendingApproval.getPendingData().getQueryValue();
-			MarginTransactionDTO marginTransDto = new Gson()
+			MarginTransactionDTO marginTransDto = Utility.getGson()
 					.fromJson(pendingApproval.getPendingData().getPendingValue(), MarginTransactionDTO.class);
 
 			// get redis user info
@@ -2490,7 +2528,7 @@ public class InvestorService {
 					ActivityLogService.ACTIVITY_APPROVAL_CREATE_INVESTOR_DEPOSIT_MONEY_DESC, investorCode,
 					pendingApproval.getId());
 
-			if (Utility.isCQGSyncOn()) {
+			if (Utility.isCQGSyncOn() && Utility.isCQGSyncBalanceOn()) {
 				updateCQGBalance(investorCode, marginTransDto.getAmount(), refId);
 			}
 			try {
@@ -2529,7 +2567,7 @@ public class InvestorService {
 		}
 	}
 
-	private boolean updateCQGBalance(String investorCode, long vndAmount, long refId) {
+	private boolean updateCQGBalance(String investorCode, double vndAmount, long refId) {
 		// update cqg balance
 		InvestorDTO investorDto = getInvestorInfo(investorCode, refId);
 		double exchangeRate = getExchangeRate(refId);
@@ -2551,7 +2589,7 @@ public class InvestorService {
 			String[] res = serviceCon.sendGetRequest(serviceCon.getSessionDateServiceURL(),
 					ConfigLoader.getMainConfig().getString(Constant.LOCAL_SECRET_KEY));
 			if (res.length >= 2 && "200".equals(res[0])) {
-				AdminResponseObj response = new Gson().fromJson(res[1], AdminResponseObj.class);
+				AdminResponseObj response = Utility.getGson().fromJson(res[1], AdminResponseObj.class);
 				if (response != null && Constant.RESPONSE_OK.equalsIgnoreCase(response.getStatus())) {
 					sessionDate = response.getData().getDate();
 				}
@@ -2568,7 +2606,9 @@ public class InvestorService {
 		try {
 			// check if investor is activated
 			InvestorDTO investorDto = getInvestorInfo(marginTransDto.getInvestorCode(), refId);
-			if (Utility.isNotNull(investorDto.getCqgInfo())) {
+			if (Utility.isCQGSyncOn() && Utility.isNull(investorDto.getCqgInfo())) {
+				throw new CustomException(ErrorMessage.INVESTOR_IS_NOT_ACTIVATED, HttpStatus.OK);
+			} else {
 				// get redis user info
 				UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
 				// insert data to inv_margin_trans_approvals
@@ -2578,8 +2618,6 @@ public class InvestorService {
 						ActivityLogService.ACTIVITY_CREATE_INVESTOR_DEPOSIT_MONEY,
 						ActivityLogService.ACTIVITY_CREATE_INVESTOR_DEPOSIT_MONEY_DESC,
 						marginTransDto.getInvestorCode(), approvalId);
-			} else {
-				throw new CustomException(ErrorMessage.INVESTOR_IS_NOT_ACTIVATED, HttpStatus.OK);
 			}
 		} catch (CustomException e) {
 			throw e;
@@ -2604,7 +2642,7 @@ public class InvestorService {
 			pendingData.setQueryField("investorCode");
 			pendingData.setQueryValue(marginTransDto.getInvestorCode());
 			pendingData.setAction(Constant.APPROVAL_ACTION_UPDATE);
-			pendingData.setPendingValue(new Gson().toJson(marginTransDto));
+			pendingData.setPendingValue(Utility.getGson().toJson(marginTransDto));
 
 			InvestorMarginTransApproval marginTransApproval = new InvestorMarginTransApproval();
 			marginTransApproval.setApiUrl(String.format(ApprovalConstant.APPROVAL_ACCOUNT_TRANS_URL, approvalId));
@@ -2628,7 +2666,7 @@ public class InvestorService {
 
 		try {
 			String investorCode = pendingApproval.getPendingData().getQueryValue();
-			MarginTransactionDTO marginTransDto = new Gson()
+			MarginTransactionDTO marginTransDto = Utility.getGson()
 					.fromJson(pendingApproval.getPendingData().getPendingValue(), MarginTransactionDTO.class);
 
 			// get redis user info
@@ -2639,7 +2677,7 @@ public class InvestorService {
 					ActivityLogService.ACTIVITY_APPROVAL_CREATE_INVESTOR_WITHDRAWAL_MONEY_DESC, investorCode,
 					pendingApproval.getId());
 
-			if (Utility.isCQGSyncOn()) {
+			if (Utility.isCQGSyncOn() && Utility.isCQGSyncBalanceOn()) {
 				updateCQGBalance(investorCode, -marginTransDto.getAmount(), refId);
 			}
 
@@ -2698,7 +2736,7 @@ public class InvestorService {
 			String memberCode = marginTransDto.getMemberCode();
 			Member member = memberRepo.findByCode(memberCode);
 
-			if ("N".equals(member.getRiskParameters().getMarginWithdrawalLock())) {
+			if (Utility.isNull(member.getRiskParameters()) || (Utility.isNotNull(member.getRiskParameters()) && "N".equals(member.getRiskParameters().getMarginWithdrawalLock()))) {
 				// check if investor is activated
 				InvestorDTO investorDto = getInvestorInfo(marginTransDto.getInvestorCode(), refId);
 				if (Utility.isNotNull(investorDto.getCqgInfo())) {
@@ -2734,15 +2772,15 @@ public class InvestorService {
 		}
 	}
 
-	private long getInvestorWithdrawalAmount(String investorCode, long refId) {
+	private double getInvestorWithdrawalAmount(String investorCode, long refId) {
 		String methodName = "getInvestorWithdrawalAmount";
-		long withdrawalAmount = 0;
+		double withdrawalAmount = 0;
 		try {
 			LocalServiceConnection serviceCon = new LocalServiceConnection();
 			String[] res = serviceCon.sendGetRequest(serviceCon.getWithdrawalAmountServiceURL(investorCode),
 					ConfigLoader.getMainConfig().getString(Constant.LOCAL_SECRET_KEY));
 			if (res.length >= 2 && "200".equals(res[0])) {
-				AdminResponseObj response = new Gson().fromJson(res[1], AdminResponseObj.class);
+				AdminResponseObj response = Utility.getGson().fromJson(res[1], AdminResponseObj.class);
 				if (response != null && Constant.RESPONSE_OK.equalsIgnoreCase(response.getStatus())) {
 					withdrawalAmount = response.getData().getAmount();
 				}
@@ -2766,7 +2804,7 @@ public class InvestorService {
 			AMLogger.logMessage(className, methodName, refId,
 					"Exchange Rate Serivce Reseponse: " + res[0] + " => " + res[1]);
 			if (res.length >= 2 && "200".equals(res[0])) {
-				ExchangeRateReponseDTO response = new Gson().fromJson(res[1], ExchangeRateReponseDTO.class);
+				ExchangeRateReponseDTO response = Utility.getGson().fromJson(res[1], ExchangeRateReponseDTO.class);
 				if (response != null && Constant.RESPONSE_OK.equalsIgnoreCase(response.getStatus())) {
 					for (ExchangeRateDTO exRate : response.getData()) {
 						if (Constant.CURRENCY_USD.equals(exRate.getMonetaryBase())
@@ -2799,7 +2837,7 @@ public class InvestorService {
 			pendingData.setQueryField("investorCode");
 			pendingData.setQueryValue(marginTransDto.getInvestorCode());
 			pendingData.setAction(Constant.APPROVAL_ACTION_UPDATE);
-			pendingData.setPendingValue(new Gson().toJson(marginTransDto));
+			pendingData.setPendingValue(Utility.getGson().toJson(marginTransDto));
 
 			InvestorMarginTransApproval marginTransApproval = new InvestorMarginTransApproval();
 			marginTransApproval.setApiUrl(String.format(ApprovalConstant.APPROVAL_ACCOUNT_TRANS_URL, approvalId));
@@ -2818,6 +2856,10 @@ public class InvestorService {
 		return approvalId;
 	}
 
+	private String getCurrentSessionDate() {
+		SimpleDateFormat formater = new SimpleDateFormat("yyyy-MM-dd");
+		return formater.format(new Date());
+	}
 	public BasePagination<InvestorMarginTransaction> listMarginTransactions(HttpServletRequest request, long refId) {
 		String methodName = "listMarginTransactions";
 		BasePagination<InvestorMarginTransaction> pagination = null;
@@ -2827,16 +2869,47 @@ public class InvestorService {
 			// get redis user info
 			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
 
+			Document queryDoc = getQueryDocument(searchCriteria, userInfo);
+			boolean sessionDateQueryExist = false;
+			
+			ArrayList<Document> queryDocList = (ArrayList<Document>) queryDoc.get("$and");
+			
+			if (queryDocList != null && queryDocList.size() > 0) {
+				for (Document doc : queryDocList) {
+					if (Utility.isNotNull(doc) && doc.containsKey("sessionDate")) {
+						sessionDateQueryExist = true;
+						Document opeartor = (Document) doc.get("sessionDate");
+						if (opeartor.containsKey("$gte")) {
+							Long timestamp = opeartor.getLong("$gte");
+							doc.remove("sessionDate");
+							doc.append("sessionDate", new Document("$gte", Utility.convertSessionDateFromLong(timestamp)));
+						}
+						if (opeartor.containsKey("$lte")) {
+							Long timestamp = opeartor.getLong("$lte");
+							doc.remove("sessionDate");
+							doc.append("sessionDate", new Document("$lte", Utility.convertSessionDateFromLong(timestamp)));
+						}
+					}
+				}
+			}
+			
+			
+			if (!sessionDateQueryExist) {
+				queryDoc.append("sessionDate", getCurrentSessionDate());
+			}
+			
+			Document sortDoc = new Document("approvalDate", -1);
+			
 			List<? extends Bson> pipeline = Arrays
-					.asList(new Document().append("$match", getQueryDocument(searchCriteria, userInfo)),
-							new Document().append("$sort", searchCriteria.getSort()),
+					.asList(new Document().append("$match", queryDoc),
+							new Document().append("$sort", sortDoc),
 							new Document().append("$project", new Document()
 									.append("_id", new Document().append("$toString", "$_id")).append("memberCode", 1.0)
 									.append("memberName", 1.0).append("brokerCode", 1.0).append("brokerName", 1.0)
 									.append("collaboratorCode", 1.0).append("collaboratorName", 1.0)
 									.append("investorCode", 1.0).append("investorName", 1.0)
 									.append("transactionType", 1.0).append("amount", 1.0).append("currency", 1.0)
-									.append("approvalUser", 1.0).append("approvalDate", 1.0).append("note", 1.0)),
+									.append("approvalUser", 1.0).append("approvalDate", 1.0).append("createdDate", 1.0).append("note", 1.0).append("sessionDate", 1.0)),
 							new Document().append("$facet", new Document()
 									.append("stage1", Arrays.asList(new Document().append("$count", "total")))
 									.append("stage2",
@@ -2866,9 +2939,39 @@ public class InvestorService {
 			// get redis user info
 			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
 
+			Document queryDoc = getQueryDocument(searchCriteria, userInfo);
+			boolean sessionDateQueryExist = false;
+			
+			ArrayList<Document> queryDocList = (ArrayList<Document>) queryDoc.get("$and");
+			
+			if (queryDocList != null && queryDocList.size() > 0) {
+				for (Document doc : queryDocList) {
+					if (Utility.isNotNull(doc) && doc.containsKey("sessionDate")) {
+						sessionDateQueryExist = true;
+						Document opeartor = (Document) doc.get("sessionDate");
+						if (opeartor.containsKey("$gte")) {
+							Long timestamp = opeartor.getLong("$gte");
+							doc.remove("sessionDate");
+							doc.append("sessionDate", new Document("$gte", Utility.convertSessionDateFromLong(timestamp)));
+						}
+						if (opeartor.containsKey("$lte")) {
+							Long timestamp = opeartor.getLong("$lte");
+							doc.remove("sessionDate");
+							doc.append("sessionDate", new Document("$lte", Utility.convertSessionDateFromLong(timestamp)));
+						}
+					}
+				}
+			}
+			
+			if (!sessionDateQueryExist) {
+				queryDoc.append("sessionDate", getCurrentSessionDate());
+			}
+			
+			Document sortDoc = new Document("approvalDate", -1);
+			
 			List<? extends Bson> pipeline = Arrays.asList(
-					new Document().append("$match", getQueryDocument(searchCriteria, userInfo)),
-					new Document().append("$sort", searchCriteria.getSort()),
+					new Document().append("$match", queryDoc),
+					new Document().append("$sort", sortDoc),
 					new Document().append("$project",
 							new Document().append("_id", new Document().append("$toString", "$_id"))
 									.append("memberCode", 1.0).append("memberName", 1.0).append("brokerCode", 1.0)
@@ -2879,8 +2982,9 @@ public class InvestorService {
 									.append("approvalDate",
 											new Document().append("$dateToString",
 													new Document().append("format", "%d/%m/%Y %H:%M:%S").append("date",
-															new Document().append("$toDate", "$createdDate"))))
-									.append("note", 1.0)));
+															new Document().append("$toDate", "$approvalDate"))))
+									.append("note", 1.0)
+									.append("sessionDate", 1.0)));
 
 			MongoDatabase database = MongoDBConnection.getMongoDatabase();
 			MongoCollection<Document> collection = database.getCollection("investor_margin_trans");
@@ -2902,7 +3006,7 @@ public class InvestorService {
 		String methodName = "refundDepositMargin";
 		try {
 			String investorCode = pendingApproval.getPendingData().getQueryValue();
-			MarginTransactionDTO marginTransDto = new Gson()
+			MarginTransactionDTO marginTransDto = Utility.getGson()
 					.fromJson(pendingApproval.getPendingData().getPendingValue(), MarginTransactionDTO.class);
 
 			// get redis user info
@@ -2913,7 +3017,7 @@ public class InvestorService {
 					ActivityLogService.ACTIVITY_APPROVAL_REFUND_INVESTOR_DEPOSIT_MONEY_DESC, investorCode,
 					pendingApproval.getId());
 
-			if (Utility.isCQGSyncOn()) {
+			if (Utility.isCQGSyncOn() && Utility.isCQGSyncBalanceOn()) {
 				// update cqg balance
 				InvestorDTO investorDto = getInvestorInfo(investorCode, refId);
 				double exchangeRate = getExchangeRate(refId);
@@ -2968,7 +3072,7 @@ public class InvestorService {
 		String approvalId = "";
 		try {
 			InvestorMarginTransApproval depositApproval = invMarginTransApprovalRepo.findById(depositApprovalId).get();
-			MarginTransactionDTO depositTransDto = new Gson()
+			MarginTransactionDTO depositTransDto = Utility.getGson()
 					.fromJson(depositApproval.getPendingData().getPendingValue(), MarginTransactionDTO.class);
 			MarginTransactionDTO refundTransDto = depositTransDto;
 			refundTransDto.setTransactionType(Constant.MARGIN_TRANS_TYPE_REFUND);
@@ -2983,7 +3087,7 @@ public class InvestorService {
 			pendingData.setQueryField("investorCode");
 			pendingData.setQueryValue(refundTransDto.getInvestorCode());
 			pendingData.setAction(Constant.APPROVAL_ACTION_CREATE);
-			pendingData.setPendingValue(new Gson().toJson(refundTransDto));
+			pendingData.setPendingValue(Utility.getGson().toJson(refundTransDto));
 
 			InvestorMarginTransApproval marginTransApproval = new InvestorMarginTransApproval();
 			marginTransApproval.setApiUrl(String.format(ApprovalConstant.APPROVAL_ACCOUNT_TRANS_URL, approvalId));

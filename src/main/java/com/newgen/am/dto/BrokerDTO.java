@@ -15,6 +15,11 @@ import com.newgen.am.model.RoleFunction;
 import com.newgen.am.model.UserRole;
 import com.newgen.am.validation.FormatGroup;
 import com.newgen.am.validation.LengthGroup;
+import com.newgen.am.validation.UniqueBrokerCode;
+import com.newgen.am.validation.UniqueGroup;
+import com.newgen.am.validation.UniqueInvestorCode;
+import com.newgen.am.validation.ValidBrokerCode;
+import com.newgen.am.validation.ValidInvestorCode;
 import com.newgen.am.validation.ValidNumber;
 
 import lombok.Data;
@@ -30,6 +35,9 @@ public class BrokerDTO implements Serializable {
 	@NotEmpty(message = "Required.")
     @Size(min = 1, max = 200, message = "Invalid format.", groups = LengthGroup.class)
     private String memberName;
+	@NotEmpty(message = "Required.")
+    @ValidBrokerCode(groups = FormatGroup.class)
+    @UniqueBrokerCode(groups = UniqueGroup.class)
     private String code;
     @NotEmpty(message = "Required.")
     @Size(min = 1, max = 200, message = "Invalid format.", groups = LengthGroup.class)

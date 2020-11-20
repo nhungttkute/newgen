@@ -52,7 +52,7 @@ public class LoginInvestorUserController {
         String methodName = "login";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [POST]/users/login");
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(userDto));
+        AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(userDto));
         
         LoginInvestorUserOutputDTO loginUserDto = loginInvUserService.signin(request, userDto.getUsername(), userDto.getPassword(), refId);
         
@@ -65,7 +65,7 @@ public class LoginInvestorUserController {
         if (logResponse != null && logResponse.getData() != null) {
         	logResponse.getData().setLayout("");
         }
-        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(logResponse));
+        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(logResponse));
         return response;
     }
     
@@ -83,7 +83,7 @@ public class LoginInvestorUserController {
         response.setData(new DataObj());
         response.getData().setAccessToken(accessToken);
         
-        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
         return response;
     }
 
@@ -99,7 +99,7 @@ public class LoginInvestorUserController {
         ResponseObj response = new ResponseObj();
         response.setStatus(Constant.RESPONSE_OK);
         
-        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
         return response;
     }
 
@@ -108,7 +108,7 @@ public class LoginInvestorUserController {
         String methodName = "verifyPin";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [POST]/users/verifyPin/" + userId);
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(user));
+        AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(user));
         
         ResponseObj response = new ResponseObj();
         if (loginInvUserService.verifyPin(userId, user.getPin(), refId)) {
@@ -118,7 +118,7 @@ public class LoginInvestorUserController {
             response.setErrMsg("Cannot verify Pin.");
         }
         
-        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
         return response;
     }
 
@@ -127,7 +127,7 @@ public class LoginInvestorUserController {
         String methodName = "saveWatchList";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, "REQUEST_API: " + String.format("[POST]/users/%s/watchlist", userId));
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(input));
+        AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(input));
         
         ResponseObj response = new ResponseObj();
         try {
@@ -147,7 +147,7 @@ public class LoginInvestorUserController {
             throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
         }
         
-        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
         return response;
     }
 
@@ -156,7 +156,7 @@ public class LoginInvestorUserController {
         String methodName = "saveLayout";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, "REQUEST_API: " + String.format("[POST]/users/%s/layout", userId));
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(input));
+        AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(input));
         
         ResponseObj response = new ResponseObj();
         try {
@@ -190,7 +190,7 @@ public class LoginInvestorUserController {
             throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
         }
         
-        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
         return response;
     }
 
@@ -199,14 +199,14 @@ public class LoginInvestorUserController {
         String methodName = "changePassword";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, "REQUEST_API: " + String.format("[POST]/users/%s/password", userId));
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(input));
+        AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(input));
         
         loginInvUserService.changePassword(request, userId, input.getOldPassword(), input.getNewPassword(), refId);
         
         ResponseObj response = new ResponseObj();
         response.setStatus(Constant.RESPONSE_OK);
 
-        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
         return response;
     }
 
@@ -230,7 +230,7 @@ public class LoginInvestorUserController {
             response.setErrMsg(ErrorMessage.USER_DOES_NOT_EXIST);
         }
         
-        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
         return response;
     }
 
@@ -257,7 +257,7 @@ public class LoginInvestorUserController {
             response.setErrMsg(ErrorMessage.RESULT_NOT_FOUND);
         }
         
-        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
         return response;
     }
 

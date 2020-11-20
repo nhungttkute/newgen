@@ -29,7 +29,7 @@ import lombok.Data;
 public class Individual implements Serializable {
 	private static final long serialVersionUID = 1L;
 	@NotEmpty(message = "Required.")
-	@Size(min = 1, max = 100, message = "Invalid format.", groups = LengthGroup.class)
+	@Size(min = 1, max = 200, message = "Invalid format.", groups = LengthGroup.class)
     private String fullName;
 	@NotEmpty(message = "Required.")
 	@ValidDate(groups = FormatGroup.class)

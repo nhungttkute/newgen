@@ -167,7 +167,7 @@ public class CollaboratorService {
             );
 			MongoDatabase database = MongoDBConnection.getMongoDatabase();
 			MongoCollection<Document> collection = database.getCollection("collaborators");
-			Document resultDoc = collection.aggregate(pipeline).first();
+			Document resultDoc = collection.aggregate(pipeline).allowDiskUse(true).first();
 			pagination = mongoTemplate.getConverter().read(BasePagination.class, resultDoc);
 		} catch (CustomException e) {
 			throw e;
@@ -214,7 +214,7 @@ public class CollaboratorService {
                             ));
 			MongoDatabase database = MongoDBConnection.getMongoDatabase();
 			MongoCollection<Document> collection = database.getCollection("collaborators");
-			MongoCursor<Document> cur = collection.aggregate(pipeline).iterator();
+			MongoCursor<Document> cur = collection.aggregate(pipeline).allowDiskUse(true).iterator();
 			while (cur.hasNext()) {
 				CollaboratorCSV brokerCsv = mongoTemplate.getConverter().read(CollaboratorCSV.class, cur.next());
 				if (brokerCsv != null)
@@ -232,7 +232,7 @@ public class CollaboratorService {
 	public void createCollaborator(HttpServletRequest request, PendingApproval pendingApproval, long refId) {
 		String methodName = "createCollaborator";
 		try {
-			CollaboratorDTO collaboratorDto = new Gson().fromJson(pendingApproval.getPendingData().getPendingValue(), CollaboratorDTO.class);
+			CollaboratorDTO collaboratorDto = Utility.getGson().fromJson(pendingApproval.getPendingData().getPendingValue(), CollaboratorDTO.class);
 			
 			// generate collaborator code
 			String collaboratorCode = collaboratorDto.getMemberCode() + Utility.lpad3With0(dbSeqService.generateSequence(Constant.COLLABORATOR_SEQ + collaboratorDto.getMemberCode(), refId));
@@ -419,7 +419,7 @@ public class CollaboratorService {
 							ConfigLoader.getMainConfig().getString(FileUtility.CREATE_NEW_USER_EMAIL_FILE), refId),
 					username, password, pin);
 			email.setBodyStr(emailBody);
-			String emailJson = new Gson().toJson(email);
+			String emailJson = Utility.getGson().toJson(email);
 			AMLogger.logMessage(className, methodName, refId, "Email: " + emailJson);
 			serviceCon.sendPostRequest(serviceCon.getEmailNotificationServiceURL(), emailJson, null);
 		} catch (Exception e) {
@@ -440,7 +440,7 @@ public class CollaboratorService {
 			pendingData.setServiceFunctionName(ApprovalConstant.COLLABORATOR_CREATE);
 			pendingData.setCollectionName("collaborators");
 			pendingData.setAction(Constant.APPROVAL_ACTION_CREATE);
-			pendingData.setPendingValue(new Gson().toJson(collaboratorDto));
+			pendingData.setPendingValue(Utility.getGson().toJson(collaboratorDto));
 
 			PendingApproval pendingApproval = new PendingApproval();
 			pendingApproval.setApiUrl(String.format(ApprovalConstant.APPROVAL_PENDING_URL, approvalId));
@@ -463,7 +463,7 @@ public class CollaboratorService {
 		String methodName = "updateCollaborator";
 		try {
 			String collaboratorCode = pendingApproval.getPendingData().getQueryValue();
-			UpdateCollaboratorDTO collaboratorDto = new Gson().fromJson(pendingApproval.getPendingData().getPendingValue(), UpdateCollaboratorDTO.class);
+			UpdateCollaboratorDTO collaboratorDto = Utility.getGson().fromJson(pendingApproval.getPendingData().getPendingValue(), UpdateCollaboratorDTO.class);
 			
 			// get redis user info
 			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
@@ -632,8 +632,8 @@ public class CollaboratorService {
 			pendingData.setQueryField("code");
 			pendingData.setQueryValue(collaboratorCode);
 			pendingData.setAction(Constant.APPROVAL_ACTION_UPDATE);
-			pendingData.setOldValue(new Gson().toJson(collaboratorDto.getOldData()));
-			pendingData.setPendingValue(new Gson().toJson(collaboratorDto.getPendingData()));
+			pendingData.setOldValue(Utility.getGson().toJson(collaboratorDto.getOldData()));
+			pendingData.setPendingValue(Utility.getGson().toJson(collaboratorDto.getPendingData()));
 
 			PendingApproval pendingApproval = new PendingApproval();
 			pendingApproval.setApiUrl(String.format(ApprovalConstant.APPROVAL_PENDING_URL, approvalId));
@@ -717,7 +717,7 @@ public class CollaboratorService {
 		String methodName = "createCollaboratorFunctions";
 		try {
 			String collaboratorCode = pendingApproval.getPendingData().getQueryValue();
-			FunctionsDTO collaboratorDto = new Gson().fromJson(pendingApproval.getPendingData().getPendingValue(), FunctionsDTO.class);
+			FunctionsDTO collaboratorDto = Utility.getGson().fromJson(pendingApproval.getPendingData().getPendingValue(), FunctionsDTO.class);
 			
 			// get redis user info
 			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
@@ -797,8 +797,8 @@ public class CollaboratorService {
 			pendingData.setAction(Constant.APPROVAL_ACTION_CREATE);
 			pendingData.setQueryField("code");
 			pendingData.setQueryValue(collaboratorCode);
-			pendingData.setOldValue(new Gson().toJson(collaboratorDto.getOldData()));
-			pendingData.setPendingValue(new Gson().toJson(collaboratorDto.getPendingData()));
+			pendingData.setOldValue(Utility.getGson().toJson(collaboratorDto.getOldData()));
+			pendingData.setPendingValue(Utility.getGson().toJson(collaboratorDto.getPendingData()));
 
 			PendingApproval pendingApproval = new PendingApproval();
 			pendingApproval.setApiUrl(String.format(ApprovalConstant.APPROVAL_PENDING_URL, approvalId));

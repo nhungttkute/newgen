@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.google.gson.Gson;
 import com.newgen.am.common.AMLogger;
 import com.newgen.am.common.Constant;
+import com.newgen.am.common.Utility;
 import com.newgen.am.dto.AdminResponseObj;
 import com.newgen.am.dto.InterestRateDTO;
 import com.newgen.am.service.InvestorActivationService;
@@ -48,7 +49,7 @@ public class ApprovalController {
         AdminResponseObj response = new AdminResponseObj();
         response.setStatus(Constant.RESPONSE_OK);
         
-        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
         return response;
     }
     
@@ -63,7 +64,7 @@ public class ApprovalController {
         AdminResponseObj response = new AdminResponseObj();
         response.setStatus(Constant.RESPONSE_OK);
         
-        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
         return response;
     }
     
@@ -78,7 +79,7 @@ public class ApprovalController {
         AdminResponseObj response = new AdminResponseObj();
         response.setStatus(Constant.RESPONSE_OK);
         
-        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
         return response;
     }
 }

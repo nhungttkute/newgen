@@ -77,7 +77,7 @@ public class SystemRoleController {
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
         }
         
-        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
         return response;
     }
     
@@ -122,14 +122,14 @@ public class SystemRoleController {
         String methodName = "createSystemRole";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [POST]/admin/systemRoles");
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(sysRoleDto));
+        AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(sysRoleDto));
         
         sysRoleService.createSystemRolePA(request, sysRoleDto, refId);
         
         AdminResponseObj response = new AdminResponseObj();
         response.setStatus(Constant.RESPONSE_OK);
         
-        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
         return response;
     }
     
@@ -139,14 +139,14 @@ public class SystemRoleController {
         String methodName = "updateSystemRole";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [PUT]/admin/systemRoles/" + sysRoleId);
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(sysRoleDto));
+        AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(sysRoleDto));
         
         sysRoleService.updateSystemRolePA(request, sysRoleId, sysRoleDto, refId);
         
         AdminResponseObj response = new AdminResponseObj();
         response.setStatus(Constant.RESPONSE_OK);
         
-        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
         return response;
     }
     
@@ -156,14 +156,14 @@ public class SystemRoleController {
         String methodName = "createSystemRoleFunctions";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, "REQUEST_API: " + String.format("[POST]/admin/systemRoles/%s/functions", sysRoleId));
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(sysRoleDto));
+        AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(sysRoleDto));
         
         sysRoleService.createSystemRoleFunctionsPA(request, sysRoleId, sysRoleDto, refId);
         
         AdminResponseObj response = new AdminResponseObj();
         response.setStatus(Constant.RESPONSE_OK);
         
-        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
         return response;
     }
 }

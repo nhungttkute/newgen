@@ -8,10 +8,13 @@ package com.newgen.am.common;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collections;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
@@ -38,6 +41,7 @@ import com.google.gson.Gson;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.newgen.am.dto.EmailDTO;
+import com.newgen.am.dto.InvestorDTO;
 import com.newgen.am.dto.NotifyServiceDTO;
 import com.newgen.am.dto.Pagination;
 import com.newgen.am.dto.UserInfoDTO;
@@ -50,6 +54,11 @@ import com.newgen.am.exception.CustomException;
 public class Utility {
     private static String className = "Utility";
 
+    private static Gson gson = new Gson();
+    
+    public static Gson getGson() {
+    	return gson;
+    }
     public static String lpad3With0(long id) {
         return String.format("%03d", id);
     }
@@ -240,7 +249,7 @@ public class Utility {
         redisUserInfo.setLanguage(null);
         redisUserInfo.setFontSize(0);
         String key = Utility.genRedisKey(accessToken);
-        String value = new Gson().toJson(redisUserInfo);
+        String value = gson.toJson(redisUserInfo);
         template.opsForValue().set(key, value, Duration.ofDays(1));
     }
     
@@ -250,28 +259,41 @@ public class Utility {
             String key = genRedisKey(accessToken);
             AMLogger.logMessage(className, methodName, refId, "REDIS_GET: key=" + key);
             String value = (String) template.opsForValue().get(key);
-            return new Gson().fromJson(value, UserInfoDTO.class);
+            return gson.fromJson(value, UserInfoDTO.class);
         } catch (Exception e) {
             AMLogger.logError(className, methodName, refId, e);
             throw new CustomException("Cannot get user info from redis", HttpStatus.UNPROCESSABLE_ENTITY);
         }
     }
     
-    public static void deleteOldRedisUserInfo(RedisTemplate template, String accessToken, long refId) {
-		String key = Utility.genRedisKey(accessToken);
-		AMLogger.logMessage(className, "deleteOldRedisUserInfo", refId, "REDIS_DELETE: key=" + key);
-		template.delete(key);
+    public static void deleteOldRedisUserInfo(RedisTemplate<String, String> template, String accessToken, long refId) {
+    	try {
+    		String key = Utility.genRedisKey(accessToken);
+    		AMLogger.logMessage(className, "deleteOldRedisUserInfo", refId, "REDIS_DELETE: key=" + key);
+    		template.delete(key);
+    	} catch (Exception e) {
+    		throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+    	}
+		
 	}
     
-    public static <T> void setRedisInfo(RedisTemplate template, String key, T object, long refId) {
-    	String value = new Gson().toJson(object);
-    	AMLogger.logMessage(className, "setRedisInfo", refId, "REDIS_SET: key=" + key + ", value=" + value);
-        template.opsForValue().set(key, value);
+    public static <T> void setRedisInfo(RedisTemplate<String, String> template, String key, T object, long refId) {
+    	try {
+    		String value = gson.toJson(object);
+        	AMLogger.logMessage(className, "setRedisInfo", refId, "REDIS_SET: key=" + key + ", value=" + value);
+            template.opsForValue().set(key, value);
+    	} catch (Exception e) {
+    		throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+    	}
     }
     
-    public static void deleteRedisInfo(RedisTemplate template, String key, long refId) {
-		AMLogger.logMessage(className, "deleteRedisInfo", refId, "REDIS_DELETE: key=" + key);
-		template.delete(key);
+    public static void deleteRedisInfo(RedisTemplate<String, String> template, String key, long refId) {
+    	try {
+    		AMLogger.logMessage(className, "deleteRedisInfo", refId, "REDIS_DELETE: key=" + key);
+    		template.delete(key);
+    	} catch (Exception e) {
+    		throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+    	}
 	}
     
     public static double roundAvoid(double value, int places) {
@@ -303,6 +325,19 @@ public class Utility {
 		long investorCount = investorCollection.countDocuments(investorQuery);
 		
 		return (investorCount > 0) ? true : false;
+    }
+    
+    public static boolean checkExistedBrokerCode(String brokerCode) {
+    	// check in member code exists
+    	MongoDatabase database = MongoDBConnection.getMongoDatabase();
+		MongoCollection<Document> collection = database.getCollection("brokers");
+		
+		Document query = new Document();
+		query.append("code", brokerCode);
+		
+		long count = collection.countDocuments(query);
+		
+		return (count > 0) ? true : false;
     }
     
     public static boolean checkExistedTaxCode(String taxCode) {
@@ -465,7 +500,7 @@ public class Utility {
 			NotifyServiceDTO notifyDto = new NotifyServiceDTO();
 			notifyDto.setUserID(usernameList);
 			LocalServiceConnection serviceCon = new LocalServiceConnection();
-			serviceCon.sendPostRequest(serviceCon.getLogoutHandleServiceURL(), new Gson().toJson(notifyDto), null);
+			serviceCon.sendPostRequest(serviceCon.getLogoutHandleServiceURL(), gson.toJson(notifyDto), null);
 		} catch (Exception e) {
 			AMLogger.logError(className, methodName, refId, e);
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -499,7 +534,7 @@ public class Utility {
 							ConfigLoader.getMainConfig().getString(FileUtility.CHANGE_PASSWORD_EMAIL_FILE), refId),
 					username, password);
 			email.setBodyStr(emailBody);
-			String emailJson = new Gson().toJson(email);
+			String emailJson = gson.toJson(email);
 			AMLogger.logMessage(className, methodName, refId, "Email: " + emailJson);
 			serviceCon.sendPostRequest(serviceCon.getEmailNotificationServiceURL(), emailJson, null);
 		} catch (Exception e) {
@@ -523,7 +558,7 @@ public class Utility {
 							ConfigLoader.getMainConfig().getString(FileUtility.CHANGE_PIN_EMAIL_FILE), refId),
 					username, pin);
 			email.setBodyStr(emailBody);
-			String emailJson = new Gson().toJson(email);
+			String emailJson = gson.toJson(email);
 			AMLogger.logMessage(className, methodName, refId, "Email: " + emailJson);
 			serviceCon.sendPostRequest(serviceCon.getEmailNotificationServiceURL(), emailJson, null);
 		} catch (Exception e) {
@@ -532,8 +567,50 @@ public class Utility {
 		}
 	}
     
+    public static boolean isProdMode() {
+    	if("1".equals(ConfigLoader.getMainConfig().getString(Constant.PROD_FLAG))) return true;
+    	return false;
+    }
+    
     public static boolean isCQGSyncOn() {
     	if("1".equals(ConfigLoader.getMainConfig().getString(Constant.CQG_SYNC_FLAG))) return true;
     	return false;
+    }
+    
+    public static boolean isCQGSyncBalanceOn() {
+    	if("1".equals(ConfigLoader.getMainConfig().getString(Constant.CQG_SYNC_BALANCE_FLAG))) return true;
+    	return false;
+    }
+    
+    public static String getCQGAccountName(InvestorDTO investor) {
+    	String accountName = "";
+    	if (Utility.isProdMode()) {
+    		if (Utility.isNotNull(investor)) {
+        		if (Utility.isNotNull(investor.getCompany()) && Utility.isNotNull(investor.getCompany().getDelegate()) && Utility.isNotNull(investor.getCompany().getDelegate().getFullName())) {
+        			if(investor.getCompany().getDelegate().getFullName().length() > 64) {
+        				accountName = investor.getCompany().getDelegate().getFullName().substring(0, 64);
+            		} else {
+            			accountName = investor.getCompany().getDelegate().getFullName();
+            		}
+        		} else if (Utility.isNotNull(investor.getIndividual()) && Utility.isNotNull(investor.getIndividual().getFullName())) {
+        			if(investor.getIndividual().getFullName().length() > 64) {
+        				accountName = investor.getIndividual().getFullName().substring(0, 64);
+            		} else {
+            			accountName = investor.getIndividual().getFullName();
+            		}
+        		}
+        			
+        	}
+    	} else {
+    		accountName = Constant.CQG_ACCOUNT_NAME_PREFIX + investor.getInvestorCode();
+    	}
+    	
+    	return accountName;
+    }
+    
+    public static String convertSessionDateFromLong(long timestamp) {
+    	Date date = new Date(timestamp);
+    	SimpleDateFormat formater = new SimpleDateFormat("yyyy-MM-dd");
+    	return formater.format(date);
     }
 }

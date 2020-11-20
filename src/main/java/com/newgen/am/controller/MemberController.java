@@ -88,7 +88,7 @@ public class MemberController {
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 		
-		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
 		return response;
 	}
 
@@ -136,14 +136,14 @@ public class MemberController {
 		logRequest.getCompany().getDelegate().setScannedFrontIdCard(null);
 		logRequest.getCompany().getDelegate().setScannedSignature(null);
 		
-		AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(logRequest));
+		AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(logRequest));
 
 		memberService.createMemberPA(request, memberDto, refId);
 
 		AdminResponseObj response = new AdminResponseObj();
 		response.setStatus(Constant.RESPONSE_OK);
 
-		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
 		return response;
 	}
 	
@@ -163,14 +163,14 @@ public class MemberController {
 			logRequest.getPendingData().getCompany().getDelegate().setScannedSignature(null);
 		}
 		
-		AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(logRequest));
+		AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(logRequest));
 
 		memberService.updateMemberPA(request, memberCode, memberDto, refId);
 
 		AdminResponseObj response = new AdminResponseObj();
 		response.setStatus(Constant.RESPONSE_OK);
 
-		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
 		return response;
 	}
 
@@ -199,7 +199,7 @@ public class MemberController {
 			logResponse.getData().getMember().getCompany().getDelegate().setScannedSignature("");
 		}
 		
-		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(logResponse));
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(logResponse));
 		return response;
 	}
 	
@@ -221,7 +221,7 @@ public class MemberController {
 			response.setErrMsg(ErrorMessage.RESULT_NOT_FOUND);
 		}
 
-		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
 		return response;
 	}
 	
@@ -231,14 +231,14 @@ public class MemberController {
         String methodName = "createMemberFunctions";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, "REQUEST_API: " + String.format("[POST]/admin/members/%s/functions", memberCode));
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(memberDto));
+        AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(memberDto));
         
         memberService.createMemberFunctionsPA(request, memberCode, memberDto, refId);
         
         AdminResponseObj response = new AdminResponseObj();
         response.setStatus(Constant.RESPONSE_OK);
         
-        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
         return response;
     }
 	
@@ -248,14 +248,14 @@ public class MemberController {
         String methodName = "createMemberOrderLimit";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, "REQUEST_API: " + String.format("[POST]/admin/members/%s/orderLimit", memberCode));
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(memberDto));
+        AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(memberDto));
         
         memberService.createOrderLimitPA(request, memberCode, memberDto, refId);
         
         AdminResponseObj response = new AdminResponseObj();
         response.setStatus(Constant.RESPONSE_OK);
         
-        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
         return response;
     }
 	
@@ -265,14 +265,14 @@ public class MemberController {
         String methodName = "createMemberDefaultPositionLimit";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, "REQUEST_API: " + String.format("[POST]/admin/members/%s/defaultPositionLimit", memberCode));
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(memberDto));
+        AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(memberDto));
         
         memberService.createDefaultPositionLimitPA(request, memberCode, memberDto, refId);
         
         AdminResponseObj response = new AdminResponseObj();
         response.setStatus(Constant.RESPONSE_OK);
         
-        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
         return response;
     }
 	
@@ -282,14 +282,14 @@ public class MemberController {
         String methodName = "createMemberCommoditiesSetting";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, "REQUEST_API: " + String.format("[POST]/admin/members/%s/commoditiesSetting", memberCode));
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(memberDto));
+        AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(memberDto));
         
         memberService.createMemberCommoditiesPA(request, memberCode, memberDto, refId);
         
         AdminResponseObj response = new AdminResponseObj();
         response.setStatus(Constant.RESPONSE_OK);
         
-        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
         return response;
     }
 	
@@ -299,7 +299,7 @@ public class MemberController {
         String methodName = "setMemberNewPositionOrderLock";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, "REQUEST_API: " + String.format("[PUT]/admin/members/%s/newPositionOrderLock", memberCode));
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(memberDto));
+        AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(memberDto));
         
         if (Utility.isNull(memberDto) || Utility.isNull(memberDto.getPendingData()) || Utility.isNull(memberDto.getPendingData().getRiskParameters()) || Utility.isNull(memberDto.getPendingData().getRiskParameters().getNewPositionOrderLock())) {
         	throw new CustomException(ErrorMessage.INVALID_REQUEST, HttpStatus.BAD_REQUEST);
@@ -309,7 +309,7 @@ public class MemberController {
         AdminResponseObj response = new AdminResponseObj();
         response.setStatus(Constant.RESPONSE_OK);
         
-        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
         return response;
     }
 	
@@ -319,7 +319,7 @@ public class MemberController {
         String methodName = "setMemberOrderLock";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, "REQUEST_API: " + String.format("[PUT]/admin/members/%s/orderLock", memberCode));
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(memberDto));
+        AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(memberDto));
         
         if (Utility.isNull(memberDto) || Utility.isNull(memberDto.getPendingData()) || Utility.isNull(memberDto.getPendingData().getRiskParameters()) || Utility.isNull(memberDto.getPendingData().getRiskParameters().getOrderLock())) {
         	throw new CustomException(ErrorMessage.INVALID_REQUEST, HttpStatus.BAD_REQUEST);
@@ -329,7 +329,7 @@ public class MemberController {
         AdminResponseObj response = new AdminResponseObj();
         response.setStatus(Constant.RESPONSE_OK);
         
-        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
         return response;
     }
 	
@@ -339,7 +339,7 @@ public class MemberController {
         String methodName = "setMemberMarginWithdrawalLock";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, "REQUEST_API: " + String.format("[PUT]/admin/members/%s/marginWithdrawalLock", memberCode));
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(memberDto));
+        AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(memberDto));
         
         if (Utility.isNull(memberDto) || Utility.isNull(memberDto.getPendingData()) || Utility.isNull(memberDto.getPendingData().getRiskParameters()) ||  Utility.isNull(memberDto.getPendingData().getRiskParameters().getMarginWithdrawalLock())) {
         	throw new CustomException(ErrorMessage.INVALID_REQUEST, HttpStatus.BAD_REQUEST);
@@ -349,7 +349,7 @@ public class MemberController {
         AdminResponseObj response = new AdminResponseObj();
         response.setStatus(Constant.RESPONSE_OK);
         
-        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
         return response;
     }
 	
@@ -359,14 +359,14 @@ public class MemberController {
         String methodName = "setMarginMultiplierBulk";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, "REQUEST_API: " + String.format("[PUT]/admin/members/%s/marginMultiplierBulk", memberCode));
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(memberDto));
+        AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(memberDto));
         
         memberService.setMarginMultiplierBulkPA(request, memberCode, memberDto, refId);
         
         AdminResponseObj response = new AdminResponseObj();
         response.setStatus(Constant.RESPONSE_OK);
         
-        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
         return response;
     }
 	
@@ -376,14 +376,14 @@ public class MemberController {
         String methodName = "setMarginRatioBulk";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, "REQUEST_API: " + String.format("[PUT]/admin/members/%s/marginRatioBulk", memberCode));
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(memberDto));
+        AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(memberDto));
         
         memberService.setMarginRatioAlertBulkPA(request, memberCode, memberDto, refId);
         
         AdminResponseObj response = new AdminResponseObj();
         response.setStatus(Constant.RESPONSE_OK);
         
-        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
         return response;
     }
 	
@@ -393,14 +393,14 @@ public class MemberController {
         String methodName = "setGeneralFeeBulk";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, "REQUEST_API: " + String.format("[POST]/admin/members/%s/setGeneralFeeBulk", memberCode));
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(memberDto));
+        AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(memberDto));
         
         memberService.setGeneralFeesBulkPA(request, memberCode, memberDto, refId);
         
         AdminResponseObj response = new AdminResponseObj();
         response.setStatus(Constant.RESPONSE_OK);
         
-        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
         return response;
     }
 	
@@ -410,14 +410,14 @@ public class MemberController {
         String methodName = "setGeneralFeeBulk";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, "REQUEST_API: " + String.format("[PUT]/admin/members/%s/updateGeneralFeeBulk", memberCode));
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(memberDto));
+        AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(memberDto));
         
         memberService.updateGeneralFeesBulkPA(request, memberCode, memberDto, refId);
         
         AdminResponseObj response = new AdminResponseObj();
         response.setStatus(Constant.RESPONSE_OK);
         
-        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
         return response;
     }
 	
@@ -427,14 +427,14 @@ public class MemberController {
         String methodName = "setBrokerCommoditiesFeeBulk";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, "REQUEST_API: " + String.format("[PUT]/admin/members/%s/brokerCommoditiesFeeBulk", memberCode));
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(memberDto));
+        AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(memberDto));
 
         memberService.setBrokerCommoditiesFeeBulkPA(request, memberCode, memberDto, refId);
         
         AdminResponseObj response = new AdminResponseObj();
         response.setStatus(Constant.RESPONSE_OK);
         
-        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
         return response;
     }
 	
@@ -444,14 +444,14 @@ public class MemberController {
         String methodName = "setInvestorCommoditiesFeeBulk";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, "REQUEST_API: " + String.format("[PUT]/admin/members/%s/investorCommoditiesFeeBulk", memberCode));
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(memberDto));
+        AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(memberDto));
 
         memberService.setInvestorCommoditiesFeeBulkPA(request, memberCode, memberDto, refId);
         
         AdminResponseObj response = new AdminResponseObj();
         response.setStatus(Constant.RESPONSE_OK);
         
-        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
         return response;
     }
 	
@@ -480,7 +480,7 @@ public class MemberController {
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 		
-		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
 		return response;
 	}
 	
@@ -522,14 +522,14 @@ public class MemberController {
 		String methodName = "createMemberUser";
 		long refId = System.currentTimeMillis();
 		AMLogger.logMessage(className, methodName, refId, "REQUEST_API: " + String.format("[POST]/admin/members/%s/users", memberCode));
-		AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(userDto));
+		AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(userDto));
 
 		memberService.createMemberUserPA(request, memberCode, userDto, refId);
 
 		AdminResponseObj response = new AdminResponseObj();
 		response.setStatus(Constant.RESPONSE_OK);
 
-		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
 		return response;
 	}
 	
@@ -540,14 +540,14 @@ public class MemberController {
 		String methodName = "updateMemberUser";
 		long refId = System.currentTimeMillis();
 		AMLogger.logMessage(className, methodName, refId, "REQUEST_API: " + String.format("[PUT]/admin/members/%s/users/%s", memberCode, username));
-		AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(userDto));
+		AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(userDto));
 
 		memberService.updateMemberUserPA(request, memberCode, username, userDto, refId);
 
 		AdminResponseObj response = new AdminResponseObj();
 		response.setStatus(Constant.RESPONSE_OK);
 
-		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
 		return response;
 	}
 	
@@ -570,7 +570,7 @@ public class MemberController {
 			response.setErrMsg(ErrorMessage.RESULT_NOT_FOUND);
 		}
 
-		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
 		return response;
 	}
 
@@ -588,7 +588,7 @@ public class MemberController {
 		AdminResponseObj response = new AdminResponseObj();
 		response.setStatus(Constant.RESPONSE_OK);
 
-		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
 		return response;
 	}
 
@@ -606,7 +606,7 @@ public class MemberController {
 		AdminResponseObj response = new AdminResponseObj();
 		response.setStatus(Constant.RESPONSE_OK);
 
-		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
 		return response;
 	}
 	
@@ -630,7 +630,7 @@ public class MemberController {
             response.setErrMsg(ErrorMessage.RESULT_NOT_FOUND);
         }
 
-		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
 		return response;
 	}
 	
@@ -653,7 +653,7 @@ public class MemberController {
 			response.setErrMsg(ErrorMessage.RESULT_NOT_FOUND);
 		}
 
-		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
 		return response;
 	}
 	
@@ -670,7 +670,7 @@ public class MemberController {
         response.setData(new AdminDataObj());
         response.getData().setBrokerList(brokerList);
 
-		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
 		return response;
 	}
 	
@@ -687,7 +687,7 @@ public class MemberController {
         response.setData(new AdminDataObj());
         response.getData().setCollaboratorList(collaboratorList);
 
-		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
 		return response;
 	}
 	
@@ -697,14 +697,14 @@ public class MemberController {
         String methodName = "moveAllInvestors";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, "admin/members/moveAllInvestors");
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(groupDto));
+        AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(groupDto));
         
         memberService.moveAllInvestorsToNewMemberPA(request, groupDto, refId);
         
         AdminResponseObj response = new AdminResponseObj();
         response.setStatus(Constant.RESPONSE_OK);
         
-        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
         return response;
     }
 }

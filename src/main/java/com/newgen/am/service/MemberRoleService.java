@@ -174,7 +174,7 @@ public class MemberRoleService {
 		String methodName = "createMemberRole";
 		try {
 			String memberCode = pendingApproval.getPendingData().getQueryValue();
-			RoleDTO roleDto = new Gson().fromJson(pendingApproval.getPendingData().getPendingValue(), RoleDTO.class);
+			RoleDTO roleDto = Utility.getGson().fromJson(pendingApproval.getPendingData().getPendingValue(), RoleDTO.class);
 			
 			// get redis user info
 			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
@@ -241,7 +241,7 @@ public class MemberRoleService {
 			pendingData.setAction(Constant.APPROVAL_ACTION_CREATE);
 			pendingData.setQueryField("memberCode");
 			pendingData.setQueryValue(memberCode);
-			pendingData.setPendingValue(new Gson().toJson(roleDto));
+			pendingData.setPendingValue(Utility.getGson().toJson(roleDto));
 
 			PendingApproval pendingApproval = new PendingApproval();
 			pendingApproval.setApiUrl(String.format(ApprovalConstant.APPROVAL_PENDING_URL, approvalId));
@@ -265,7 +265,7 @@ public class MemberRoleService {
 		try {
 			String memberCode = pendingApproval.getPendingData().getQueryValue();
 			String roleId = pendingApproval.getPendingData().getQueryValue2();
-			UpdateRoleDTO roleDto = new Gson().fromJson(pendingApproval.getPendingData().getPendingValue(), UpdateRoleDTO.class);
+			UpdateRoleDTO roleDto = Utility.getGson().fromJson(pendingApproval.getPendingData().getPendingValue(), UpdateRoleDTO.class);
 			
 			// get redis user info
 			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
@@ -336,8 +336,8 @@ public class MemberRoleService {
 			pendingData.setQueryValue(memberCode);
 			pendingData.setQueryField2("_id");
 			pendingData.setQueryValue2(roleId);
-			pendingData.setOldValue(new Gson().toJson(roleDto.getOldData()));
-			pendingData.setPendingValue(new Gson().toJson(roleDto.getPendingData()));
+			pendingData.setOldValue(Utility.getGson().toJson(roleDto.getOldData()));
+			pendingData.setPendingValue(Utility.getGson().toJson(roleDto.getPendingData()));
 
 			PendingApproval pendingApproval = new PendingApproval();
 			pendingApproval.setApiUrl(String.format(ApprovalConstant.APPROVAL_PENDING_URL, approvalId));
@@ -361,7 +361,7 @@ public class MemberRoleService {
 		try {
 			String memberCode = pendingApproval.getPendingData().getQueryValue();
 			String roleId = pendingApproval.getPendingData().getQueryValue2();
-			FunctionsDTO functionsDto = new Gson().fromJson(pendingApproval.getPendingData().getPendingValue(), FunctionsDTO.class);
+			FunctionsDTO functionsDto = Utility.getGson().fromJson(pendingApproval.getPendingData().getPendingValue(), FunctionsDTO.class);
 			
 			// get redis user info
 			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
@@ -434,8 +434,8 @@ public class MemberRoleService {
 			pendingData.setQueryValue(memberCode);
 			pendingData.setQueryField2("_id");
 			pendingData.setQueryValue2(roleId);
-			pendingData.setOldValue(new Gson().toJson(roleDto.getOldData()));
-			pendingData.setPendingValue(new Gson().toJson(roleDto.getPendingData()));
+			pendingData.setOldValue(Utility.getGson().toJson(roleDto.getOldData()));
+			pendingData.setPendingValue(Utility.getGson().toJson(roleDto.getPendingData()));
 
 			PendingApproval pendingApproval = new PendingApproval();
 			pendingApproval.setApiUrl(String.format(ApprovalConstant.APPROVAL_PENDING_URL, approvalId));

@@ -92,7 +92,7 @@ public class AdminDataObj implements Serializable {
     private ExchangeSettingDTO exchangeSetting;
     
     // investor withdrawal amount
-    private long amount;
+    private double amount;
     
     // session date
     private String date;

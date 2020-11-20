@@ -81,7 +81,7 @@ public class InvestorActivationService {
             				} else {
             					if (Utility.isNotNull(customerId)) {
             						// create cqg account
-                    				CQGResponseObj accountRes = cqgService.createCQGAccount(investorCode, customerId, refId);
+                    				CQGResponseObj accountRes = cqgService.createCQGAccount(cqgInfo.getProfileId(), Utility.getCQGAccountName(investorDto), investorCode, customerId, refId);
                         			if (accountRes != null) {
                         				accountId = accountRes.getData().getAccountId();
                         			} else {

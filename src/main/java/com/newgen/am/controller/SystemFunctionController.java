@@ -8,14 +8,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.google.gson.Gson;
 import com.newgen.am.common.AMLogger;
 import com.newgen.am.common.Constant;
 import com.newgen.am.common.ErrorMessage;
+import com.newgen.am.common.Utility;
 import com.newgen.am.dto.AdminDataObj;
 import com.newgen.am.dto.AdminResponseObj;
 import com.newgen.am.dto.SystemFunctionDTO;
-import com.newgen.am.model.SystemFunction;
 import com.newgen.am.service.SystemFunctionService;
 
 @RestController
@@ -42,7 +41,7 @@ public class SystemFunctionController {
             response.setErrMsg(ErrorMessage.RESULT_NOT_FOUND);
         }
         
-        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
         return response;
     }
 }

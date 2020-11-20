@@ -5,6 +5,7 @@ import java.io.Serializable;
 import javax.validation.Valid;
 import javax.validation.constraints.Size;
 
+import com.newgen.am.model.CqgInfo;
 import com.newgen.am.validation.LengthGroup;
 import com.newgen.am.validation.ValidUpdateStringField;
 
@@ -28,4 +29,6 @@ public class UpdateInvestorDTO implements Serializable {
     private int orderLimit;
     private int defaultPositionLimit;
     private long defaultCommodityFee;
+    @Valid
+    private CqgInfo cqgInfo;
 }

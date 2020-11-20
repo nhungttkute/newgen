@@ -38,7 +38,7 @@ public class Company implements Serializable {
 	@UniqueTaxCode(groups = UniqueGroup.class)
     private String taxCode;
 	@NotEmpty(message = "Required.")
-	@Size(min = 1, max = 64, message = "Invalid format.", groups = LengthGroup.class)
+	@Size(min = 1, max = 300, message = "Invalid format.", groups = LengthGroup.class)
     private String address;
 	@NotEmpty(message = "Required.")
 	@ValidPhoneNumber(groups = FormatGroup.class)
@@ -47,7 +47,7 @@ public class Company implements Serializable {
     private String fax;
     @NotEmpty(message = "Required.")
     @Email(message = "Invalid format.", groups = FormatGroup.class)
-    @Size(min = 1, max = 50, message = "Invalid format.", groups = LengthGroup.class)
+    @Size(min = 1, max = 100, message = "Invalid format.", groups = LengthGroup.class)
     private String email;
     @NotNull(message = "Required.")
     @Valid

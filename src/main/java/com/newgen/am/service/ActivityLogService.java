@@ -215,6 +215,8 @@ public class ActivityLogService {
     public static final String ACTIVITY_APPROVAL_CREATE_INVESTOR_DESC = "Phê duyệt tạo thông tin TKGD %s - mã phê duyệt %s";
     public static final String ACTIVITY_UPDATE_INVESTOR = "Cập nhật thông tin TKGD";
     public static final String ACTIVITY_UPDATE_INVESTOR_DESC = "Cập nhật thông tin TKGD %s - mã phê duyệt %s";
+    public static final String ACTIVITY_UPDATE_INVESTOR_CQG = "Cập nhật thông tin CQG";
+    public static final String ACTIVITY_UPDATE_INVESTOR_CQG_DESC = "Cập nhật thông tin CQG cho TKGD %s";
     public static final String ACTIVITY_APPROVAL_UPDATE_INVESTOR = "Phê duyệt cập nhật thông tin TKGD";
     public static final String ACTIVITY_APPROVAL_UPDATE_INVESTOR_DESC = "Phê duyệt cập nhật thông tin TKGD %s - mã phê duyệt %s";
     public static final String ACTIVITY_CREATE_INVESTOR_USER2 = "Tạo đăng nhập thứ 2 trở lên cho TKGD";
@@ -300,7 +302,7 @@ public class ActivityLogService {
         activityLog.setAction(action);
         activityLog.setDescription(String.format(desc, objectStr, approvalId));
         activityLog.setDatetime(System.currentTimeMillis());
-        redisMessagePublisher.publish(new Gson().toJson(activityLog));
+        redisMessagePublisher.publish(Utility.getGson().toJson(activityLog));
     }
     
     public void sendActivityLog2(UserInfoDTO userInfo, HttpServletRequest request, String action, String desc, String objectStr, String orgCode, String approvalId) {
@@ -310,6 +312,6 @@ public class ActivityLogService {
         activityLog.setAction(action);
         activityLog.setDescription(String.format(desc, objectStr, orgCode, approvalId));
         activityLog.setDatetime(System.currentTimeMillis());
-        redisMessagePublisher.publish(new Gson().toJson(activityLog));
+        redisMessagePublisher.publish(Utility.getGson().toJson(activityLog));
     }
 }

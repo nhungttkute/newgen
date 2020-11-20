@@ -174,7 +174,7 @@ public class DepartmentService {
 		String methodName = "createDeparment";
 		
 		try {
-			DepartmentDTO deptDto = new Gson().fromJson(pendingApproval.getPendingData().getPendingValue(), DepartmentDTO.class);
+			DepartmentDTO deptDto = Utility.getGson().fromJson(pendingApproval.getPendingData().getPendingValue(), DepartmentDTO.class);
 			
 			// get redis user info
 			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
@@ -239,7 +239,7 @@ public class DepartmentService {
 			pendingData.setServiceFunctionName(ApprovalConstant.DEPARTMENT_CREATE);
 			pendingData.setCollectionName("departments");
 			pendingData.setAction(Constant.APPROVAL_ACTION_CREATE);
-			pendingData.setPendingValue(new Gson().toJson(deptDto));
+			pendingData.setPendingValue(Utility.getGson().toJson(deptDto));
 
 			PendingApproval pendingApproval = new PendingApproval();
 			pendingApproval.setApiUrl(String.format(ApprovalConstant.APPROVAL_PENDING_URL, approvalId));
@@ -335,7 +335,7 @@ public class DepartmentService {
 					new Document().append("$unwind", new Document().append("path", "$stage1")), new Document().append(
 							"$project", new Document().append("count", "$stage1.total").append("data", "$stage2")));
 			
-			System.out.println("pipeline: " + new Gson().toJson(pipeline));
+			System.out.println("pipeline: " + Utility.getGson().toJson(pipeline));
 			MongoDatabase database = MongoDBConnection.getMongoDatabase();
 			MongoCollection<Document> collection = database.getCollection("departments");
 			Document resultDoc = collection.aggregate(pipeline).first();
@@ -368,7 +368,7 @@ public class DepartmentService {
 		String methodName = "udpdateDeparment";
 		try {
 			String deptId = pendingApproval.getPendingData().getQueryValue();
-			UpdateDepartmentDTO deptDto = new Gson().fromJson(pendingApproval.getPendingData().getPendingValue(), UpdateDepartmentDTO.class);
+			UpdateDepartmentDTO deptDto = Utility.getGson().fromJson(pendingApproval.getPendingData().getPendingValue(), UpdateDepartmentDTO.class);
 			
 			// get redis user info
 			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
@@ -480,8 +480,8 @@ public class DepartmentService {
 			pendingData.setQueryField("_id");
 			pendingData.setQueryValue(deptId);
 			pendingData.setAction(Constant.APPROVAL_ACTION_UPDATE);
-			pendingData.setOldValue(new Gson().toJson(deptDto.getOldData()));
-			pendingData.setPendingValue(new Gson().toJson(deptDto.getPendingData()));
+			pendingData.setOldValue(Utility.getGson().toJson(deptDto.getOldData()));
+			pendingData.setPendingValue(Utility.getGson().toJson(deptDto.getPendingData()));
 
 			PendingApproval pendingApproval = new PendingApproval();
 			pendingApproval.setApiUrl(String.format(ApprovalConstant.APPROVAL_PENDING_URL, approvalId));
@@ -505,7 +505,7 @@ public class DepartmentService {
 		
 		try {
 			String deptId = pendingApproval.getPendingData().getQueryValue();
-			UserDTO deptUserDto = new Gson().fromJson(pendingApproval.getPendingData().getPendingValue(), UserDTO.class);
+			UserDTO deptUserDto = Utility.getGson().fromJson(pendingApproval.getPendingData().getPendingValue(), UserDTO.class);
 			
 			// get redis user info
 			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
@@ -601,7 +601,7 @@ public class DepartmentService {
 			pendingData.setQueryField("_id");
 			pendingData.setQueryValue(deptId);
 			pendingData.setAction(Constant.APPROVAL_ACTION_CREATE);
-			pendingData.setPendingValue(new Gson().toJson(deptUserDto));
+			pendingData.setPendingValue(Utility.getGson().toJson(deptUserDto));
 
 			PendingApproval pendingApproval = new PendingApproval();
 			pendingApproval.setApiUrl(String.format(ApprovalConstant.APPROVAL_PENDING_URL, approvalId));
@@ -656,7 +656,7 @@ public class DepartmentService {
 							ConfigLoader.getMainConfig().getString(FileUtility.CREATE_NEW_USER_EMAIL_FILE), refId),
 					username, password, pin);
 			email.setBodyStr(emailBody);
-			String emailJson = new Gson().toJson(email);
+			String emailJson = Utility.getGson().toJson(email);
 			AMLogger.logMessage(className, methodName, refId, "Email: " + emailJson);
 			serviceCon.sendPostRequest(serviceCon.getEmailNotificationServiceURL(), emailJson, null);
 		} catch (Exception e) {
@@ -670,7 +670,7 @@ public class DepartmentService {
 		try {
 			String deptId = pendingAprroval.getPendingData().getQueryValue();
 			String deptUserId = pendingAprroval.getPendingData().getQueryValue2();
-			UpdateUserDTO deptUserDto = new Gson().fromJson(pendingAprroval.getPendingData().getPendingValue(), UpdateUserDTO.class);
+			UpdateUserDTO deptUserDto = Utility.getGson().fromJson(pendingAprroval.getPendingData().getPendingValue(), UpdateUserDTO.class);
 			
 			// get redis user info
 			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
@@ -787,8 +787,8 @@ public class DepartmentService {
 			pendingData.setQueryField2("users._id");
 			pendingData.setQueryValue2(deptUserId);
 			pendingData.setAction(Constant.APPROVAL_ACTION_UPDATE);
-			pendingData.setOldValue(new Gson().toJson(deptUserDto.getOldData()));
-			pendingData.setPendingValue(new Gson().toJson(deptUserDto.getPendingData()));
+			pendingData.setOldValue(Utility.getGson().toJson(deptUserDto.getOldData()));
+			pendingData.setPendingValue(Utility.getGson().toJson(deptUserDto.getPendingData()));
 
 			String username = getDepartmentUser(deptId, deptUserId, refId).getUsername();
 			PendingApproval pendingApproval = new PendingApproval();
@@ -835,7 +835,7 @@ public class DepartmentService {
 		try {
 			String deptId = pendingApproval.getPendingData().getQueryValue();
 			String deptUserId = pendingApproval.getPendingData().getQueryValue2();
-			UserRolesDTO userDto = new Gson().fromJson(pendingApproval.getPendingData().getPendingValue(), UserRolesDTO.class);
+			UserRolesDTO userDto = Utility.getGson().fromJson(pendingApproval.getPendingData().getPendingValue(), UserRolesDTO.class);
 			
 			// get redis user info
 			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
@@ -904,8 +904,8 @@ public class DepartmentService {
 			pendingData.setQueryField2("users._id");
 			pendingData.setQueryValue2(deptUserId);
 			pendingData.setAction(Constant.APPROVAL_ACTION_CREATE);
-			pendingData.setOldValue(new Gson().toJson(deptUserDto.getOldData()));
-			pendingData.setPendingValue(new Gson().toJson(deptUserDto.getPendingData()));
+			pendingData.setOldValue(Utility.getGson().toJson(deptUserDto.getOldData()));
+			pendingData.setPendingValue(Utility.getGson().toJson(deptUserDto.getPendingData()));
 
 			PendingApproval pendingApproval = new PendingApproval();
 			pendingApproval.setApiUrl(String.format(ApprovalConstant.APPROVAL_PENDING_URL, approvalId));
@@ -930,7 +930,7 @@ public class DepartmentService {
 		try {
 			String deptId = pendingApproval.getPendingData().getQueryValue();
 			String deptUserId = pendingApproval.getPendingData().getQueryValue2();
-			FunctionsDTO userDto = new Gson().fromJson(pendingApproval.getPendingData().getPendingValue(), FunctionsDTO.class);
+			FunctionsDTO userDto = Utility.getGson().fromJson(pendingApproval.getPendingData().getPendingValue(), FunctionsDTO.class);
 			
 			// get redis user info
 			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
@@ -999,8 +999,8 @@ public class DepartmentService {
 			pendingData.setQueryField2("users._id");
 			pendingData.setQueryValue2(deptUserId);
 			pendingData.setAction(Constant.APPROVAL_ACTION_CREATE);
-			pendingData.setOldValue(new Gson().toJson(deptUserDto.getOldData()));
-			pendingData.setPendingValue(new Gson().toJson(deptUserDto.getPendingData()));
+			pendingData.setOldValue(Utility.getGson().toJson(deptUserDto.getOldData()));
+			pendingData.setPendingValue(Utility.getGson().toJson(deptUserDto.getPendingData()));
 
 			PendingApproval pendingApproval = new PendingApproval();
 			pendingApproval.setApiUrl(String.format(ApprovalConstant.APPROVAL_PENDING_URL, approvalId));
@@ -1129,7 +1129,7 @@ public class DepartmentService {
 			pendingData.setQueryField2("users.username");
 			pendingData.setQueryValue2(username);
 			pendingData.setAction(Constant.APPROVAL_ACTION_UPDATE);
-			pendingData.setOldValue(new Gson().toJson(changeDeptDto));
+			pendingData.setOldValue(Utility.getGson().toJson(changeDeptDto));
 			pendingData.setPendingValue(toDeptCode);
 
 			PendingApproval pendingApproval = new PendingApproval();

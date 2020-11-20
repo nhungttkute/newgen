@@ -82,7 +82,7 @@ public class DepartmentController {
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 		
-		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
 		return response;
 	}
 
@@ -123,7 +123,7 @@ public class DepartmentController {
 		String methodName = "createDepartment";
 		long refId = System.currentTimeMillis();
 		AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [POST]/admin/deparments");
-		AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(deptDto));
+		AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(deptDto));
 
 		if (Utility.isNotNull(deptDto)) {
 			deptService.createDepartmentPA(request, deptDto, refId);
@@ -134,7 +134,7 @@ public class DepartmentController {
 		AdminResponseObj response = new AdminResponseObj();
 		response.setStatus(Constant.RESPONSE_OK);
 
-		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
 		return response;
 	}
 
@@ -145,7 +145,7 @@ public class DepartmentController {
 		String methodName = "updateDepartment";
 		long refId = System.currentTimeMillis();
 		AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [PUT]/admin/deparments/" + deptId);
-		AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(deptDto));
+		AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(deptDto));
 
 		if (Utility.isNotNull(deptDto)) {
 			deptService.updateDepartmentPA(request, deptId, deptDto, refId);
@@ -156,7 +156,7 @@ public class DepartmentController {
 		AdminResponseObj response = new AdminResponseObj();
 		response.setStatus(Constant.RESPONSE_OK);
 
-		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
 		return response;
 	}
 
@@ -178,7 +178,7 @@ public class DepartmentController {
 			response.setErrMsg(ErrorMessage.RESULT_NOT_FOUND);
 		}
 
-		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
 		return response;
 	}
 
@@ -208,7 +208,7 @@ public class DepartmentController {
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 
-		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
 		return response;
 	}
 
@@ -253,14 +253,14 @@ public class DepartmentController {
 		String methodName = "createDepartmentUser";
 		long refId = System.currentTimeMillis();
 		AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [POST]/admin/departments/users");
-		AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(deptUserDto));
+		AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(deptUserDto));
 
 		deptService.createDepartmentUserPA(request, deptId, deptUserDto, refId);
 
 		AdminResponseObj response = new AdminResponseObj();
 		response.setStatus(Constant.RESPONSE_OK);
 
-		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
 		return response;
 	}
 
@@ -272,14 +272,14 @@ public class DepartmentController {
 		long refId = System.currentTimeMillis();
 		AMLogger.logMessage(className, methodName, refId,
 				String.format("REQUEST_API: [PUT]/admin/departments/%s/users/%s", deptId, deptUserId));
-		AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(deptUserDto));
+		AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(deptUserDto));
 
 		deptService.updateDepartmentUserPA(request, deptId, deptUserId, deptUserDto, refId);
 
 		AdminResponseObj response = new AdminResponseObj();
 		response.setStatus(Constant.RESPONSE_OK);
 
-		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
 		return response;
 	}
 
@@ -302,7 +302,7 @@ public class DepartmentController {
 			response.setErrMsg(ErrorMessage.RESULT_NOT_FOUND);
 		}
 
-		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
 		return response;
 	}
 
@@ -320,7 +320,7 @@ public class DepartmentController {
 		AdminResponseObj response = new AdminResponseObj();
 		response.setStatus(Constant.RESPONSE_OK);
 
-		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
 		return response;
 	}
 
@@ -338,7 +338,7 @@ public class DepartmentController {
 		AdminResponseObj response = new AdminResponseObj();
 		response.setStatus(Constant.RESPONSE_OK);
 
-		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
 		return response;
 	}
 
@@ -357,7 +357,7 @@ public class DepartmentController {
 		AdminResponseObj response = new AdminResponseObj();
 		response.setStatus(Constant.RESPONSE_OK);
 
-		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
 		return response;
 	}
 }

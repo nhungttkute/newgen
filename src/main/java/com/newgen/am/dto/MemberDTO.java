@@ -37,7 +37,7 @@ public class MemberDTO implements Serializable{
 	@UniqueMemberCode(groups = UniqueGroup.class)
     private String code;
     @NotEmpty(message = "Required.")
-    @Size(min = 1, max = 25, message = "Invalid format.", groups = LengthGroup.class)
+    @Size(min = 1, max = 200, message = "Invalid format.", groups = LengthGroup.class)
     private String name;
     @NotEmpty(message = "Required.")
     @Size(min = 1, max = 20, message = "Invalid format.", groups = LengthGroup.class)

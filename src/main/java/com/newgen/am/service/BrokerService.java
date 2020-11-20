@@ -167,7 +167,7 @@ public class BrokerService {
             );
 			MongoDatabase database = MongoDBConnection.getMongoDatabase();
 			MongoCollection<Document> collection = database.getCollection("brokers");
-			Document resultDoc = collection.aggregate(pipeline).first();
+			Document resultDoc = collection.aggregate(pipeline).allowDiskUse(true).first();
 			pagination = mongoTemplate.getConverter().read(BasePagination.class, resultDoc);
 		} catch (CustomException e) {
 			throw e;
@@ -213,7 +213,7 @@ public class BrokerService {
                             ));
 			MongoDatabase database = MongoDBConnection.getMongoDatabase();
 			MongoCollection<Document> collection = database.getCollection("brokers");
-			MongoCursor<Document> cur = collection.aggregate(pipeline).iterator();
+			MongoCursor<Document> cur = collection.aggregate(pipeline).allowDiskUse(true).iterator();
 			while (cur.hasNext()) {
 				BrokerCSV brokerCsv = mongoTemplate.getConverter().read(BrokerCSV.class, cur.next());
 				if (brokerCsv != null)
@@ -231,16 +231,16 @@ public class BrokerService {
 	public void createBroker(HttpServletRequest request, PendingApproval pendingApproval, long refId) {
 		String methodName = "createBroker";
 		try {
-			BrokerDTO brokerDto = new Gson().fromJson(pendingApproval.getPendingData().getPendingValue(), BrokerDTO.class);
+			BrokerDTO brokerDto = Utility.getGson().fromJson(pendingApproval.getPendingData().getPendingValue(), BrokerDTO.class);
 			
 			// generate broker code
-			String brokerCode = brokerDto.getMemberCode() + Utility.lpad5With0(dbSeqService.generateSequence(Constant.BROKER_SEQ + brokerDto.getMemberCode(), refId));
+//			String brokerCode = brokerDto.getMemberCode() + Utility.lpad5With0(dbSeqService.generateSequence(Constant.BROKER_SEQ + brokerDto.getMemberCode(), refId));
 			
 			// get redis user info
 			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
 			// send activity log
 			activityLogService.sendActivityLog(userInfo, request, ActivityLogService.ACTIVITY_APPROVAL_CREATE_BROKER,
-					ActivityLogService.ACTIVITY_APPROVAL_CREATE_BROKER_DESC, brokerCode, pendingApproval.getId());
+					ActivityLogService.ACTIVITY_APPROVAL_CREATE_BROKER_DESC, brokerDto.getCode(), pendingApproval.getId());
 			
 			Document company = null;
 			Document individual = null;
@@ -310,7 +310,7 @@ public class BrokerService {
 			newBroker.append("createdUser", Utility.getCurrentUsername());
 			newBroker.append("createdDate", System.currentTimeMillis());
 			newBroker.append("_id", new ObjectId());
-			newBroker.append("code", brokerCode);
+			newBroker.append("code", brokerDto.getCode());
 			newBroker.append("name", brokerDto.getName());
 			newBroker.append("status", Constant.STATUS_ACTIVE);
 			newBroker.append("note", brokerDto.getNote());
@@ -328,7 +328,7 @@ public class BrokerService {
 			collection.insertOne(newBroker);
 			
 			// insert new broker's user to login_admin_users
-			createBrokerUser(request, brokerDto, brokerCode, refId);
+			createBrokerUser(request, brokerDto, brokerDto.getCode(), refId);
 		} catch (CustomException e) {
 			throw e;
 		} catch (Exception e) {
@@ -476,7 +476,7 @@ public class BrokerService {
 							ConfigLoader.getMainConfig().getString(FileUtility.CREATE_NEW_USER_EMAIL_FILE), refId),
 					username, password, pin);
 			email.setBodyStr(emailBody);
-			String emailJson = new Gson().toJson(email);
+			String emailJson = Utility.getGson().toJson(email);
 			AMLogger.logMessage(className, methodName, refId, "Email: " + emailJson);
 			serviceCon.sendPostRequest(serviceCon.getEmailNotificationServiceURL(), emailJson, null);
 		} catch (Exception e) {
@@ -497,7 +497,7 @@ public class BrokerService {
 			pendingData.setServiceFunctionName(ApprovalConstant.BROKER_CREATE);
 			pendingData.setCollectionName("brokers");
 			pendingData.setAction(Constant.APPROVAL_ACTION_CREATE);
-			pendingData.setPendingValue(new Gson().toJson(brokerDto));
+			pendingData.setPendingValue(Utility.getGson().toJson(brokerDto));
 
 			PendingApproval pendingApproval = new PendingApproval();
 			pendingApproval.setApiUrl(String.format(ApprovalConstant.APPROVAL_PENDING_URL, approvalId));
@@ -520,7 +520,7 @@ public class BrokerService {
 		String methodName = "updateBroker";
 		try {
 			String brokerCode = pendingApproval.getPendingData().getQueryValue();
-			UpdateBrokerDTO brokerDto = new Gson().fromJson(pendingApproval.getPendingData().getPendingValue(), UpdateBrokerDTO.class);
+			UpdateBrokerDTO brokerDto = Utility.getGson().fromJson(pendingApproval.getPendingData().getPendingValue(), UpdateBrokerDTO.class);
 			
 			// get redis user info
 			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
@@ -730,8 +730,8 @@ public class BrokerService {
 			pendingData.setQueryField("code");
 			pendingData.setQueryValue(brokerCode);
 			pendingData.setAction(Constant.APPROVAL_ACTION_UPDATE);
-			pendingData.setOldValue(new Gson().toJson(brokerDto.getOldData()));
-			pendingData.setPendingValue(new Gson().toJson(brokerDto.getPendingData()));
+			pendingData.setOldValue(Utility.getGson().toJson(brokerDto.getOldData()));
+			pendingData.setPendingValue(Utility.getGson().toJson(brokerDto.getPendingData()));
 
 			PendingApproval pendingApproval = new PendingApproval();
 			pendingApproval.setApiUrl(String.format(ApprovalConstant.APPROVAL_PENDING_URL, approvalId));
@@ -815,7 +815,7 @@ public class BrokerService {
 		String methodName = "createBrokerFunctions";
 		try {
 			String brokerCode = pendingApproval.getPendingData().getQueryValue();
-			FunctionsDTO brokerDto = new Gson().fromJson(pendingApproval.getPendingData().getPendingValue(), FunctionsDTO.class);
+			FunctionsDTO brokerDto = Utility.getGson().fromJson(pendingApproval.getPendingData().getPendingValue(), FunctionsDTO.class);
 			
 			// get redis user info
 			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
@@ -900,8 +900,8 @@ public class BrokerService {
 			pendingData.setAction(Constant.APPROVAL_ACTION_CREATE);
 			pendingData.setQueryField("code");
 			pendingData.setQueryValue(brokerCode);
-			pendingData.setOldValue(new Gson().toJson(brokerDto.getOldData()));
-			pendingData.setPendingValue(new Gson().toJson(brokerDto.getPendingData()));
+			pendingData.setOldValue(Utility.getGson().toJson(brokerDto.getOldData()));
+			pendingData.setPendingValue(Utility.getGson().toJson(brokerDto.getPendingData()));
 
 			PendingApproval pendingApproval = new PendingApproval();
 			pendingApproval.setApiUrl(String.format(ApprovalConstant.APPROVAL_PENDING_URL, approvalId));

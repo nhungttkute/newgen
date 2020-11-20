@@ -13,7 +13,7 @@ public class MarginTransactionDTO {
     private String investorCode;
     private String investorName;
 	private String transactionType;
-	private long withdrawableAmount;
-	private long amount;
+	private double withdrawableAmount;
+	private double amount;
 	private String note;
 }

@@ -29,7 +29,7 @@ public class DepartmentDTO {
     @ValidCode(groups = FormatGroup.class)
     private String code;
     @NotEmpty(message = "Required.")
-    @Size(min = 1, max = 100, message = "Invalid format.", groups = LengthGroup.class)
+    @Size(min = 1, max = 200, message = "Invalid format.", groups = LengthGroup.class)
     private String name;
     private String status;
     @JsonInclude(JsonInclude.Include.NON_DEFAULT)

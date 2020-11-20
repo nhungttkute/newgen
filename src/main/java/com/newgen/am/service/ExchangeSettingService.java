@@ -72,7 +72,7 @@ public class ExchangeSettingService {
 	public void setExchangeSetting(HttpServletRequest request, PendingApproval pendingApproval, long refId) {
 		String methodName = "setExchangeSetting";
 		try {
-			ExchangeSettingDTO exchangeDto = new Gson().fromJson(pendingApproval.getPendingData().getPendingValue(), ExchangeSettingDTO.class);
+			ExchangeSettingDTO exchangeDto = Utility.getGson().fromJson(pendingApproval.getPendingData().getPendingValue(), ExchangeSettingDTO.class);
 			
 			if (exchangeDto != null & exchangeDto.getUsers() != null && exchangeDto.getUsers().size() > 0) {
 				// get redis user info
@@ -179,7 +179,7 @@ public class ExchangeSettingService {
 			PendingData pendingData = new PendingData();
 			pendingData.setServiceFunctionName(ApprovalConstant.USER_EXCHANGE_SETTING_CREATE);
 			pendingData.setAction(Constant.APPROVAL_ACTION_CREATE);
-			pendingData.setPendingValue(new Gson().toJson(exchangeDto));
+			pendingData.setPendingValue(Utility.getGson().toJson(exchangeDto));
 
 			PendingApproval pendingApproval = new PendingApproval();
 			pendingApproval.setApiUrl(String.format(ApprovalConstant.APPROVAL_PENDING_URL, approvalId));
@@ -200,7 +200,7 @@ public class ExchangeSettingService {
 	public void updateExchangeSetting(HttpServletRequest request, PendingApproval pendingApproval, long refId) {
 		String methodName = "updateExchangeSetting";
 		try {
-			ExchangeSettingDTO exchangeDto = new Gson().fromJson(pendingApproval.getPendingData().getPendingValue(), ExchangeSettingDTO.class);
+			ExchangeSettingDTO exchangeDto = Utility.getGson().fromJson(pendingApproval.getPendingData().getPendingValue(), ExchangeSettingDTO.class);
 			
 			if (exchangeDto != null & exchangeDto.getUsername() != null) {
 				// get redis user info
@@ -300,8 +300,8 @@ public class ExchangeSettingService {
 			PendingData pendingData = new PendingData();
 			pendingData.setServiceFunctionName(ApprovalConstant.USER_EXCHANGE_SETTING_UPDATE);
 			pendingData.setAction(Constant.APPROVAL_ACTION_UPDATE);
-			pendingData.setOldValue(new Gson().toJson(exchangeDto.getOldData()));
-			pendingData.setPendingValue(new Gson().toJson(exchangeDto.getPendingData()));
+			pendingData.setOldValue(Utility.getGson().toJson(exchangeDto.getOldData()));
+			pendingData.setPendingValue(Utility.getGson().toJson(exchangeDto.getPendingData()));
 
 			PendingApproval pendingApproval = new PendingApproval();
 			pendingApproval.setApiUrl(String.format(ApprovalConstant.APPROVAL_PENDING_URL, approvalId));

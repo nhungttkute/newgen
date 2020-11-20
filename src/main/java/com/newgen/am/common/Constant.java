@@ -12,7 +12,9 @@ package com.newgen.am.common;
 public class Constant {
     public static final String CONFIG_DIR = "/opt/account-management/settings/properties/";
 //    public static final String CONFIG_DIR = "C:/u01/apps/AM/settings/properties/";
+    public static final String PROD_FLAG = "PROD_FLAG";
     public static final String CQG_SYNC_FLAG = "CQG_SYNC_FLAG";
+    public static final String CQG_SYNC_BALANCE_FLAG = "CQG_SYNC_BALANCE_FLAG";
     
     public static final String DATE_TIME_PATTERN = "dd/MM/yyyy HH:mm:ss";
     
@@ -91,7 +93,7 @@ public class Constant {
     public static final String OPT_EQUALS = "$eq";
     public static final String OPT_IN = "$in";
     public static final String OPT_NOT_IN = "$nin";
-    public static final String SORT_DETAUL_FIELD = "lastModifiedDate";
+    public static final String SORT_DETAUL_FIELD = "createdDate";
     public static final int PAGINATION_DEFAULT_LIMIT = 20;
     public static final int PAGINATION_DEFAULT_OFFSET = 0;
     
@@ -134,7 +136,8 @@ public class Constant {
     public static final String INVESTOR_DEFAULT_ROLE = "TKGD";
     public static final String INVESTOR_USER_PREFIX = "TKGD_";
     public static final String CQG_ACCOUNT_NAME_PREFIX = "SIM";
-    public static final String CQG_ACCOUNT_NUMBER_PREFIX = "PS";
+    public static final String CQG_ACCOUNT_NUMBER_PREFIX_STG = "PS";
+    public static final String CQG_ACCOUNT_NUMBER_PREFIX_PROD = "MX";
     
     public static final String INVESTOR_TYPE_INNER_TRADING_COMPANY = "P";
     public static final String INVESTOR_TYPE_LOCAL_INDIVIDUAL = "C";

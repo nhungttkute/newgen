@@ -71,7 +71,7 @@ private String className = "CollaboratorController";
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 		
-		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
 		return response;
 	}
 
@@ -121,14 +121,14 @@ private String className = "CollaboratorController";
 			logRequest.getDelegate().setScannedSignature(null);
 		}
 		
-		AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(logRequest));
+		AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(logRequest));
 
 		collaboratorService.createCollaboratorPA(request, collaboratorDto, refId);
 
 		AdminResponseObj response = new AdminResponseObj();
 		response.setStatus(Constant.RESPONSE_OK);
 
-		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
 		return response;
 	}
 	
@@ -148,14 +148,14 @@ private String className = "CollaboratorController";
 			logRequest.getPendingData().getDelegate().setScannedSignature(null);
 		}
 				
-		AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(logRequest));
+		AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(logRequest));
 
 		collaboratorService.updateCollaboratorPA(request, collaboratorCode, collaboratorDto, refId);
 
 		AdminResponseObj response = new AdminResponseObj();
 		response.setStatus(Constant.RESPONSE_OK);
 
-		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
 		return response;
 	}
 
@@ -184,7 +184,7 @@ private String className = "CollaboratorController";
 			logResponse.getData().getCollaborator().getDelegate().setScannedSignature("");
 		}
 		
-		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(logResponse));
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(logResponse));
 		return response;
 	}
 	
@@ -206,7 +206,7 @@ private String className = "CollaboratorController";
 			response.setErrMsg(ErrorMessage.RESULT_NOT_FOUND);
 		}
 
-		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
 		return response;
 	}
 	
@@ -216,14 +216,14 @@ private String className = "CollaboratorController";
         String methodName = "createCollaboratorFunctions";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, "REQUEST_API: " + String.format("[POST]/admin/collaborators/%s/functions", collaboratorCode));
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(collaboratorDto));
+        AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(collaboratorDto));
         
         collaboratorService.createCollaboratorFunctionsPA(request, collaboratorCode, collaboratorDto, refId);
         
         AdminResponseObj response = new AdminResponseObj();
         response.setStatus(Constant.RESPONSE_OK);
         
-        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
         return response;
     }
 }

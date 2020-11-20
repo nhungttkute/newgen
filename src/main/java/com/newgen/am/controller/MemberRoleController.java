@@ -68,7 +68,7 @@ private String className = "MemberRoleController";
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
         }
         
-        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
         return response;
     }
     
@@ -113,14 +113,14 @@ private String className = "MemberRoleController";
         String methodName = "createMemberRole";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, "REQUEST_API: " + String.format("[POST]/admin/members/%s/memberRoles", memberCode));
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(roleDto));
+        AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(roleDto));
         
         memberRoleService.createMemberRolePA(request, memberCode, roleDto, refId);
         
         AdminResponseObj response = new AdminResponseObj();
         response.setStatus(Constant.RESPONSE_OK);
         
-        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
         return response;
     }
     
@@ -130,14 +130,14 @@ private String className = "MemberRoleController";
         String methodName = "updateMemberRole";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, "REQUEST_API: " + String.format("[PUT]/admin/members/%s/memberRoles/%s", memberCode, roleId));
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(roleDto));
+        AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(roleDto));
         
         memberRoleService.updateMemberRolePA(request, memberCode, roleId, roleDto, refId);
         
         AdminResponseObj response = new AdminResponseObj();
         response.setStatus(Constant.RESPONSE_OK);
         
-        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
         return response;
     }
     
@@ -147,14 +147,14 @@ private String className = "MemberRoleController";
         String methodName = "createMemberRoleFunctions";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, "REQUEST_API: " + String.format("[POST]/admin/members/%s/memberRoles/%s/functions", memberCode, roleId));
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(roleDto));
+        AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(roleDto));
         
         memberRoleService.createMemberRoleFunctionsPA(request, memberCode, roleId, roleDto, refId);
         
         AdminResponseObj response = new AdminResponseObj();
         response.setStatus(Constant.RESPONSE_OK);
         
-        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
         return response;
     }
 }

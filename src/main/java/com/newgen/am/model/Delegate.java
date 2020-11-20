@@ -36,7 +36,7 @@ public class Delegate implements Serializable {
     private String birthDay;
 	@NotEmpty(message = "Required.")
 	@ValidNumberCharacter(groups = FormatGroup.class)
-	@Size(min = 1, max = 20, groups = LengthGroup.class)
+	@Size(min = 1, max = 50, groups = LengthGroup.class)
 	@UniqueIdentityCard(groups = UniqueGroup.class)
     private String identityCard;
 	@NotEmpty(message = "Required.")
@@ -47,7 +47,7 @@ public class Delegate implements Serializable {
     private String idCreatedLocation;
 	@NotEmpty(message = "Required.")
 	@Email(message = "Invalid format.", groups = FormatGroup.class)
-	@Size(min = 1, max = 50, message = "Invalid format.", groups = LengthGroup.class)
+	@Size(min = 1, max = 100, message = "Invalid format.", groups = LengthGroup.class)
     private String email;
 	@NotEmpty(message = "Required.")
     @ValidPhoneNumber(groups = FormatGroup.class)

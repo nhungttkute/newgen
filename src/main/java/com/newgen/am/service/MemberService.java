@@ -199,7 +199,7 @@ public class MemberService {
             );
 			MongoDatabase database = MongoDBConnection.getMongoDatabase();
 			MongoCollection<Document> collection = database.getCollection("members");
-			Document resultDoc = collection.aggregate(pipeline).first();
+			Document resultDoc = collection.aggregate(pipeline).allowDiskUse(true).first();
 			pagination = mongoTemplate.getConverter().read(BasePagination.class, resultDoc);
 		} catch (CustomException e) {
 			throw e;
@@ -243,7 +243,7 @@ public class MemberService {
                             ));
 			MongoDatabase database = MongoDBConnection.getMongoDatabase();
 			MongoCollection<Document> collection = database.getCollection("members");
-			MongoCursor<Document> cur = collection.aggregate(pipeline).iterator();
+			MongoCursor<Document> cur = collection.aggregate(pipeline).allowDiskUse(true).iterator();
 			while (cur.hasNext()) {
 				MemberCSV memberCsv = mongoTemplate.getConverter().read(MemberCSV.class, cur.next());
 				if (memberCsv != null)
@@ -261,7 +261,7 @@ public class MemberService {
 	public void createMember(HttpServletRequest request, PendingApproval pendingApproval, long refId) {
 		String methodName = "createMember";
 		try {
-			MemberDTO memberDto = new Gson().fromJson(pendingApproval.getPendingData().getPendingValue(), MemberDTO.class);
+			MemberDTO memberDto = Utility.getGson().fromJson(pendingApproval.getPendingData().getPendingValue(), MemberDTO.class);
 			
 			// get redis user info
 			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
@@ -333,11 +333,11 @@ public class MemberService {
 				CQGResponseObj saleSeriesResult = cqgService.createCQGSaleSeries(memberDto, refId);
 				if (saleSeriesResult != null) {
 					String profileId = saleSeriesResult.getData().getProfileId();
-					
-					Document cqgInfo = new Document();
-					cqgInfo.append("profileId", profileId);
-					
-					newMember.append("cqgInfo", cqgInfo);
+					if (Utility.isNotNull(profileId)) {
+						Document cqgInfo = new Document();
+						cqgInfo.append("profileId", profileId.substring(1, profileId.length()));
+						newMember.append("cqgInfo", cqgInfo);
+					}
 				} else {
 					throw new CustomException(ErrorMessage.CQG_INFO_CREATED_UNSUCCESSFULLY, HttpStatus.OK);
 				}
@@ -410,7 +410,7 @@ public class MemberService {
 			pendingData.setServiceFunctionName(ApprovalConstant.MEMBER_CREATE);
 			pendingData.setCollectionName("members");
 			pendingData.setAction(Constant.APPROVAL_ACTION_CREATE);
-			pendingData.setPendingValue(new Gson().toJson(memberDto));
+			pendingData.setPendingValue(Utility.getGson().toJson(memberDto));
 
 			PendingApproval pendingApproval = new PendingApproval();
 			pendingApproval.setApiUrl(String.format(ApprovalConstant.APPROVAL_PENDING_URL, approvalId));
@@ -526,7 +526,7 @@ public class MemberService {
 							ConfigLoader.getMainConfig().getString(FileUtility.CREATE_NEW_USER_EMAIL_FILE), refId),
 					username, password, pin);
 			email.setBodyStr(emailBody);
-			String emailJson = new Gson().toJson(email);
+			String emailJson = Utility.getGson().toJson(email);
 			AMLogger.logMessage(className, methodName, refId, "Email: " + emailJson);
 			serviceCon.sendPostRequest(serviceCon.getEmailNotificationServiceURL(), emailJson, null);
 		} catch (Exception e) {
@@ -539,7 +539,7 @@ public class MemberService {
 		String methodName = "updateMember";
 		try {
 			String memberCode = pendingApproval.getPendingData().getQueryValue();
-			UpdateMemberDTO memberDto = new Gson().fromJson(pendingApproval.getPendingData().getPendingValue(), UpdateMemberDTO.class);
+			UpdateMemberDTO memberDto = Utility.getGson().fromJson(pendingApproval.getPendingData().getPendingValue(), UpdateMemberDTO.class);
 			
 			// get redis user info
 			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
@@ -687,8 +687,8 @@ public class MemberService {
 			pendingData.setQueryField("code");
 			pendingData.setQueryValue(memberCode);
 			pendingData.setAction(Constant.APPROVAL_ACTION_UPDATE);
-			pendingData.setOldValue(new Gson().toJson(memberDto.getOldData()));
-			pendingData.setPendingValue(new Gson().toJson(memberDto.getPendingData()));
+			pendingData.setOldValue(Utility.getGson().toJson(memberDto.getOldData()));
+			pendingData.setPendingValue(Utility.getGson().toJson(memberDto.getPendingData()));
 
 			PendingApproval pendingApproval = new PendingApproval();
 			pendingApproval.setApiUrl(String.format(ApprovalConstant.APPROVAL_PENDING_URL, approvalId));
@@ -781,7 +781,7 @@ public class MemberService {
 		String methodName = "createMemberFunctions";
 		try {
 			String memberCode = pendingApproval.getPendingData().getQueryValue();
-			FunctionsDTO memberDto = new Gson().fromJson(pendingApproval.getPendingData().getPendingValue(), FunctionsDTO.class);
+			FunctionsDTO memberDto = Utility.getGson().fromJson(pendingApproval.getPendingData().getPendingValue(), FunctionsDTO.class);
 			
 			// get redis user info
 			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
@@ -866,8 +866,8 @@ public class MemberService {
 			pendingData.setAction(Constant.APPROVAL_ACTION_CREATE);
 			pendingData.setQueryField("code");
 			pendingData.setQueryValue(memberCode);
-			pendingData.setOldValue(new Gson().toJson(memberDto.getOldData()));
-			pendingData.setPendingValue(new Gson().toJson(memberDto.getPendingData()));
+			pendingData.setOldValue(Utility.getGson().toJson(memberDto.getOldData()));
+			pendingData.setPendingValue(Utility.getGson().toJson(memberDto.getPendingData()));
 
 			PendingApproval pendingApproval = new PendingApproval();
 			pendingApproval.setApiUrl(String.format(ApprovalConstant.APPROVAL_PENDING_URL, approvalId));
@@ -890,7 +890,7 @@ public class MemberService {
 		String methodName = "assignCommodities";
 		try {
 			String memberCode = pendingApproval.getPendingData().getQueryValue();
-			CommoditiesDTO memberDto = new Gson().fromJson(pendingApproval.getPendingData().getPendingValue(), CommoditiesDTO.class);
+			CommoditiesDTO memberDto = Utility.getGson().fromJson(pendingApproval.getPendingData().getPendingValue(), CommoditiesDTO.class);
 			// get redis user info
 			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
 			// send activity log
@@ -955,7 +955,7 @@ public class MemberService {
 		String methodName = "setCommoditiesPositionLimit";
 		try {
 			String memberCode = pendingApproval.getPendingData().getQueryValue();
-			CommoditiesDTO pendingCommDto = new Gson().fromJson(pendingApproval.getPendingData().getPendingValue(), CommoditiesDTO.class);
+			CommoditiesDTO pendingCommDto = Utility.getGson().fromJson(pendingApproval.getPendingData().getPendingValue(), CommoditiesDTO.class);
 			
 			// get redis user info
 			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
@@ -1024,7 +1024,7 @@ public class MemberService {
 		String methodName = "setCommoditiesFee";
 		try {
 			String memberCode = pendingApproval.getPendingData().getQueryValue();
-			CommoditiesDTO pendingCommDto = new Gson().fromJson(pendingApproval.getPendingData().getPendingValue(), CommoditiesDTO.class);
+			CommoditiesDTO pendingCommDto = Utility.getGson().fromJson(pendingApproval.getPendingData().getPendingValue(), CommoditiesDTO.class);
 			
 			// get redis user info
 			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
@@ -1174,8 +1174,8 @@ public class MemberService {
 			pendingData.setAction(Constant.APPROVAL_ACTION_CREATE);
 			pendingData.setQueryField("code");
 			pendingData.setQueryValue(memberCode);
-			pendingData.setOldValue(new Gson().toJson(memberDto.getOldData()));
-			pendingData.setPendingValue(new Gson().toJson(memberDto.getPendingData()));
+			pendingData.setOldValue(Utility.getGson().toJson(memberDto.getOldData()));
+			pendingData.setPendingValue(Utility.getGson().toJson(memberDto.getPendingData()));
 
 			PendingApproval pendingApproval = new PendingApproval();
 			pendingApproval.setApiUrl(String.format(ApprovalConstant.APPROVAL_PENDING_URL, approvalId));
@@ -1198,7 +1198,7 @@ public class MemberService {
 		String methodName = "createOrderLimit";
 		try {
 			String memberCode = pendingApproval.getPendingData().getQueryValue();
-			OrderLimitDTO memberDto = new Gson().fromJson(pendingApproval.getPendingData().getPendingValue(), OrderLimitDTO.class);
+			OrderLimitDTO memberDto = Utility.getGson().fromJson(pendingApproval.getPendingData().getPendingValue(), OrderLimitDTO.class);
 			
 			// get redis user info
 			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
@@ -1295,7 +1295,7 @@ public class MemberService {
 		boolean needUpdateCommodities = false;
 		try {
 			String memberCode = pendingApproval.getPendingData().getQueryValue();
-			DefaultPositionLimitDTO memberDto = new Gson().fromJson(pendingApproval.getPendingData().getPendingValue(), DefaultPositionLimitDTO.class);
+			DefaultPositionLimitDTO memberDto = Utility.getGson().fromJson(pendingApproval.getPendingData().getPendingValue(), DefaultPositionLimitDTO.class);
 			
 			// get redis user info
 			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
@@ -1433,8 +1433,8 @@ public class MemberService {
 			pendingData.setAction(Constant.APPROVAL_ACTION_UPDATE);
 			pendingData.setQueryField("code");
 			pendingData.setQueryValue(memberCode);
-			pendingData.setOldValue(new Gson().toJson(memberDto.getOldData()));
-			pendingData.setPendingValue(new Gson().toJson(memberDto.getPendingData()));
+			pendingData.setOldValue(Utility.getGson().toJson(memberDto.getOldData()));
+			pendingData.setPendingValue(Utility.getGson().toJson(memberDto.getPendingData()));
 
 			PendingApproval pendingApproval = new PendingApproval();
 			pendingApproval.setApiUrl(String.format(ApprovalConstant.APPROVAL_PENDING_URL, approvalId));
@@ -1467,8 +1467,8 @@ public class MemberService {
 			pendingData.setAction(Constant.APPROVAL_ACTION_CREATE);
 			pendingData.setQueryField("code");
 			pendingData.setQueryValue(memberCode);
-			pendingData.setOldValue(new Gson().toJson(memberDto.getOldData()));
-			pendingData.setPendingValue(new Gson().toJson(memberDto.getPendingData()));
+			pendingData.setOldValue(Utility.getGson().toJson(memberDto.getOldData()));
+			pendingData.setPendingValue(Utility.getGson().toJson(memberDto.getPendingData()));
 
 			PendingApproval pendingApproval = new PendingApproval();
 			pendingApproval.setApiUrl(String.format(ApprovalConstant.APPROVAL_PENDING_URL, approvalId));
@@ -1491,7 +1491,7 @@ public class MemberService {
 		String methodName = "setMemberNewPositionOrderLock";
 		try {
 			String memberCode = pendingApproval.getPendingData().getQueryValue();
-			RiskParametersDTO memberDto = new Gson().fromJson(pendingApproval.getPendingData().getPendingValue(), RiskParametersDTO.class);
+			RiskParametersDTO memberDto = Utility.getGson().fromJson(pendingApproval.getPendingData().getPendingValue(), RiskParametersDTO.class);
 			
 			// get redis user info
 			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
@@ -1560,8 +1560,8 @@ public class MemberService {
 			pendingData.setAppliedObject(String.format(ApprovalConstant.APPLIED_OBJ_MEMBER, memberCode));
 			pendingData.setQueryField("code");
 			pendingData.setQueryValue(memberCode);
-			pendingData.setOldValue(new Gson().toJson(memberDto.getOldData()));
-			pendingData.setPendingValue(new Gson().toJson(memberDto.getPendingData()));
+			pendingData.setOldValue(Utility.getGson().toJson(memberDto.getOldData()));
+			pendingData.setPendingValue(Utility.getGson().toJson(memberDto.getPendingData()));
 
 			PendingApproval pendingApproval = new PendingApproval();
 			pendingApproval.setApiUrl(String.format(ApprovalConstant.APPROVAL_PENDING_URL, approvalId));
@@ -1584,7 +1584,7 @@ public class MemberService {
 		String methodName = "setMemberOrderLock";
 		try {
 			String memberCode = pendingApproval.getPendingData().getQueryValue();
-			RiskParametersDTO memberDto = new Gson().fromJson(pendingApproval.getPendingData().getPendingValue(), RiskParametersDTO.class);
+			RiskParametersDTO memberDto = Utility.getGson().fromJson(pendingApproval.getPendingData().getPendingValue(), RiskParametersDTO.class);
 			
 			// get redis user info
 			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
@@ -1653,8 +1653,8 @@ public class MemberService {
 			pendingData.setAppliedObject(String.format(ApprovalConstant.APPLIED_OBJ_MEMBER, memberCode));
 			pendingData.setQueryField("code");
 			pendingData.setQueryValue(memberCode);
-			pendingData.setOldValue(new Gson().toJson(memberDto.getOldData()));
-			pendingData.setPendingValue(new Gson().toJson(memberDto.getPendingData()));
+			pendingData.setOldValue(Utility.getGson().toJson(memberDto.getOldData()));
+			pendingData.setPendingValue(Utility.getGson().toJson(memberDto.getPendingData()));
 
 			PendingApproval pendingApproval = new PendingApproval();
 			pendingApproval.setApiUrl(String.format(ApprovalConstant.APPROVAL_PENDING_URL, approvalId));
@@ -1677,7 +1677,7 @@ public class MemberService {
 		String methodName = "setMemberMarginWithDrawalLock";
 		try {
 			String memberCode = pendingApproval.getPendingData().getQueryValue();
-			RiskParametersDTO memberDto = new Gson().fromJson(pendingApproval.getPendingData().getPendingValue(), RiskParametersDTO.class);
+			RiskParametersDTO memberDto = Utility.getGson().fromJson(pendingApproval.getPendingData().getPendingValue(), RiskParametersDTO.class);
 			
 			// get redis user info
 			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
@@ -1746,8 +1746,8 @@ public class MemberService {
 			pendingData.setAppliedObject(String.format(ApprovalConstant.APPLIED_OBJ_MEMBER, memberCode));
 			pendingData.setQueryField("code");
 			pendingData.setQueryValue(memberCode);
-			pendingData.setOldValue(new Gson().toJson(memberDto.getOldData()));
-			pendingData.setPendingValue(new Gson().toJson(memberDto.getPendingData()));
+			pendingData.setOldValue(Utility.getGson().toJson(memberDto.getOldData()));
+			pendingData.setPendingValue(Utility.getGson().toJson(memberDto.getPendingData()));
 
 			PendingApproval pendingApproval = new PendingApproval();
 			pendingApproval.setApiUrl(String.format(ApprovalConstant.APPROVAL_PENDING_URL, approvalId));
@@ -1795,7 +1795,7 @@ public class MemberService {
 		String methodName = "setMarginMultiplierBulk";
 		try {
 			String memberCode = pendingApproval.getPendingData().getQueryValue();
-			MarginMultiplierDTO memberDto = new Gson().fromJson(pendingApproval.getPendingData().getPendingValue(), MarginMultiplierDTO.class);
+			MarginMultiplierDTO memberDto = Utility.getGson().fromJson(pendingApproval.getPendingData().getPendingValue(), MarginMultiplierDTO.class);
 			
 			// get redis user info
 			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
@@ -1887,8 +1887,8 @@ public class MemberService {
 			pendingData.setAppliedObject(String.format(ApprovalConstant.APPLIED_OBJ_MEMBER, memberCode));
 			pendingData.setQueryField("code");
 			pendingData.setQueryValue(memberCode);
-			pendingData.setOldValue(new Gson().toJson(memberDto.getOldData()));
-			pendingData.setPendingValue(new Gson().toJson(memberDto.getPendingData()));
+			pendingData.setOldValue(Utility.getGson().toJson(memberDto.getOldData()));
+			pendingData.setPendingValue(Utility.getGson().toJson(memberDto.getPendingData()));
 
 			PendingApproval pendingApproval = new PendingApproval();
 			pendingApproval.setApiUrl(String.format(ApprovalConstant.APPROVAL_PENDING_URL, approvalId));
@@ -1911,7 +1911,7 @@ public class MemberService {
 		String methodName = "setMarginRatioAlertBulk";
 		try {
 			String memberCode = pendingApproval.getPendingData().getQueryValue();
-			MarginRatioAlertDTO memberDto = new Gson().fromJson(pendingApproval.getPendingData().getPendingValue(), MarginRatioAlertDTO.class);
+			MarginRatioAlertDTO memberDto = Utility.getGson().fromJson(pendingApproval.getPendingData().getPendingValue(), MarginRatioAlertDTO.class);
 			
 			// get redis user info
 			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
@@ -2008,8 +2008,8 @@ public class MemberService {
 			pendingData.setAppliedObject(String.format(ApprovalConstant.APPLIED_OBJ_MEMBER_INVESTORS, memberCode));
 			pendingData.setQueryField("code");
 			pendingData.setQueryValue(memberCode);
-			pendingData.setOldValue(new Gson().toJson(memberDto.getOldData()));
-			pendingData.setPendingValue(new Gson().toJson(memberDto.getPendingData()));
+			pendingData.setOldValue(Utility.getGson().toJson(memberDto.getOldData()));
+			pendingData.setPendingValue(Utility.getGson().toJson(memberDto.getPendingData()));
 
 			PendingApproval pendingApproval = new PendingApproval();
 			pendingApproval.setApiUrl(String.format(ApprovalConstant.APPROVAL_PENDING_URL, approvalId));
@@ -2032,7 +2032,7 @@ public class MemberService {
 		String methodName = "setGeneralFeeBulk";
 		try {
 			String memberCode = pendingApproval.getPendingData().getQueryValue();
-			GeneralFeeDTO generalFeeDto = new Gson().fromJson(pendingApproval.getPendingData().getPendingValue(), GeneralFeeDTO.class);
+			GeneralFeeDTO generalFeeDto = Utility.getGson().fromJson(pendingApproval.getPendingData().getPendingValue(), GeneralFeeDTO.class);
 			
 			// get redis user info
 			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
@@ -2130,7 +2130,7 @@ public class MemberService {
 			pendingData.setAppliedObject(String.format(ApprovalConstant.APPLIED_OBJ_MEMBER_INVESTORS, memberCode));
 			pendingData.setQueryField("code");
 			pendingData.setQueryValue(memberCode);
-			pendingData.setPendingValue(new Gson().toJson(generalFeeDto));
+			pendingData.setPendingValue(Utility.getGson().toJson(generalFeeDto));
 
 			PendingApproval pendingApproval = new PendingApproval();
 			pendingApproval.setApiUrl(String.format(ApprovalConstant.APPROVAL_PENDING_URL, approvalId));
@@ -2154,7 +2154,7 @@ public class MemberService {
 		try {
 			String memberCode = pendingApproval.getPendingData().getQueryValue();
 			String oldFeeName = pendingApproval.getPendingData().getQueryValue2();
-			GeneralFeeDTO generalFeeDto = new Gson().fromJson(pendingApproval.getPendingData().getPendingValue(), GeneralFeeDTO.class);
+			GeneralFeeDTO generalFeeDto = Utility.getGson().fromJson(pendingApproval.getPendingData().getPendingValue(), GeneralFeeDTO.class);
 			
 			// get redis user info
 			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
@@ -2240,8 +2240,8 @@ public class MemberService {
 			pendingData.setQueryValue(memberCode);
 			pendingData.setQueryField2("generalFees.name");
 			pendingData.setQueryValue2(generalFeeDto.getOldData().getName());
-			pendingData.setOldValue(new Gson().toJson(generalFeeDto.getOldData()));
-			pendingData.setPendingValue(new Gson().toJson(generalFeeDto.getPendingData()));
+			pendingData.setOldValue(Utility.getGson().toJson(generalFeeDto.getOldData()));
+			pendingData.setPendingValue(Utility.getGson().toJson(generalFeeDto.getPendingData()));
 
 			PendingApproval pendingApproval = new PendingApproval();
 			pendingApproval.setApiUrl(String.format(ApprovalConstant.APPROVAL_PENDING_URL, approvalId));
@@ -2264,7 +2264,7 @@ public class MemberService {
 		String methodName = "setBrokerCommoditiesFeeBulk";
 		try {
 			String memberCode = pendingApproval.getPendingData().getQueryValue();
-			CommodityFeesDTO memberDto = new Gson().fromJson(pendingApproval.getPendingData().getPendingValue(), CommodityFeesDTO.class);
+			CommodityFeesDTO memberDto = Utility.getGson().fromJson(pendingApproval.getPendingData().getPendingValue(), CommodityFeesDTO.class);
 			
 			// get redis user info
 			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
@@ -2415,8 +2415,8 @@ public class MemberService {
 			pendingData.setAppliedObject(String.format(ApprovalConstant.APPLIED_OBJ_MEMBER_BROKERS, memberCode));
 			pendingData.setQueryField("code");
 			pendingData.setQueryValue(memberCode);
-			pendingData.setOldValue(new Gson().toJson(memberDto.getOldData()));
-			pendingData.setPendingValue(new Gson().toJson(memberDto.getPendingData()));
+			pendingData.setOldValue(Utility.getGson().toJson(memberDto.getOldData()));
+			pendingData.setPendingValue(Utility.getGson().toJson(memberDto.getPendingData()));
 
 			PendingApproval pendingApproval = new PendingApproval();
 			pendingApproval.setApiUrl(String.format(ApprovalConstant.APPROVAL_PENDING_URL, approvalId));
@@ -2439,7 +2439,7 @@ public class MemberService {
 		String methodName = "setInvestorCommoditiesFeeBulk";
 		try {
 			String memberCode = pendingApproval.getPendingData().getQueryValue();
-			CommodityFeesDTO memberDto = new Gson().fromJson(pendingApproval.getPendingData().getPendingValue(), CommodityFeesDTO.class);
+			CommodityFeesDTO memberDto = Utility.getGson().fromJson(pendingApproval.getPendingData().getPendingValue(), CommodityFeesDTO.class);
 			
 			// get redis user info
 			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
@@ -2580,8 +2580,8 @@ public class MemberService {
 			pendingData.setAppliedObject(String.format(ApprovalConstant.APPLIED_OBJ_MEMBER_INVESTORS, memberCode));
 			pendingData.setQueryField("code");
 			pendingData.setQueryValue(memberCode);
-			pendingData.setOldValue(new Gson().toJson(memberDto.getOldData()));
-			pendingData.setPendingValue(new Gson().toJson(memberDto.getPendingData()));
+			pendingData.setOldValue(Utility.getGson().toJson(memberDto.getOldData()));
+			pendingData.setPendingValue(Utility.getGson().toJson(memberDto.getPendingData()));
 
 			PendingApproval pendingApproval = new PendingApproval();
 			pendingApproval.setApiUrl(String.format(ApprovalConstant.APPROVAL_PENDING_URL, approvalId));
@@ -2752,7 +2752,7 @@ public class MemberService {
 		String methodName = "createMemberUser";
 		try {
 			String memberCode = pendingApproval.getPendingData().getQueryValue();
-			UserDTO memberUserDto = new Gson().fromJson(pendingApproval.getPendingData().getPendingValue(), UserDTO.class);
+			UserDTO memberUserDto = Utility.getGson().fromJson(pendingApproval.getPendingData().getPendingValue(), UserDTO.class);
 			
 			// get redis user info
 			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
@@ -2854,7 +2854,7 @@ public class MemberService {
 			pendingData.setQueryField("code");
 			pendingData.setQueryValue(memberCode);
 			pendingData.setAction(Constant.APPROVAL_ACTION_CREATE);
-			pendingData.setPendingValue(new Gson().toJson(memberUserDto));
+			pendingData.setPendingValue(Utility.getGson().toJson(memberUserDto));
 
 			PendingApproval pendingApproval = new PendingApproval();
 			pendingApproval.setApiUrl(String.format(ApprovalConstant.APPROVAL_PENDING_URL, approvalId));
@@ -2878,7 +2878,7 @@ public class MemberService {
 		try {
 			String memberCode = pendingApproval.getPendingData().getQueryValue();
 			String username = pendingApproval.getPendingData().getQueryValue2();
-			UpdateUserDTO userDto = new Gson().fromJson(pendingApproval.getPendingData().getPendingValue(), UpdateUserDTO.class);
+			UpdateUserDTO userDto = Utility.getGson().fromJson(pendingApproval.getPendingData().getPendingValue(), UpdateUserDTO.class);
 			
 			// get redis user info
 			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
@@ -2970,8 +2970,8 @@ public class MemberService {
 			pendingData.setQueryField2("users.username");
 			pendingData.setQueryValue2(username);
 			pendingData.setAction(Constant.APPROVAL_ACTION_UPDATE);
-			pendingData.setOldValue(new Gson().toJson(userDto.getOldData()));
-			pendingData.setPendingValue(new Gson().toJson(userDto.getPendingData()));
+			pendingData.setOldValue(Utility.getGson().toJson(userDto.getOldData()));
+			pendingData.setPendingValue(Utility.getGson().toJson(userDto.getPendingData()));
 
 			PendingApproval pendingApproval = new PendingApproval();
 			pendingApproval.setApiUrl(String.format(ApprovalConstant.APPROVAL_PENDING_URL, approvalId));
@@ -3024,7 +3024,7 @@ public class MemberService {
 		try {
 			String memberCode = pendingApproval.getPendingData().getQueryValue();
 			String username = pendingApproval.getPendingData().getQueryValue2();
-			UserRolesDTO userDto = new Gson().fromJson(pendingApproval.getPendingData().getPendingValue(), UserRolesDTO.class);
+			UserRolesDTO userDto = Utility.getGson().fromJson(pendingApproval.getPendingData().getPendingValue(), UserRolesDTO.class);
 			
 			// get redis user info
 			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
@@ -3107,8 +3107,8 @@ public class MemberService {
 			pendingData.setQueryField2("users.username");
 			pendingData.setQueryValue2(username);
 			pendingData.setAction(Constant.APPROVAL_ACTION_CREATE);
-			pendingData.setOldValue(new Gson().toJson(userDto.getOldData()));
-			pendingData.setPendingValue(new Gson().toJson(userDto.getPendingData()));
+			pendingData.setOldValue(Utility.getGson().toJson(userDto.getOldData()));
+			pendingData.setPendingValue(Utility.getGson().toJson(userDto.getPendingData()));
 
 			PendingApproval pendingApproval = new PendingApproval();
 			pendingApproval.setApiUrl(String.format(ApprovalConstant.APPROVAL_PENDING_URL, approvalId));
@@ -3132,7 +3132,7 @@ public class MemberService {
 		try {
 			String memberCode = pendingApproval.getPendingData().getQueryValue();
 			String username = pendingApproval.getPendingData().getQueryValue2();
-			FunctionsDTO userDto = new Gson().fromJson(pendingApproval.getPendingData().getPendingValue(), FunctionsDTO.class);
+			FunctionsDTO userDto = Utility.getGson().fromJson(pendingApproval.getPendingData().getPendingValue(), FunctionsDTO.class);
 			
 			// get redis user info
 			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
@@ -3215,8 +3215,8 @@ public class MemberService {
 			pendingData.setQueryField2("users.username");
 			pendingData.setQueryValue2(username);
 			pendingData.setAction(Constant.APPROVAL_ACTION_CREATE);
-			pendingData.setOldValue(new Gson().toJson(userDto.getOldData()));
-			pendingData.setPendingValue(new Gson().toJson(userDto.getPendingData()));
+			pendingData.setOldValue(Utility.getGson().toJson(userDto.getOldData()));
+			pendingData.setPendingValue(Utility.getGson().toJson(userDto.getPendingData()));
 
 			PendingApproval pendingApproval = new PendingApproval();
 			pendingApproval.setApiUrl(String.format(ApprovalConstant.APPROVAL_PENDING_URL, approvalId));
@@ -3369,7 +3369,7 @@ public class MemberService {
 		String methodName = "moveAllInvestorsToNewMember";
 		try {
 			String memberCode = pendingApproval.getPendingData().getQueryValue();
-			ChangeGroupDTO changeGroupDto = new Gson().fromJson(pendingApproval.getPendingData().getPendingValue(), ChangeGroupDTO.class);
+			ChangeGroupDTO changeGroupDto = Utility.getGson().fromJson(pendingApproval.getPendingData().getPendingValue(), ChangeGroupDTO.class);
 			
 			// get redis user info
 			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
@@ -3474,8 +3474,8 @@ public class MemberService {
 			pendingData.setQueryField("memberCode");
 			pendingData.setQueryValue(changeGroupDto.getOldData().getGroupCode());
 			pendingData.setAction(Constant.APPROVAL_ACTION_UPDATE);
-			pendingData.setOldValue(new Gson().toJson(changeGroupDto.getOldData()));
-			pendingData.setPendingValue(new Gson().toJson(changeGroupDto.getPendingData()));
+			pendingData.setOldValue(Utility.getGson().toJson(changeGroupDto.getOldData()));
+			pendingData.setPendingValue(Utility.getGson().toJson(changeGroupDto.getPendingData()));
 
 			PendingApproval pendingApproval = new PendingApproval();
 			pendingApproval.setApiUrl(String.format(ApprovalConstant.APPROVAL_PENDING_URL, approvalId));

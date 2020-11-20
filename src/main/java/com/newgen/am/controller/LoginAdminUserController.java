@@ -59,7 +59,7 @@ public class LoginAdminUserController {
         String methodName = "login";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [POST]/admin/users/login");
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(userDto));
+        AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(userDto));
         
         LoginAdminUserOutputDTO loginUserDto = loginAdmUserService.signin(request, userDto.getUsername(), userDto.getPassword(), refId);
         
@@ -74,7 +74,7 @@ public class LoginAdminUserController {
         	logResponse.getData().getUser().setFunctions(null);
         }
         
-        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(logResponse));
+        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(logResponse));
         return response;
     }
     
@@ -90,7 +90,7 @@ public class LoginAdminUserController {
         AdminResponseObj response = new AdminResponseObj();
         response.setStatus(Constant.RESPONSE_OK);
         
-        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
         return response;
     }
     
@@ -99,7 +99,7 @@ public class LoginAdminUserController {
         String methodName = "verifyPin";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [POST]/admin/users/verifyPin/" + userId);
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(user));
+        AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(user));
         
         AdminResponseObj response = new AdminResponseObj();
         if (loginAdmUserService.verifyPin(userId, user.getPin(), refId)) {
@@ -109,7 +109,7 @@ public class LoginAdminUserController {
             response.setErrMsg(ErrorMessage.INCORRECT_PIN);
         }
         
-        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
         return response;
     }
     
@@ -118,14 +118,14 @@ public class LoginAdminUserController {
         String methodName = "changePassword";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, "REQUEST_API: " + String.format("[POST]/admin/users/%s/password", userId));
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(input));
+        AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(input));
         
         loginAdmUserService.changePassword(request, userId, input.getOldPassword(), input.getNewPassword(), refId);
         
         AdminResponseObj response = new AdminResponseObj();
         response.setStatus(Constant.RESPONSE_OK);
         
-        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
         return response;
     }
     
@@ -134,7 +134,7 @@ public class LoginAdminUserController {
         String methodName = "saveLayout";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [POST]/admin/users/layout");
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(input));
+        AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(input));
         
         AdminResponseObj response = new AdminResponseObj();
         try {
@@ -145,7 +145,7 @@ public class LoginAdminUserController {
             throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
         }
         
-        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
         return response;
     }
     
@@ -154,7 +154,7 @@ public class LoginAdminUserController {
         String methodName = "saveLayout";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [POST]/admin/users/tableSetting");
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(input));
+        AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(input));
         
         AdminResponseObj response = new AdminResponseObj();
         try {
@@ -165,7 +165,7 @@ public class LoginAdminUserController {
             throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
         }
         
-        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
         return response;
     }
     
@@ -174,7 +174,7 @@ public class LoginAdminUserController {
         String methodName = "saveWatchList";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, "REQUEST_API: " + String.format("[POST]/admin/users/%s/watchlist", userId));
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(input));
+        AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(input));
         
         AdminResponseObj response = new AdminResponseObj();
         try {
@@ -194,7 +194,7 @@ public class LoginAdminUserController {
             throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
         }
         
-        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
         return response;
     }
     
@@ -203,14 +203,14 @@ public class LoginAdminUserController {
         String methodName = "resetPassword";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [PUT]/admin/users/resetPassword");
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(userDto));
+        AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(userDto));
         
         loginAdmUserService.resetAdminUserPassword(request, userDto, refId);
         
         AdminResponseObj response = new AdminResponseObj();
         response.setStatus(Constant.RESPONSE_OK);
         
-        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
         return response;
     }
     
@@ -219,14 +219,14 @@ public class LoginAdminUserController {
         String methodName = "resetPin";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [PUT]/admin/users/resetPin");
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(userDto));
+        AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(userDto));
         
         loginAdmUserService.resetAdminUserPin(request, userDto, refId);
         
         AdminResponseObj response = new AdminResponseObj();
         response.setStatus(Constant.RESPONSE_OK);
         
-        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
         return response;
     }
     
@@ -235,14 +235,14 @@ public class LoginAdminUserController {
         String methodName = "resetInvestorUserPassword";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [PUT]/admin/users/resetInvestorUserPassword");
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(userDto));
+        AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(userDto));
         
         loginAdmUserService.resetInvestorUserPassword(request, userDto, refId);
         
         AdminResponseObj response = new AdminResponseObj();
         response.setStatus(Constant.RESPONSE_OK);
         
-        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
         return response;
     }
     
@@ -251,14 +251,14 @@ public class LoginAdminUserController {
         String methodName = "resetPin";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [PUT]/admin/users/resetInvestorUserPin");
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(userDto));
+        AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(userDto));
         
         loginAdmUserService.resetInvestorUserPin(request, userDto, refId);
         
         AdminResponseObj response = new AdminResponseObj();
         response.setStatus(Constant.RESPONSE_OK);
         
-        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
         return response;
     }
     
@@ -287,7 +287,7 @@ public class LoginAdminUserController {
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 		
-		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
 		return response;
 	}
     
@@ -313,7 +313,7 @@ public class LoginAdminUserController {
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 		
-		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
 		return response;
 	}
 }

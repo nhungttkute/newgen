@@ -24,7 +24,6 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.google.gson.Gson;
 import com.newgen.am.common.AMLogger;
 import com.newgen.am.common.Constant;
 import com.newgen.am.common.CustomMappingStrategy;
@@ -51,6 +50,7 @@ import com.newgen.am.dto.MarginRatioAlertDTO;
 import com.newgen.am.dto.MarginTransCSV;
 import com.newgen.am.dto.MarginTransactionDTO;
 import com.newgen.am.dto.ResponseObj;
+import com.newgen.am.dto.UpdateInvestorDTO;
 import com.newgen.am.dto.UserCSV;
 import com.newgen.am.dto.UserDTO;
 import com.newgen.am.exception.CustomException;
@@ -89,7 +89,7 @@ public class InvestorController {
             response.setErrMsg(ErrorMessage.RESULT_NOT_FOUND);
         }
         
-        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
         return response;
     }
     
@@ -111,7 +111,7 @@ public class InvestorController {
             response.setErrMsg(ErrorMessage.RESULT_NOT_FOUND);
         }
         
-        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
         return response;
     }
     
@@ -120,7 +120,7 @@ public class InvestorController {
         String methodName = "getInvestorInfo";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, "REQUEST_API: /admin/investorInfo");
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(investorDetailDto));
+        AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(investorDetailDto));
         
         if (!Utility.isLocalRequest(request)) throw new CustomException(ErrorMessage.ACCESS_DENIED, HttpStatus.FORBIDDEN);
         
@@ -137,7 +137,7 @@ public class InvestorController {
 			response.setErrMsg(ErrorMessage.RESULT_NOT_FOUND);
 		}
 
-		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
 		return response;
     }
     
@@ -146,7 +146,7 @@ public class InvestorController {
         String methodName = "getInvestorInfoByCQGAccountId";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, "REQUEST_API: /admin/getInvestorInfoByCQGAccountId");
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(investorDetailDto));
+        AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(investorDetailDto));
         
         if (!Utility.isLocalRequest(request)) throw new CustomException(ErrorMessage.ACCESS_DENIED, HttpStatus.FORBIDDEN);
         
@@ -163,7 +163,7 @@ public class InvestorController {
 			response.setErrMsg(ErrorMessage.RESULT_NOT_FOUND);
 		}
 		
-		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
 		return response;
     }
     
@@ -192,7 +192,7 @@ public class InvestorController {
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 		
-		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
 		return response;
 	}
 
@@ -247,14 +247,14 @@ public class InvestorController {
 			logRequest.getIndividual().setScannedSignature(null);
 		}
 		
-		AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(logRequest));
+		AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(logRequest));
 
 		investorService.createInvestorPA(request, investorDto, refId);
 
 		AdminResponseObj response = new AdminResponseObj();
 		response.setStatus(Constant.RESPONSE_OK);
 
-		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
 		return response;
 	}
 	
@@ -280,16 +280,35 @@ public class InvestorController {
 			logRequest.getPendingData().getIndividual().setScannedSignature(null);
 		}
 				
-		AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(logRequest));
+		AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(logRequest));
 
 		investorService.updateInvestorPA(request, investorCode, investorDto, refId);
 
 		AdminResponseObj response = new AdminResponseObj();
 		response.setStatus(Constant.RESPONSE_OK);
 
-		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
 		return response;
 	}
+	
+	@PutMapping("/admin/investors/{investorCode}/cqgInfo")
+	@PreAuthorize("hasAuthority('clientManagement.investorManagement.investorInfo.update')")
+	public AdminResponseObj updateInvestorCQGInfo(HttpServletRequest request, @PathVariable String investorCode,
+			@Validated(ValidationSequence.class) @RequestBody UpdateInvestorDTO investorDto) {
+		String methodName = "updateInvestorCQGInfo";
+		long refId = System.currentTimeMillis();
+		AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [PUT]/admin/investors/" + investorCode + "/cqgInfo");
+		AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(investorDto));
+
+		investorService.updateInvestorCQGInfo(request, investorCode, investorDto, refId);
+
+		AdminResponseObj response = new AdminResponseObj();
+		response.setStatus(Constant.RESPONSE_OK);
+
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
+		return response;
+	}
+
 
 	@GetMapping("/admin/investors/{investorCode}")
 	@PreAuthorize("hasAuthority('clientManagement.investorManagementinvestorInfo.view')")
@@ -320,7 +339,7 @@ public class InvestorController {
 			logResponse.getData().getInvestor().getIndividual().setScannedFrontIdCard("");
 			logResponse.getData().getInvestor().getIndividual().setScannedSignature("");
 		}
-		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(logResponse));
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(logResponse));
 		return response;
 	}
 	
@@ -349,7 +368,7 @@ public class InvestorController {
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 		
-		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
 		return response;
 	}
 	
@@ -403,7 +422,7 @@ public class InvestorController {
 			response.setErrMsg(ErrorMessage.RESULT_NOT_FOUND);
 		}
 
-		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
 		return response;
 	}
 	
@@ -414,14 +433,14 @@ public class InvestorController {
 		String methodName = "createInvestorUser";
 		long refId = System.currentTimeMillis();
 		AMLogger.logMessage(className, methodName, refId, String.format("REQUEST_API: [POST]/admin/investors/%s/users", investorCode));
-		AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(userDto));
+		AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(userDto));
 
 		investorService.createInvestorUserPA(request, investorCode, userDto, refId);
 
 		AdminResponseObj response = new AdminResponseObj();
 		response.setStatus(Constant.RESPONSE_OK);
 
-		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
 		return response;
 	}
 	
@@ -431,14 +450,14 @@ public class InvestorController {
         String methodName = "createInvestorDefaultSetting";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, String.format("REQUEST_API: [POST]/admin/investors/%s/%s/defaultSetting", memberCode, investorCode));
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(investorDto));
+        AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(investorDto));
         
         investorService.createDefaultSetting(request, memberCode, investorCode, investorDto, refId);
         
         AdminResponseObj response = new AdminResponseObj();
         response.setStatus(Constant.RESPONSE_OK);
         
-        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
         return response;
     }
 	
@@ -448,14 +467,14 @@ public class InvestorController {
         String methodName = "createInvestorCommoditiesSetting";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, String.format("REQUEST_API: [POST]/admin/investors/%s/%s/commoditiesSetting", memberCode, investorCode));
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(investorDto));
+        AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(investorDto));
         
         investorService.createInvestorCommodities(request, memberCode, investorCode, investorDto, refId);
         
         AdminResponseObj response = new AdminResponseObj();
         response.setStatus(Constant.RESPONSE_OK);
         
-        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
         return response;
     }
 	
@@ -465,7 +484,7 @@ public class InvestorController {
         String methodName = "setInvestorNewPositionOrderLock";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, String.format("REQUEST_API: [PUT]/admin/members/%s/newPositionOrderLock", investorCode));
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(investorDto));
+        AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(investorDto));
         
         if (Utility.isNull(investorDto) || Utility.isNull(investorDto.getPendingData()) || Utility.isNull(investorDto.getPendingData().getRiskParameters()) || Utility.isNull(investorDto.getPendingData().getRiskParameters().getNewPositionOrderLock())) {
         	throw new CustomException(ErrorMessage.INVALID_REQUEST, HttpStatus.BAD_REQUEST);
@@ -475,7 +494,7 @@ public class InvestorController {
         AdminResponseObj response = new AdminResponseObj();
         response.setStatus(Constant.RESPONSE_OK);
         
-        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
         return response;
     }
 	
@@ -485,7 +504,7 @@ public class InvestorController {
         String methodName = "setInvestorOrderLock";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, String.format("REQUEST_API: [PUT]/admin/investors/%s/orderLock", investorCode));
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(investorDto));
+        AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(investorDto));
         
         if (Utility.isNull(investorDto) || Utility.isNull(investorDto.getPendingData()) || Utility.isNull(investorDto.getPendingData().getRiskParameters()) || Utility.isNull(investorDto.getPendingData().getRiskParameters().getOrderLock())) {
         	throw new CustomException(ErrorMessage.INVALID_REQUEST, HttpStatus.BAD_REQUEST);
@@ -495,7 +514,7 @@ public class InvestorController {
         AdminResponseObj response = new AdminResponseObj();
         response.setStatus(Constant.RESPONSE_OK);
         
-        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
         return response;
     }
 	
@@ -505,14 +524,14 @@ public class InvestorController {
         String methodName = "setMarginMultiplier";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, String.format("REQUEST_API: [PUT]/admin/investors/%s/marginMultiplier", investorCode));
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(investorDto));
+        AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(investorDto));
         
         investorService.setMarginMultiplier(request, investorCode, investorDto, refId);
         
         AdminResponseObj response = new AdminResponseObj();
         response.setStatus(Constant.RESPONSE_OK);
         
-        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
         return response;
     }
 	
@@ -522,14 +541,14 @@ public class InvestorController {
         String methodName = "setMarginRatio";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, String.format("REQUEST_API: [PUT]/admin/investors/%s/marginRatio", investorCode));
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(investorDto));
+        AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(investorDto));
         
         investorService.setMarginRatioAlert(request, investorCode, investorDto, refId);
         
         AdminResponseObj response = new AdminResponseObj();
         response.setStatus(Constant.RESPONSE_OK);
         
-        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
         return response;
     }
 	
@@ -539,14 +558,14 @@ public class InvestorController {
         String methodName = "setGeneralFee";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, String.format("REQUEST_API: [PUT]/admin/investors/%s/setGeneralFee", investorCode));
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(investorDto));
+        AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(investorDto));
         
         investorService.setGeneralFee(request, investorCode, investorDto, refId);
         
         AdminResponseObj response = new AdminResponseObj();
         response.setStatus(Constant.RESPONSE_OK);
         
-        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
         return response;
     }
 	
@@ -556,14 +575,14 @@ public class InvestorController {
         String methodName = "updateGeneralFee";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, String.format("REQUEST_API: [PUT]/admin/investors/%s/updateGeneralFee", investorCode));
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(investorDto));
+        AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(investorDto));
         
         investorService.updateGeneralFee(request, investorCode, investorDto, refId);
         
         AdminResponseObj response = new AdminResponseObj();
         response.setStatus(Constant.RESPONSE_OK);
         
-        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
         return response;
     }
 	
@@ -573,14 +592,14 @@ public class InvestorController {
         String methodName = "changeBroker";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, String.format("REQUEST_API: [PUT]/admin/investors/%s/changeBroker", investorCode));
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(groupDto));
+        AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(groupDto));
         
         investorService.changeBrokerPA(request, investorCode, groupDto, refId);
         
         AdminResponseObj response = new AdminResponseObj();
         response.setStatus(Constant.RESPONSE_OK);
         
-        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
         return response;
     }
 	
@@ -590,14 +609,14 @@ public class InvestorController {
         String methodName = "changeCollaborator";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, String.format("REQUEST_API: [PUT]/admin/investors/%s/changeCollaborator", investorCode));
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(groupDto));
+        AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(groupDto));
         
         investorService.changeCollaboratorPA(request, investorCode, groupDto, refId);
         
         AdminResponseObj response = new AdminResponseObj();
         response.setStatus(Constant.RESPONSE_OK);
         
-        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
         return response;
     }
 	
@@ -613,7 +632,7 @@ public class InvestorController {
         AdminResponseObj response = new AdminResponseObj();
         response.setStatus(Constant.RESPONSE_OK);
         
-        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
         return response;
     }
 	
@@ -632,7 +651,7 @@ public class InvestorController {
 		response.setData(new AdminDataObj());
 		response.getData().setWithdrawableAmount(amount);
 
-		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
 		return response;
 	}
 	
@@ -642,14 +661,14 @@ public class InvestorController {
         String methodName = "depositMargin";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [PUT]/am/admin/investors/moneyDeposit");
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(marginTransDto));
+        AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(marginTransDto));
         
         investorService.depositMarginPA(request, marginTransDto, refId);
         
         AdminResponseObj response = new AdminResponseObj();
         response.setStatus(Constant.RESPONSE_OK);
         
-        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
         return response;
     }
 	
@@ -659,14 +678,14 @@ public class InvestorController {
         String methodName = "withdrawMargin";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [PUT]/am/admin/investors/moneyWithdrawal");
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + new Gson().toJson(marginTransDto));
+        AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(marginTransDto));
         
         investorService.withdrawMarginPA(request, marginTransDto, refId);
         
         AdminResponseObj response = new AdminResponseObj();
         response.setStatus(Constant.RESPONSE_OK);
         
-        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
         return response;
     }
 	
@@ -695,7 +714,7 @@ public class InvestorController {
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 		
-		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
 		return response;
 	}
 	
@@ -742,7 +761,7 @@ public class InvestorController {
         AdminResponseObj response = new AdminResponseObj();
         response.setStatus(Constant.RESPONSE_OK);
         
-        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
         return response;
     }
 	
@@ -753,7 +772,7 @@ public class InvestorController {
         
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [POST]/am/admin/investors/commodityFee");
-        AMLogger.logMessage(className, methodName, refId, "INPUT: " + new Gson().toJson(invCommdityFeeDto));
+        AMLogger.logMessage(className, methodName, refId, "INPUT: " + Utility.getGson().toJson(invCommdityFeeDto));
         
         InvestorCommodityFeeDTO invCommFee = investorService.getInvestorCommodityFee(invCommdityFeeDto.getInvestorCode(), invCommdityFeeDto.getCommodityCode(), refId);
         
@@ -762,7 +781,7 @@ public class InvestorController {
         response.setData(new AdminDataObj());
         response.getData().setInvCommodityFee(invCommFee);
         
-        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + new Gson().toJson(response));
+        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
         return response;
     }
 }

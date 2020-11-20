@@ -17,6 +17,9 @@ import com.newgen.am.exception.CustomException;
 import com.newgen.am.model.DBSequence;
 import org.bson.Document;
 import org.bson.json.JsonWriterSettings;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.mapping.MongoId;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -28,6 +31,9 @@ import org.springframework.stereotype.Service;
 public class DBSequenceService {
 
     private String className = "DBSequenceService";
+    
+    @Autowired
+    MongoTemplate mongoTemplate;
 
     public long generateSequence(String seqName, long refId) {
         String methodName = "generateSequence";
@@ -39,7 +45,8 @@ public class DBSequenceService {
             BasicDBObject query = new BasicDBObject();
             query.put("_id", seqName);
             Document sequenceDoc = collection.find(query).first();
-            DBSequence dbSeq = new Gson().fromJson(sequenceDoc.toJson(Utility.getJsonWriterSettings()), DBSequence.class);
+            DBSequence dbSeq = mongoTemplate.getConverter().read(DBSequence.class, sequenceDoc);
+//            DBSequence dbSeq = Utility.getGson().fromJson(sequenceDoc.toJson(Utility.getJsonWriterSettings()), DBSequence.class);
             sequenceValue = dbSeq.getSeq() + 1;
 
             BasicDBObject newDocument = new BasicDBObject();

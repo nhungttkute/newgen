@@ -147,7 +147,7 @@ public class SystemRoleService {
 		String methodName = "createSystemRole";
 		
 		try {
-			RoleDTO sysRoleDto = new Gson().fromJson(pendingApproval.getPendingData().getPendingValue(), RoleDTO.class);
+			RoleDTO sysRoleDto = Utility.getGson().fromJson(pendingApproval.getPendingData().getPendingValue(), RoleDTO.class);
 			
 			// get redis user info
 			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
@@ -211,7 +211,7 @@ public class SystemRoleService {
 			pendingData.setServiceFunctionName(ApprovalConstant.SYSTEM_ROLE_CREATE);
 			pendingData.setCollectionName("system_roles");
 			pendingData.setAction(Constant.APPROVAL_ACTION_CREATE);
-			pendingData.setPendingValue(new Gson().toJson(sysRoleDto));
+			pendingData.setPendingValue(Utility.getGson().toJson(sysRoleDto));
 
 			PendingApproval pendingApproval = new PendingApproval();
 			pendingApproval.setApiUrl(String.format(ApprovalConstant.APPROVAL_PENDING_URL, approvalId));
@@ -234,7 +234,7 @@ public class SystemRoleService {
 		String methodName = "updateSystemRole";
 		
 		try {
-			UpdateRoleDTO sysRoleDto = new Gson().fromJson(pendingApproval.getPendingData().getPendingValue(), UpdateRoleDTO.class);
+			UpdateRoleDTO sysRoleDto = Utility.getGson().fromJson(pendingApproval.getPendingData().getPendingValue(), UpdateRoleDTO.class);
 			
 			// get redis user info
 			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
@@ -296,8 +296,8 @@ public class SystemRoleService {
 			pendingData.setAction(Constant.APPROVAL_ACTION_UPDATE);
 			pendingData.setQueryField("_id");
 			pendingData.setQueryValue(sysRoleId);
-			pendingData.setOldValue(new Gson().toJson(sysRoleDto.getOldData()));
-			pendingData.setPendingValue(new Gson().toJson(sysRoleDto.getPendingData()));
+			pendingData.setOldValue(Utility.getGson().toJson(sysRoleDto.getOldData()));
+			pendingData.setPendingValue(Utility.getGson().toJson(sysRoleDto.getPendingData()));
 
 			PendingApproval pendingApproval = new PendingApproval();
 			pendingApproval.setApiUrl(String.format(ApprovalConstant.APPROVAL_PENDING_URL, approvalId));
@@ -321,7 +321,7 @@ public class SystemRoleService {
 		String methodName = "createSystemRoleFunctions";
 		
 		try {
-			FunctionsDTO sysRoleDto = new Gson().fromJson(pendingApproval.getPendingData().getPendingValue(), FunctionsDTO.class);
+			FunctionsDTO sysRoleDto = Utility.getGson().fromJson(pendingApproval.getPendingData().getPendingValue(), FunctionsDTO.class);
 			
 			// get redis user info
 			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
@@ -389,8 +389,8 @@ public class SystemRoleService {
 			pendingData.setAction(Constant.APPROVAL_ACTION_UPDATE);
 			pendingData.setQueryField("_id");
 			pendingData.setQueryValue(sysRoleId);
-			pendingData.setOldValue(new Gson().toJson(sysRoleDto.getOldData()));
-			pendingData.setPendingValue(new Gson().toJson(sysRoleDto.getPendingData()));
+			pendingData.setOldValue(Utility.getGson().toJson(sysRoleDto.getOldData()));
+			pendingData.setPendingValue(Utility.getGson().toJson(sysRoleDto.getPendingData()));
 
 			PendingApproval pendingApproval = new PendingApproval();
 			pendingApproval.setApiUrl(String.format(ApprovalConstant.APPROVAL_PENDING_URL, approvalId));

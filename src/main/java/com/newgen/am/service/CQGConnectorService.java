@@ -41,13 +41,13 @@ public class CQGConnectorService {
 			cqgRequest.setFullName(memberDto.getCompany().getDelegate().getFullName());
 			cqgRequest.setAddress(memberDto.getCompany().getAddress());
 			
-			String input = new Gson().toJson(cqgRequest);
+			String input = Utility.getGson().toJson(cqgRequest);
 			AMLogger.logMessage(className, methodName, refId, "INPUT: " + input);
 			
 			String[] res = serviceCon.sendPostRequest(serviceCon.getCMSServiceURL(ConfigLoader.getMainConfig().getString(Constant.SERVICE_CMS_SALE_SERIES)), input, ConfigLoader.getMainConfig().getString(Constant.LOCAL_SECRET_KEY));
 			AMLogger.logMessage(className, methodName, refId, "OUTPUT: " + res[0] + " => " + res[1]);
 			if (res.length >=2 && "200".equals(res[0])) {
-				CQGResponseObj cmsResponse = new Gson().fromJson(res[1], CQGResponseObj.class);
+				CQGResponseObj cmsResponse = Utility.getGson().fromJson(res[1], CQGResponseObj.class);
 				if (cmsResponse != null && Constant.RESPONSE_OK.equalsIgnoreCase(cmsResponse.getStatus())) {
 					return cmsResponse;
 				}
@@ -79,13 +79,13 @@ public class CQGConnectorService {
 			}
 			
 			
-			String input = new Gson().toJson(cqgRequest);
+			String input = Utility.getGson().toJson(cqgRequest);
 			AMLogger.logMessage(className, methodName, refId, "INPUT: " + input);
 			
 			String[] res = serviceCon.sendPostRequest(serviceCon.getCMSServiceURL(ConfigLoader.getMainConfig().getString(Constant.SERVICE_CMS_CUSTOMER)), input, ConfigLoader.getMainConfig().getString(Constant.LOCAL_SECRET_KEY));
 			AMLogger.logMessage(className, methodName, refId, "OUTPUT: " + res[0] + " => " + res[1]);
 			if (res.length >=2 && "200".equals(res[0])) {
-				CQGResponseObj cmsResponse = new Gson().fromJson(res[1], CQGResponseObj.class);
+				CQGResponseObj cmsResponse = Utility.getGson().fromJson(res[1], CQGResponseObj.class);
 				if (cmsResponse != null && Constant.RESPONSE_OK.equalsIgnoreCase(cmsResponse.getStatus())) {
 					return cmsResponse;
 				}
@@ -106,13 +106,13 @@ public class CQGConnectorService {
 			cqgRequest.setCustomerId(customerId);
 			cqgRequest.setProfileId(profileId);
 			
-			String input = new Gson().toJson(cqgRequest);
+			String input = Utility.getGson().toJson(cqgRequest);
 			AMLogger.logMessage(className, methodName, refId, "INPUT: " + input);
 			
 			String[] res = serviceCon.sendPostRequest(serviceCon.getCMSServiceURL(ConfigLoader.getMainConfig().getString(Constant.SERVICE_CMS_TRADER)), input, ConfigLoader.getMainConfig().getString(Constant.LOCAL_SECRET_KEY));
 			AMLogger.logMessage(className, methodName, refId, "OUTPUT: " + res[0] + " => " + res[1]);
 			if (res.length >=2 && "200".equals(res[0])) {
-				CQGResponseObj cmsResponse = new Gson().fromJson(res[1], CQGResponseObj.class);
+				CQGResponseObj cmsResponse = Utility.getGson().fromJson(res[1], CQGResponseObj.class);
 				if (cmsResponse != null && Constant.RESPONSE_OK.equalsIgnoreCase(cmsResponse.getStatus())) {
 					return cmsResponse;
 				}
@@ -124,23 +124,28 @@ public class CQGConnectorService {
 		}
 	}
 	
-	public CQGResponseObj createCQGAccount(String investorCode, String customerId, long refId) {
+	public CQGResponseObj createCQGAccount(String saleSeriesId, String accountName, String investorCode, String customerId, long refId) {
 		String methodName = "createCQGAccount";
 		CQGResponseObj cmsResponse = null;
 		try {
 			LocalServiceConnection serviceCon = new LocalServiceConnection();
 			CQGCMSRequestDTO cqgRequest = new CQGCMSRequestDTO();
-			cqgRequest.setName(Constant.CQG_ACCOUNT_NAME_PREFIX + investorCode);
-			cqgRequest.setNumber(Constant.CQG_ACCOUNT_NUMBER_PREFIX + investorCode);
+			cqgRequest.setSaleSeriesId(saleSeriesId);
+			cqgRequest.setName(accountName);
+			String accNumberPrefix = Constant.CQG_ACCOUNT_NUMBER_PREFIX_STG;
+			if (Utility.isProdMode()) {
+				accNumberPrefix = Constant.CQG_ACCOUNT_NUMBER_PREFIX_PROD;
+			}
+			cqgRequest.setNumber(accNumberPrefix + investorCode);
 			cqgRequest.setCustomerId(customerId);
 			
-			String input = new Gson().toJson(cqgRequest);
+			String input = Utility.getGson().toJson(cqgRequest);
 			AMLogger.logMessage(className, methodName, refId, "INPUT: " + input);
 			
 			String[] res = serviceCon.sendPostRequest(serviceCon.getCMSServiceURL(ConfigLoader.getMainConfig().getString(Constant.SERVICE_CMS_ACCOUNT)), input, ConfigLoader.getMainConfig().getString(Constant.LOCAL_SECRET_KEY));
 			AMLogger.logMessage(className, methodName, refId, "OUTPUT: " + res[0] + " => " + res[1]);
 			if (res.length >=2 && "200".equals(res[0])) {
-				cmsResponse = new Gson().fromJson(res[1], CQGResponseObj.class);
+				cmsResponse = Utility.getGson().fromJson(res[1], CQGResponseObj.class);
 				if (cmsResponse != null && Constant.RESPONSE_OK.equalsIgnoreCase(cmsResponse.getStatus())) {
 					updateInvestorCQGAccount(investorCode, customerId, cmsResponse.getData().getAccountId(), refId);
 				}
@@ -190,13 +195,13 @@ public class CQGConnectorService {
 			linksToSet.add(accAuth);
 			cqgRequest.setLinksToSet(linksToSet);
 			
-			String input = new Gson().toJson(cqgRequest);
+			String input = Utility.getGson().toJson(cqgRequest);
 			AMLogger.logMessage(className, methodName, refId, "INPUT: " + input);
 			
 			String[] res = serviceCon.sendPutRequest(serviceCon.getCMSServiceURL(ConfigLoader.getMainConfig().getString(Constant.SERVICE_CMS_ACCOUNT_USER_AUTH_LIST)), input, ConfigLoader.getMainConfig().getString(Constant.LOCAL_SECRET_KEY));
 			AMLogger.logMessage(className, methodName, refId, "OUTPUT: " + res[0] + " => " + res[1]);
 			if (res.length >=2 && "200".equals(res[0])) {
-				cmsResponse = new Gson().fromJson(res[1], CQGResponseObj.class);
+				cmsResponse = Utility.getGson().fromJson(res[1], CQGResponseObj.class);
 				if (cmsResponse != null && Constant.RESPONSE_OK.equalsIgnoreCase(cmsResponse.getStatus())) {
 					return true;
 				}
@@ -241,7 +246,7 @@ public class CQGConnectorService {
 			String[] res = serviceCon.sendGetRequest(serviceCon.getCMSServiceURL(requestURL), ConfigLoader.getMainConfig().getString(Constant.LOCAL_SECRET_KEY));
 			AMLogger.logMessage(className, methodName, refId, "OUTPUT: " + res[0] + " => " + res[1]);
 			if (res.length >=2 && "200".equals(res[0])) {
-				CQGResponseObj cmsResponse = new Gson().fromJson(res[1], CQGResponseObj.class);
+				CQGResponseObj cmsResponse = Utility.getGson().fromJson(res[1], CQGResponseObj.class);
 				if (cmsResponse != null && Constant.RESPONSE_OK.equalsIgnoreCase(cmsResponse.getStatus())) {
 					updateInvestorCQGBalanceId(investorCode, cmsResponse.getData().getBalanceId(), refId);
 					return true;
@@ -263,13 +268,13 @@ public class CQGConnectorService {
 			cqgRequest.setAccountId(accountId);
 			cqgRequest.setChangedAmount(changedAmount);
 			
-			String input = new Gson().toJson(cqgRequest);
+			String input = Utility.getGson().toJson(cqgRequest);
 			AMLogger.logMessage(className, methodName, refId, "INPUT: " + input);
 			
 			String[] res = serviceCon.sendPutRequest(serviceCon.getCMSServiceURL(ConfigLoader.getMainConfig().getString(Constant.SERVICE_CMS_ACCOUNT_BALANCE)), input, ConfigLoader.getMainConfig().getString(Constant.LOCAL_SECRET_KEY));
 			AMLogger.logMessage(className, methodName, refId, "OUTPUT: " + res[0] + " => " + res[1]);
 			if (res.length >=2 && "200".equals(res[0])) {
-				CQGResponseObj cmsResponse = new Gson().fromJson(res[1], CQGResponseObj.class);
+				CQGResponseObj cmsResponse = Utility.getGson().fromJson(res[1], CQGResponseObj.class);
 				if (cmsResponse != null && Constant.RESPONSE_OK.equalsIgnoreCase(cmsResponse.getStatus())) {
 					return true;
 				}
@@ -289,13 +294,13 @@ public class CQGConnectorService {
 			cqgRequest.setAccountId(accountId);
 			cqgRequest.setCommodities(cqgCommodities);
 			
-			String input = new Gson().toJson(cqgRequest);
+			String input = Utility.getGson().toJson(cqgRequest);
 			AMLogger.logMessage(className, methodName, refId, "INPUT: " + input);
 			
 			String[] res = serviceCon.sendPutRequest(serviceCon.getCMSServiceURL(ConfigLoader.getMainConfig().getString(Constant.SERVICE_CMS_ACCOUNT_USER_MARKET_LIMITS)), input, ConfigLoader.getMainConfig().getString(Constant.LOCAL_SECRET_KEY));
 			AMLogger.logMessage(className, methodName, refId, "OUTPUT: " + res[0] + " => " + res[1]);
 			if (res.length >=2 && "200".equals(res[0])) {
-				CQGResponseObj cmsResponse = new Gson().fromJson(res[1], CQGResponseObj.class);
+				CQGResponseObj cmsResponse = Utility.getGson().fromJson(res[1], CQGResponseObj.class);
 				if (cmsResponse != null && Constant.RESPONSE_OK.equalsIgnoreCase(cmsResponse.getStatus())) {
 					return true;
 				}
@@ -323,13 +328,13 @@ public class CQGConnectorService {
 				cqgRequest.setDefaultPositionLimit(defaultPositionLimit);
 			}
 			
-			String input = new Gson().toJson(cqgRequest);
+			String input = Utility.getGson().toJson(cqgRequest);
 			AMLogger.logMessage(className, methodName, refId, "INPUT: " + input);
 			
 			String[] res = serviceCon.sendPostRequest(serviceCon.getCMSServiceURL(ConfigLoader.getMainConfig().getString(Constant.SERVICE_CMS_ACCOUNT_RISK_PARAMS)), input, ConfigLoader.getMainConfig().getString(Constant.LOCAL_SECRET_KEY));
 			AMLogger.logMessage(className, methodName, refId, "OUTPUT: " + res[0] + " => " + res[1]);
 			if (res.length >=2 && "200".equals(res[0])) {
-				CQGResponseObj cmsResponse = new Gson().fromJson(res[1], CQGResponseObj.class);
+				CQGResponseObj cmsResponse = Utility.getGson().fromJson(res[1], CQGResponseObj.class);
 				if (cmsResponse != null && Constant.RESPONSE_OK.equalsIgnoreCase(cmsResponse.getStatus())) {
 					return true;
 				}
