@@ -192,7 +192,7 @@ public class CommonController {
 		return response;
 	}
 	
-	@GetMapping("/admin/usersByDeptCode/{deptCode}")
+	@GetMapping("/admin/usersByDeptCode/{deptCode:.+}")
 	public AdminResponseObj getUsersByDeptCode(@PathVariable String deptCode) {
 		String methodName = "getUsersByDeptCode";
 		long refId = System.currentTimeMillis();
@@ -208,7 +208,7 @@ public class CommonController {
 		return response;
 	}
 	
-	@GetMapping("/admin/usersByMemberCode/{memberCode}")
+	@GetMapping("/admin/usersByMemberCode/{memberCode}/")
 	public AdminResponseObj getUsersByMemberCode(@PathVariable String memberCode) {
 		String methodName = "getUsersByMemberCode";
 		long refId = System.currentTimeMillis();
@@ -224,7 +224,7 @@ public class CommonController {
 		return response;
 	}
 	
-	@GetMapping("/admin/usersByBrokerCode/{brokerCode}")
+	@GetMapping("/admin/usersByBrokerCode/{brokerCode}/")
 	public AdminResponseObj getUsersByBrokerCode(@PathVariable String brokerCode) {
 		String methodName = "getUsersByBrokerCode";
 		long refId = System.currentTimeMillis();
@@ -240,7 +240,7 @@ public class CommonController {
 		return response;
 	}
 	
-	@GetMapping("/admin/usersByCollaboratorCode/{collaboratorCode}")
+	@GetMapping("/admin/usersByCollaboratorCode/{collaboratorCode}/")
 	public AdminResponseObj getUsersByCollaboratorCode(@PathVariable String collaboratorCode) {
 		String methodName = "getUsersByCollaboratorCode";
 		long refId = System.currentTimeMillis();
@@ -256,7 +256,7 @@ public class CommonController {
 		return response;
 	}
 	
-	@GetMapping("/admin/usersByInvestorCode/{investorCode}")
+	@GetMapping("/admin/usersByInvestorCode/{investorCode}/")
 	public AdminResponseObj getUsersByInvestorCode(@PathVariable String investorCode) {
 		String methodName = "getUsersByInvestorCode";
 		long refId = System.currentTimeMillis();

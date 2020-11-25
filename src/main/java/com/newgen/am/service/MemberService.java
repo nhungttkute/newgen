@@ -269,97 +269,103 @@ public class MemberService {
 			activityLogService.sendActivityLog(userInfo, request, ActivityLogService.ACTIVITY_APPROVAL_CREATE_MEMBER,
 					ActivityLogService.ACTIVITY_APPROVAL_CREATE_MEMBER_DESC, memberDto.getCode(), pendingApproval.getId());
 
-			// create Delegate document
-			Document delegate = new Document();
-			delegate.append("fullName", memberDto.getCompany().getDelegate().getFullName());
-			delegate.append("birthDay", memberDto.getCompany().getDelegate().getBirthDay());
-			delegate.append("identityCard", memberDto.getCompany().getDelegate().getIdentityCard());
-			delegate.append("idCreatedDate", memberDto.getCompany().getDelegate().getIdCreatedDate());
-			delegate.append("idCreatedLocation", memberDto.getCompany().getDelegate().getIdCreatedLocation());
-			delegate.append("email", memberDto.getCompany().getDelegate().getEmail());
-			delegate.append("phoneNumber", memberDto.getCompany().getDelegate().getPhoneNumber());
-			delegate.append("address", memberDto.getCompany().getDelegate().getAddress());
-			delegate.append("scannedFrontIdCard", memberDto.getCompany().getDelegate().getScannedFrontIdCard());
-			delegate.append("scannedBackIdCard", memberDto.getCompany().getDelegate().getScannedBackIdCard());
-			delegate.append("scannedSignature", memberDto.getCompany().getDelegate().getScannedSignature());
-			
-			// create Company document
-			Document company = new Document();
-			company.append("name", memberDto.getCompany().getName());
-			company.append("taxCode", memberDto.getCompany().getTaxCode());
-			company.append("address", memberDto.getCompany().getAddress());
-			company.append("phoneNumber", memberDto.getCompany().getPhoneNumber());
-			company.append("fax", memberDto.getCompany().getFax());
-			company.append("email", memberDto.getCompany().getEmail());
-			company.append("delegate", delegate);
-			
-			// create Contact document
-			Document contact = new Document();
-			contact.append("fullName", memberDto.getCompany().getDelegate().getFullName());
-			contact.append("phoneNumber", memberDto.getCompany().getDelegate().getPhoneNumber());
-			contact.append("email", memberDto.getCompany().getDelegate().getEmail());
-			
-			// create default member role
-			SystemRole defaultMemberRole = sysRoleRepository.findByName(Constant.MEMBER_DEFAULT_ROLE);
-			if (Utility.isNull(defaultMemberRole)) {
-				throw new CustomException(ErrorMessage.DEFAULT_ROLE_DOESNT_EXIST, HttpStatus.OK);
-			}
-			Document memberRole = new Document();
-			memberRole.append("name", defaultMemberRole.getName());
-			memberRole.append("description", defaultMemberRole.getDescription());
-			
-			// create riskParameters
-			Document riskParameters = new Document();
-			riskParameters.append("newPositionOrderLock", Constant.RISK_OPTION_NO);
-			riskParameters.append("orderLock", Constant.RISK_OPTION_NO);
-			riskParameters.append("marginWithdrawalLock", Constant.RISK_OPTION_NO);
-			
-			ObjectId memberId = new ObjectId();
-			Document newMember = new Document();
-			newMember.append("createdUser", Utility.getCurrentUsername());
-			newMember.append("createdDate", System.currentTimeMillis());
-			newMember.append("_id", memberId);
-			newMember.append("code", memberDto.getCode());
-			newMember.append("name", memberDto.getName());
-			newMember.append("status", Constant.STATUS_ACTIVE);
-			newMember.append("note", memberDto.getNote());
-			newMember.append("company", company);
-			newMember.append("contact", contact);
-			newMember.append("role", memberRole);
-			newMember.append("riskParameters", riskParameters);
-			
-			if (Utility.isCQGSyncOn()) {
-				// create a new cqg customer
-				CQGResponseObj saleSeriesResult = cqgService.createCQGSaleSeries(memberDto, refId);
-				if (saleSeriesResult != null) {
-					String profileId = saleSeriesResult.getData().getProfileId();
-					if (Utility.isNotNull(profileId)) {
-						Document cqgInfo = new Document();
-						cqgInfo.append("profileId", profileId.substring(1, profileId.length()));
-						newMember.append("cqgInfo", cqgInfo);
-					}
-				} else {
-					throw new CustomException(ErrorMessage.CQG_INFO_CREATED_UNSUCCESSFULLY, HttpStatus.OK);
+			boolean existedMember = memberRepository.existsMemberByCode(memberDto.getCode());
+			if (existedMember) {
+				AMLogger.logMessage(className, methodName, refId, "This member code already exists");
+				throw new CustomException(ErrorMessage.DOCUMENT_ALREADY_EXISTED, HttpStatus.OK);
+			} else {
+				// create Delegate document
+				Document delegate = new Document();
+				delegate.append("fullName", memberDto.getCompany().getDelegate().getFullName());
+				delegate.append("birthDay", memberDto.getCompany().getDelegate().getBirthDay());
+				delegate.append("identityCard", memberDto.getCompany().getDelegate().getIdentityCard());
+				delegate.append("idCreatedDate", memberDto.getCompany().getDelegate().getIdCreatedDate());
+				delegate.append("idCreatedLocation", memberDto.getCompany().getDelegate().getIdCreatedLocation());
+				delegate.append("email", memberDto.getCompany().getDelegate().getEmail());
+				delegate.append("phoneNumber", memberDto.getCompany().getDelegate().getPhoneNumber());
+				delegate.append("address", memberDto.getCompany().getDelegate().getAddress());
+				delegate.append("scannedFrontIdCard", memberDto.getCompany().getDelegate().getScannedFrontIdCard());
+				delegate.append("scannedBackIdCard", memberDto.getCompany().getDelegate().getScannedBackIdCard());
+				delegate.append("scannedSignature", memberDto.getCompany().getDelegate().getScannedSignature());
+				
+				// create Company document
+				Document company = new Document();
+				company.append("name", memberDto.getCompany().getName());
+				company.append("taxCode", memberDto.getCompany().getTaxCode());
+				company.append("address", memberDto.getCompany().getAddress());
+				company.append("phoneNumber", memberDto.getCompany().getPhoneNumber());
+				company.append("fax", memberDto.getCompany().getFax());
+				company.append("email", memberDto.getCompany().getEmail());
+				company.append("delegate", delegate);
+				
+				// create Contact document
+				Document contact = new Document();
+				contact.append("fullName", memberDto.getCompany().getDelegate().getFullName());
+				contact.append("phoneNumber", memberDto.getCompany().getDelegate().getPhoneNumber());
+				contact.append("email", memberDto.getCompany().getDelegate().getEmail());
+				
+				// create default member role
+				SystemRole defaultMemberRole = sysRoleRepository.findByName(Constant.MEMBER_DEFAULT_ROLE);
+				if (Utility.isNull(defaultMemberRole)) {
+					throw new CustomException(ErrorMessage.DEFAULT_ROLE_DOESNT_EXIST, HttpStatus.OK);
 				}
+				Document memberRole = new Document();
+				memberRole.append("name", defaultMemberRole.getName());
+				memberRole.append("description", defaultMemberRole.getDescription());
+				
+				// create riskParameters
+				Document riskParameters = new Document();
+				riskParameters.append("newPositionOrderLock", Constant.RISK_OPTION_NO);
+				riskParameters.append("orderLock", Constant.RISK_OPTION_NO);
+				riskParameters.append("marginWithdrawalLock", Constant.RISK_OPTION_NO);
+				
+				ObjectId memberId = new ObjectId();
+				Document newMember = new Document();
+				newMember.append("createdUser", Utility.getCurrentUsername());
+				newMember.append("createdDate", System.currentTimeMillis());
+				newMember.append("_id", memberId);
+				newMember.append("code", memberDto.getCode());
+				newMember.append("name", memberDto.getName());
+				newMember.append("status", Constant.STATUS_ACTIVE);
+				newMember.append("note", memberDto.getNote());
+				newMember.append("company", company);
+				newMember.append("contact", contact);
+				newMember.append("role", memberRole);
+				newMember.append("riskParameters", riskParameters);
+				
+				if (Utility.isCQGSyncOn()) {
+					// create a new cqg customer
+					CQGResponseObj saleSeriesResult = cqgService.createCQGSaleSeries(memberDto, refId);
+					if (saleSeriesResult != null) {
+						String profileId = saleSeriesResult.getData().getProfileId();
+						if (Utility.isNotNull(profileId)) {
+							Document cqgInfo = new Document();
+							cqgInfo.append("profileId", profileId.substring(1, profileId.length()));
+							newMember.append("cqgInfo", cqgInfo);
+						}
+					} else {
+						throw new CustomException(ErrorMessage.CQG_INFO_CREATED_UNSUCCESSFULLY, HttpStatus.OK);
+					}
+				}
+							
+				// insert new member
+				MongoDatabase database = MongoDBConnection.getMongoDatabase();
+				MongoCollection<Document> collection = database.getCollection("members");
+				collection.insertOne(newMember);
+				
+				// insert broker's seq, collaborator's seq
+				DBSequence brokerSeq = new DBSequence(Constant.BROKER_SEQ + memberDto.getCode(), 0);
+				DBSequence collaboratorSeq = new DBSequence(Constant.COLLABORATOR_SEQ + memberDto.getCode(), 0);
+				
+				dbSeqRepository.save(brokerSeq);
+				dbSeqRepository.save(collaboratorSeq);
+				
+				// insert new member's master user to login_admin_users
+				createMasterMemberUser(request, memberDto, memberDto.getCode(), memberRole, refId);
+				
+				// set member to redis
+				setMemberInfoRedis(collection, memberDto.getCode(), refId);
 			}
-						
-			// insert new member
-			MongoDatabase database = MongoDBConnection.getMongoDatabase();
-			MongoCollection<Document> collection = database.getCollection("members");
-			collection.insertOne(newMember);
-			
-			// insert broker's seq, collaborator's seq
-			DBSequence brokerSeq = new DBSequence(Constant.BROKER_SEQ + memberDto.getCode(), 0);
-			DBSequence collaboratorSeq = new DBSequence(Constant.COLLABORATOR_SEQ + memberDto.getCode(), 0);
-			
-			dbSeqRepository.save(brokerSeq);
-			dbSeqRepository.save(collaboratorSeq);
-			
-			// insert new member's master user to login_admin_users
-			createMasterMemberUser(request, memberDto, memberDto.getCode(), memberRole, refId);
-			
-			// set member to redis
-			setMemberInfoRedis(collection, memberDto.getCode(), refId);
 		} catch (CustomException e) {
 			throw e;
 		} catch (Exception e) {
@@ -370,15 +376,11 @@ public class MemberService {
 	
 	public void createMemberPA(HttpServletRequest request, MemberDTO memberDto, long refId) {
 		String methodName = "createMemberPA";
-		boolean existedMember= false;
-		try {
-			existedMember = memberRepository.existsMemberByCode(memberDto.getCode());
-		} catch (Exception e) {
-			AMLogger.logError(className, methodName, refId, e);
-			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
-		}
-
-		if (!existedMember) {
+		boolean existedMember = memberRepository.existsMemberByCode(memberDto.getCode());
+		if (existedMember) {
+			AMLogger.logMessage(className, methodName, refId, "This member code already exists");
+			throw new CustomException(ErrorMessage.DOCUMENT_ALREADY_EXISTED, HttpStatus.OK);
+		} else {
 			try {
 				// get redis user info
 				UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
@@ -393,9 +395,6 @@ public class MemberService {
 				AMLogger.logError(className, methodName, refId, e);
 				throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
 			}
-		} else {
-			AMLogger.logMessage(className, methodName, refId, "This member code already exists");
-			throw new CustomException(ErrorMessage.DOCUMENT_ALREADY_EXISTED, HttpStatus.OK);
 		}
 	}
 	

@@ -408,125 +408,132 @@ public class InvestorService {
 					ActivityLogService.ACTIVITY_APPROVAL_CREATE_INVESTOR_DESC, investorDto.getInvestorCode(),
 					pendingApproval.getId());
 
-			Document company = null;
-			Document individual = null;
-			Document contact = null;
+			boolean existedInvestor =  investorRepo.existsInvestorByInvestorCode(investorDto.getInvestorCode());
+			if (existedInvestor) {
+				AMLogger.logMessage(className, methodName, refId, "This investor code already exists");
+				throw new CustomException(ErrorMessage.DOCUMENT_ALREADY_EXISTED, HttpStatus.OK);
+			} else {
+				Document company = null;
+				Document individual = null;
+				Document contact = null;
 
-			if (Utility.isInvestorCompany(investorDto.getType())) {
-				// create Delegate document
-				Document delegate = new Document();
-				delegate.append("fullName", investorDto.getCompany().getDelegate().getFullName());
-				delegate.append("birthDay", investorDto.getCompany().getDelegate().getBirthDay());
-				delegate.append("identityCard", investorDto.getCompany().getDelegate().getIdentityCard());
-				delegate.append("idCreatedDate", investorDto.getCompany().getDelegate().getIdCreatedDate());
-				delegate.append("idCreatedLocation", investorDto.getCompany().getDelegate().getIdCreatedLocation());
-				delegate.append("email", investorDto.getCompany().getDelegate().getEmail());
-				delegate.append("phoneNumber", investorDto.getCompany().getDelegate().getPhoneNumber());
-				delegate.append("address", investorDto.getCompany().getDelegate().getAddress());
-				delegate.append("scannedFrontIdCard", investorDto.getCompany().getDelegate().getScannedFrontIdCard());
-				delegate.append("scannedBackIdCard", investorDto.getCompany().getDelegate().getScannedBackIdCard());
-				delegate.append("scannedSignature", investorDto.getCompany().getDelegate().getScannedSignature());
+				if (Utility.isInvestorCompany(investorDto.getType())) {
+					// create Delegate document
+					Document delegate = new Document();
+					delegate.append("fullName", investorDto.getCompany().getDelegate().getFullName());
+					delegate.append("birthDay", investorDto.getCompany().getDelegate().getBirthDay());
+					delegate.append("identityCard", investorDto.getCompany().getDelegate().getIdentityCard());
+					delegate.append("idCreatedDate", investorDto.getCompany().getDelegate().getIdCreatedDate());
+					delegate.append("idCreatedLocation", investorDto.getCompany().getDelegate().getIdCreatedLocation());
+					delegate.append("email", investorDto.getCompany().getDelegate().getEmail());
+					delegate.append("phoneNumber", investorDto.getCompany().getDelegate().getPhoneNumber());
+					delegate.append("address", investorDto.getCompany().getDelegate().getAddress());
+					delegate.append("scannedFrontIdCard", investorDto.getCompany().getDelegate().getScannedFrontIdCard());
+					delegate.append("scannedBackIdCard", investorDto.getCompany().getDelegate().getScannedBackIdCard());
+					delegate.append("scannedSignature", investorDto.getCompany().getDelegate().getScannedSignature());
 
-				// create Company document
-				company = new Document();
-				company.append("name", investorDto.getCompany().getName());
-				company.append("taxCode", investorDto.getCompany().getTaxCode());
-				company.append("address", investorDto.getCompany().getAddress());
-				company.append("phoneNumber", investorDto.getCompany().getPhoneNumber());
-				company.append("fax", investorDto.getCompany().getFax());
-				company.append("email", investorDto.getCompany().getEmail());
-				company.append("delegate", delegate);
+					// create Company document
+					company = new Document();
+					company.append("name", investorDto.getCompany().getName());
+					company.append("taxCode", investorDto.getCompany().getTaxCode());
+					company.append("address", investorDto.getCompany().getAddress());
+					company.append("phoneNumber", investorDto.getCompany().getPhoneNumber());
+					company.append("fax", investorDto.getCompany().getFax());
+					company.append("email", investorDto.getCompany().getEmail());
+					company.append("delegate", delegate);
 
-				// create Contact document
-				contact = new Document();
-				contact.append("fullName", investorDto.getCompany().getDelegate().getFullName());
-				contact.append("phoneNumber", investorDto.getCompany().getDelegate().getPhoneNumber());
-				contact.append("email", investorDto.getCompany().getDelegate().getEmail());
-			} else if (Utility.isInvestorIndividual(investorDto.getType())) {
-				individual = new Document();
-				individual.append("fullName", investorDto.getIndividual().getFullName());
-				individual.append("birthDay", investorDto.getIndividual().getBirthDay());
-				individual.append("identityCard", investorDto.getIndividual().getIdentityCard());
-				individual.append("idCreatedDate", investorDto.getIndividual().getIdCreatedDate());
-				individual.append("idCreatedLocation", investorDto.getIndividual().getIdCreatedLocation());
-				individual.append("email", investorDto.getIndividual().getEmail());
-				individual.append("phoneNumber", investorDto.getIndividual().getPhoneNumber());
-				individual.append("address", investorDto.getIndividual().getAddress());
-				individual.append("scannedFrontIdCard", investorDto.getIndividual().getScannedFrontIdCard());
-				individual.append("scannedBackIdCard", investorDto.getIndividual().getScannedBackIdCard());
-				individual.append("scannedSignature", investorDto.getIndividual().getScannedSignature());
+					// create Contact document
+					contact = new Document();
+					contact.append("fullName", investorDto.getCompany().getDelegate().getFullName());
+					contact.append("phoneNumber", investorDto.getCompany().getDelegate().getPhoneNumber());
+					contact.append("email", investorDto.getCompany().getDelegate().getEmail());
+				} else if (Utility.isInvestorIndividual(investorDto.getType())) {
+					individual = new Document();
+					individual.append("fullName", investorDto.getIndividual().getFullName());
+					individual.append("birthDay", investorDto.getIndividual().getBirthDay());
+					individual.append("identityCard", investorDto.getIndividual().getIdentityCard());
+					individual.append("idCreatedDate", investorDto.getIndividual().getIdCreatedDate());
+					individual.append("idCreatedLocation", investorDto.getIndividual().getIdCreatedLocation());
+					individual.append("email", investorDto.getIndividual().getEmail());
+					individual.append("phoneNumber", investorDto.getIndividual().getPhoneNumber());
+					individual.append("address", investorDto.getIndividual().getAddress());
+					individual.append("scannedFrontIdCard", investorDto.getIndividual().getScannedFrontIdCard());
+					individual.append("scannedBackIdCard", investorDto.getIndividual().getScannedBackIdCard());
+					individual.append("scannedSignature", investorDto.getIndividual().getScannedSignature());
 
-				contact = new Document();
-				contact.append("fullName", investorDto.getIndividual().getFullName());
-				contact.append("phoneNumber", investorDto.getIndividual().getPhoneNumber());
-				contact.append("email", investorDto.getIndividual().getEmail());
+					contact = new Document();
+					contact.append("fullName", investorDto.getIndividual().getFullName());
+					contact.append("phoneNumber", investorDto.getIndividual().getPhoneNumber());
+					contact.append("email", investorDto.getIndividual().getEmail());
+				}
+
+				// create default investor role
+				SystemRole defaultInvestorRole = sysRoleRepository.findByName(Constant.INVESTOR_DEFAULT_ROLE);
+				if (Utility.isNull(defaultInvestorRole)) {
+					throw new CustomException(ErrorMessage.DEFAULT_ROLE_DOESNT_EXIST, HttpStatus.OK);
+				}
+
+				Document investorRole = new Document();
+				investorRole.append("name", defaultInvestorRole.getName());
+				investorRole.append("description", defaultInvestorRole.getDescription());
+
+				Document newInvestor = new Document();
+				newInvestor.append("createdUser", Utility.getCurrentUsername());
+				newInvestor.append("createdDate", System.currentTimeMillis());
+				newInvestor.append("_id", new ObjectId());
+				newInvestor.append("investorCode", investorDto.getInvestorCode());
+				newInvestor.append("investorName", investorDto.getInvestorName());
+				newInvestor.append("status", Constant.STATUS_PENDING_ACTIVATE);
+				newInvestor.append("note", investorDto.getNote());
+				newInvestor.append("memberCode", investorDto.getMemberCode());
+				newInvestor.append("memberName", investorDto.getMemberName());
+				newInvestor.append("brokerCode", investorDto.getBrokerCode());
+				newInvestor.append("brokerName", investorDto.getBrokerName());
+				newInvestor.append("collaboratorCode", investorDto.getCollaboratorCode());
+				newInvestor.append("collaboratorName", investorDto.getCollaboratorName());
+				newInvestor.append("type", investorDto.getType());
+				newInvestor.append("company", company);
+				newInvestor.append("individual", individual);
+				newInvestor.append("contact", contact);
+				newInvestor.append("role", investorRole);
+
+				MongoDatabase database = MongoDBConnection.getMongoDatabase();
+
+				// applied all default setting from member
+				MongoCollection<Document> memberCollection = database.getCollection("members");
+
+				Document memberQuery = new Document();
+				memberQuery.append("code", investorDto.getMemberCode());
+
+				Document memberProjection = new Document();
+				memberProjection.append("_id", 0.0);
+				memberProjection.append("orderLimit", 1.0);
+				memberProjection.append("marginRatioAlert", 1.0);
+				memberProjection.append("marginMultiplier", 1.0);
+				memberProjection.append("generalFees", 1.0);
+
+				Document memberDoc = memberCollection.find(memberQuery).projection(memberProjection).first();
+				MemberDTO memberDto = mongoTemplate.getConverter().read(MemberDTO.class, memberDoc);
+
+				newInvestor.append("orderLimit", memberDto.getOrderLimit());
+				newInvestor.append("marginRatioAlert", createMarginRatioAlertDoc(memberDto.getMarginRatioAlert()));
+				newInvestor.append("marginMultiplier", memberDto.getMarginMultiplier());
+				List<Document> generalFees = createGeneralFeesDoc(memberDto.getGeneralFees());
+				if (generalFees != null) {
+					newInvestor.append("generalFees", generalFees);
+				}
+
+				// insert new investor
+				MongoCollection<Document> collection = database.getCollection("investors");
+				collection.insertOne(newInvestor);
+
+				// insert a new investor_activation_approval
+				insertNewInvestorActivationApproval(userInfo, investorDto);
+
+				// insert new investor's user
+				createDefaultInvestorUser(request, investorDto, investorRole, refId);
 			}
-
-			// create default investor role
-			SystemRole defaultInvestorRole = sysRoleRepository.findByName(Constant.INVESTOR_DEFAULT_ROLE);
-			if (Utility.isNull(defaultInvestorRole)) {
-				throw new CustomException(ErrorMessage.DEFAULT_ROLE_DOESNT_EXIST, HttpStatus.OK);
-			}
-
-			Document investorRole = new Document();
-			investorRole.append("name", defaultInvestorRole.getName());
-			investorRole.append("description", defaultInvestorRole.getDescription());
-
-			Document newInvestor = new Document();
-			newInvestor.append("createdUser", Utility.getCurrentUsername());
-			newInvestor.append("createdDate", System.currentTimeMillis());
-			newInvestor.append("_id", new ObjectId());
-			newInvestor.append("investorCode", investorDto.getInvestorCode());
-			newInvestor.append("investorName", investorDto.getInvestorName());
-			newInvestor.append("status", Constant.STATUS_PENDING_ACTIVATE);
-			newInvestor.append("note", investorDto.getNote());
-			newInvestor.append("memberCode", investorDto.getMemberCode());
-			newInvestor.append("memberName", investorDto.getMemberName());
-			newInvestor.append("brokerCode", investorDto.getBrokerCode());
-			newInvestor.append("brokerName", investorDto.getBrokerName());
-			newInvestor.append("collaboratorCode", investorDto.getCollaboratorCode());
-			newInvestor.append("collaboratorName", investorDto.getCollaboratorName());
-			newInvestor.append("type", investorDto.getType());
-			newInvestor.append("company", company);
-			newInvestor.append("individual", individual);
-			newInvestor.append("contact", contact);
-			newInvestor.append("role", investorRole);
-
-			MongoDatabase database = MongoDBConnection.getMongoDatabase();
-
-			// applied all default setting from member
-			MongoCollection<Document> memberCollection = database.getCollection("members");
-
-			Document memberQuery = new Document();
-			memberQuery.append("code", investorDto.getMemberCode());
-
-			Document memberProjection = new Document();
-			memberProjection.append("_id", 0.0);
-			memberProjection.append("orderLimit", 1.0);
-			memberProjection.append("marginRatioAlert", 1.0);
-			memberProjection.append("marginMultiplier", 1.0);
-			memberProjection.append("generalFees", 1.0);
-
-			Document memberDoc = memberCollection.find(memberQuery).projection(memberProjection).first();
-			MemberDTO memberDto = mongoTemplate.getConverter().read(MemberDTO.class, memberDoc);
-
-			newInvestor.append("orderLimit", memberDto.getOrderLimit());
-			newInvestor.append("marginRatioAlert", createMarginRatioAlertDoc(memberDto.getMarginRatioAlert()));
-			newInvestor.append("marginMultiplier", memberDto.getMarginMultiplier());
-			List<Document> generalFees = createGeneralFeesDoc(memberDto.getGeneralFees());
-			if (generalFees != null) {
-				newInvestor.append("generalFees", generalFees);
-			}
-
-			// insert new investor
-			MongoCollection<Document> collection = database.getCollection("investors");
-			collection.insertOne(newInvestor);
-
-			// insert a new investor_activation_approval
-			insertNewInvestorActivationApproval(userInfo, investorDto);
-
-			// insert new investor's user
-			createDefaultInvestorUser(request, investorDto, investorRole, refId);
+			
 		} catch (CustomException e) {
 			throw e;
 		} catch (Exception e) {
@@ -610,15 +617,11 @@ public class InvestorService {
 
 	public void createInvestorPA(HttpServletRequest request, InvestorDTO investorDto, long refId) {
 		String methodName = "createInvestorPA";
-		boolean existedInvestor = false;
-		try {
-			existedInvestor = investorRepo.existsInvestorByInvestorCode(investorDto.getInvestorCode());
-		} catch (Exception e) {
-			AMLogger.logError(className, methodName, refId, e);
-			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
-		}
-
-		if (!existedInvestor) {
+		boolean existedInvestor =  investorRepo.existsInvestorByInvestorCode(investorDto.getInvestorCode());
+		if (existedInvestor) {
+			AMLogger.logMessage(className, methodName, refId, "This investor code already exists");
+			throw new CustomException(ErrorMessage.DOCUMENT_ALREADY_EXISTED, HttpStatus.OK);
+		} else {
 			try {
 				if (Utility.isInvestorCompany(investorDto.getType())) {
 					if (Utility.isNull(investorDto.getCompany())) {
@@ -645,9 +648,6 @@ public class InvestorService {
 				AMLogger.logError(className, methodName, refId, e);
 				throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
 			}
-		} else {
-			AMLogger.logMessage(className, methodName, refId, "This investor code already exists");
-			throw new CustomException(ErrorMessage.DOCUMENT_ALREADY_EXISTED, HttpStatus.OK);
 		}
 	}
 
@@ -836,8 +836,8 @@ public class InvestorService {
 		String methodName = "updateInvestor";
 		try {
 			String investorCode = pendingApproval.getPendingData().getQueryValue();
-			UpdateInvestorDTO investorDto = Utility.getGson().fromJson(pendingApproval.getPendingData().getPendingValue(),
-					UpdateInvestorDTO.class);
+			UpdateInvestorDTO investorDto = Utility.getGson()
+					.fromJson(pendingApproval.getPendingData().getPendingValue(), UpdateInvestorDTO.class);
 
 			// get redis user info
 			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
@@ -1060,7 +1060,7 @@ public class InvestorService {
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
-	
+
 	public void updateInvestorCQGInfo(HttpServletRequest request, String investorCode, UpdateInvestorDTO investorDto,
 			long refId) {
 		String methodName = "updateInvestorCQGInfo";
@@ -1074,20 +1074,20 @@ public class InvestorService {
 			// send activity log
 			activityLogService.sendActivityLog(userInfo, request, ActivityLogService.ACTIVITY_UPDATE_INVESTOR_CQG,
 					ActivityLogService.ACTIVITY_UPDATE_INVESTOR_CQG_DESC, investorCode, "");
-			
+
 			MongoDatabase database = MongoDBConnection.getMongoDatabase();
 			MongoCollection<Document> invCollection = database.getCollection("investors");
-			
+
 			Document invQuery = new Document();
 			invQuery.append("investorCode", investorCode);
-			
+
 			Document updateDoc = new Document();
 			updateDoc.append("cqgInfo.customerId", investorDto.getCqgInfo().getCustomerId());
 			updateDoc.append("cqgInfo.accountId", investorDto.getCqgInfo().getAccountId());
-			
+
 			Document update = new Document();
 			update.append("$set", updateDoc);
-			
+
 			invCollection.updateOne(invQuery, update);
 		} catch (CustomException e) {
 			throw e;
@@ -1414,7 +1414,8 @@ public class InvestorService {
 		String methodName = "createInvestorUser";
 		try {
 			String investorCode = pendingApproval.getPendingData().getQueryValue();
-			UserDTO userDto = Utility.getGson().fromJson(pendingApproval.getPendingData().getPendingValue(), UserDTO.class);
+			UserDTO userDto = Utility.getGson().fromJson(pendingApproval.getPendingData().getPendingValue(),
+					UserDTO.class);
 
 			// get redis user info
 			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
@@ -1837,8 +1838,8 @@ public class InvestorService {
 		String methodName = "setInvestorNewPositionOrderLock";
 		try {
 			String investorCode = pendingApproval.getPendingData().getQueryValue();
-			RiskParametersDTO riskParamDto = Utility.getGson().fromJson(pendingApproval.getPendingData().getPendingValue(),
-					RiskParametersDTO.class);
+			RiskParametersDTO riskParamDto = Utility.getGson()
+					.fromJson(pendingApproval.getPendingData().getPendingValue(), RiskParametersDTO.class);
 
 			// get redis user info
 			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
@@ -1935,8 +1936,8 @@ public class InvestorService {
 		String methodName = "setInvestorOrderLock";
 		try {
 			String investorCode = pendingApproval.getPendingData().getQueryValue();
-			RiskParametersDTO riskParamDto = Utility.getGson().fromJson(pendingApproval.getPendingData().getPendingValue(),
-					RiskParametersDTO.class);
+			RiskParametersDTO riskParamDto = Utility.getGson()
+					.fromJson(pendingApproval.getPendingData().getPendingValue(), RiskParametersDTO.class);
 
 			// get redis user info
 			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
@@ -2247,8 +2248,8 @@ public class InvestorService {
 		String methodName = "changeBroker";
 		try {
 			String investorCode = pendingApproval.getPendingData().getQueryValue();
-			ChangeGroupDTO changeGroupDto = Utility.getGson().fromJson(pendingApproval.getPendingData().getPendingValue(),
-					ChangeGroupDTO.class);
+			ChangeGroupDTO changeGroupDto = Utility.getGson()
+					.fromJson(pendingApproval.getPendingData().getPendingValue(), ChangeGroupDTO.class);
 
 			// get redis user info
 			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
@@ -2362,8 +2363,8 @@ public class InvestorService {
 		String methodName = "changeCollaborator";
 		try {
 			String investorCode = pendingApproval.getPendingData().getQueryValue();
-			ChangeGroupDTO changeGroupDto = Utility.getGson().fromJson(pendingApproval.getPendingData().getPendingValue(),
-					ChangeGroupDTO.class);
+			ChangeGroupDTO changeGroupDto = Utility.getGson()
+					.fromJson(pendingApproval.getPendingData().getPendingValue(), ChangeGroupDTO.class);
 
 			// get redis user info
 			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
@@ -2541,14 +2542,14 @@ public class InvestorService {
 				// update investor_margin_trans
 				InvestorMarginTransaction marginTrans = modelMapper.map(marginTransDto,
 						InvestorMarginTransaction.class);
-				
+
 				marginTrans.setMemberCode(marginInfo.getMemberCode());
 				marginTrans.setMemberName(marginInfo.getMemberName());
 				marginTrans.setBrokerCode(marginInfo.getBrokerCode());
 				marginTrans.setBrokerName(marginInfo.getBrokerName());
 				marginTrans.setCollaboratorCode(marginInfo.getCollaboratorCode());
 				marginTrans.setCollaboratorName(marginInfo.getCollaboratorName());
-				
+
 				marginTrans.setCurrency(Constant.CURRENCY_VND);
 				marginTrans.setApprovalDate(System.currentTimeMillis());
 				marginTrans.setApprovalUser(userInfo.getUsername());
@@ -2693,14 +2694,14 @@ public class InvestorService {
 				// insert new investor_margin_trans
 				InvestorMarginTransaction marginTrans = modelMapper.map(marginTransDto,
 						InvestorMarginTransaction.class);
-				
+
 				marginTrans.setMemberCode(marginInfo.getMemberCode());
 				marginTrans.setMemberName(marginInfo.getMemberName());
 				marginTrans.setBrokerCode(marginInfo.getBrokerCode());
 				marginTrans.setBrokerName(marginInfo.getBrokerName());
 				marginTrans.setCollaboratorCode(marginInfo.getCollaboratorCode());
 				marginTrans.setCollaboratorName(marginInfo.getCollaboratorName());
-				
+
 				marginTrans.setCurrency(Constant.CURRENCY_VND);
 				marginTrans.setApprovalDate(System.currentTimeMillis());
 				marginTrans.setApprovalUser(userInfo.getUsername());
@@ -2736,7 +2737,8 @@ public class InvestorService {
 			String memberCode = marginTransDto.getMemberCode();
 			Member member = memberRepo.findByCode(memberCode);
 
-			if (Utility.isNull(member.getRiskParameters()) || (Utility.isNotNull(member.getRiskParameters()) && "N".equals(member.getRiskParameters().getMarginWithdrawalLock()))) {
+			if (Utility.isNull(member.getRiskParameters()) || (Utility.isNotNull(member.getRiskParameters())
+					&& "N".equals(member.getRiskParameters().getMarginWithdrawalLock()))) {
 				// check if investor is activated
 				InvestorDTO investorDto = getInvestorInfo(marginTransDto.getInvestorCode(), refId);
 				if (Utility.isNotNull(investorDto.getCqgInfo())) {
@@ -2860,6 +2862,7 @@ public class InvestorService {
 		SimpleDateFormat formater = new SimpleDateFormat("yyyy-MM-dd");
 		return formater.format(new Date());
 	}
+
 	public BasePagination<InvestorMarginTransaction> listMarginTransactions(HttpServletRequest request, long refId) {
 		String methodName = "listMarginTransactions";
 		BasePagination<InvestorMarginTransaction> pagination = null;
@@ -2871,9 +2874,9 @@ public class InvestorService {
 
 			Document queryDoc = getQueryDocument(searchCriteria, userInfo);
 			boolean sessionDateQueryExist = false;
-			
+
 			ArrayList<Document> queryDocList = (ArrayList<Document>) queryDoc.get("$and");
-			
+
 			if (queryDocList != null && queryDocList.size() > 0) {
 				for (Document doc : queryDocList) {
 					if (Utility.isNotNull(doc) && doc.containsKey("sessionDate")) {
@@ -2882,34 +2885,35 @@ public class InvestorService {
 						if (opeartor.containsKey("$gte")) {
 							Long timestamp = opeartor.getLong("$gte");
 							doc.remove("sessionDate");
-							doc.append("sessionDate", new Document("$gte", Utility.convertSessionDateFromLong(timestamp)));
+							doc.append("sessionDate",
+									new Document("$gte", Utility.convertSessionDateFromLong(timestamp)));
 						}
 						if (opeartor.containsKey("$lte")) {
 							Long timestamp = opeartor.getLong("$lte");
 							doc.remove("sessionDate");
-							doc.append("sessionDate", new Document("$lte", Utility.convertSessionDateFromLong(timestamp)));
+							doc.append("sessionDate",
+									new Document("$lte", Utility.convertSessionDateFromLong(timestamp)));
 						}
 					}
 				}
 			}
-			
-			
+
 			if (!sessionDateQueryExist) {
 				queryDoc.append("sessionDate", getCurrentSessionDate());
 			}
-			
+
 			Document sortDoc = new Document("approvalDate", -1);
-			
+
 			List<? extends Bson> pipeline = Arrays
-					.asList(new Document().append("$match", queryDoc),
-							new Document().append("$sort", sortDoc),
+					.asList(new Document().append("$match", queryDoc), new Document().append("$sort", sortDoc),
 							new Document().append("$project", new Document()
 									.append("_id", new Document().append("$toString", "$_id")).append("memberCode", 1.0)
 									.append("memberName", 1.0).append("brokerCode", 1.0).append("brokerName", 1.0)
 									.append("collaboratorCode", 1.0).append("collaboratorName", 1.0)
 									.append("investorCode", 1.0).append("investorName", 1.0)
 									.append("transactionType", 1.0).append("amount", 1.0).append("currency", 1.0)
-									.append("approvalUser", 1.0).append("approvalDate", 1.0).append("createdDate", 1.0).append("note", 1.0).append("sessionDate", 1.0)),
+									.append("approvalUser", 1.0).append("approvalDate", 1.0).append("createdUser", 1.0)
+									.append("createdDate", 1.0).append("note", 1.0).append("sessionDate", 1.0)),
 							new Document().append("$facet", new Document()
 									.append("stage1", Arrays.asList(new Document().append("$count", "total")))
 									.append("stage2",
@@ -2941,9 +2945,9 @@ public class InvestorService {
 
 			Document queryDoc = getQueryDocument(searchCriteria, userInfo);
 			boolean sessionDateQueryExist = false;
-			
+
 			ArrayList<Document> queryDocList = (ArrayList<Document>) queryDoc.get("$and");
-			
+
 			if (queryDocList != null && queryDocList.size() > 0) {
 				for (Document doc : queryDocList) {
 					if (Utility.isNotNull(doc) && doc.containsKey("sessionDate")) {
@@ -2952,39 +2956,41 @@ public class InvestorService {
 						if (opeartor.containsKey("$gte")) {
 							Long timestamp = opeartor.getLong("$gte");
 							doc.remove("sessionDate");
-							doc.append("sessionDate", new Document("$gte", Utility.convertSessionDateFromLong(timestamp)));
+							doc.append("sessionDate",
+									new Document("$gte", Utility.convertSessionDateFromLong(timestamp)));
 						}
 						if (opeartor.containsKey("$lte")) {
 							Long timestamp = opeartor.getLong("$lte");
 							doc.remove("sessionDate");
-							doc.append("sessionDate", new Document("$lte", Utility.convertSessionDateFromLong(timestamp)));
+							doc.append("sessionDate",
+									new Document("$lte", Utility.convertSessionDateFromLong(timestamp)));
 						}
 					}
 				}
 			}
-			
+
 			if (!sessionDateQueryExist) {
 				queryDoc.append("sessionDate", getCurrentSessionDate());
 			}
-			
+
 			Document sortDoc = new Document("approvalDate", -1);
-			
-			List<? extends Bson> pipeline = Arrays.asList(
-					new Document().append("$match", queryDoc),
+
+			List<? extends Bson> pipeline = Arrays.asList(new Document().append("$match", queryDoc),
 					new Document().append("$sort", sortDoc),
-					new Document().append("$project",
-							new Document().append("_id", new Document().append("$toString", "$_id"))
-									.append("memberCode", 1.0).append("memberName", 1.0).append("brokerCode", 1.0)
-									.append("brokerName", 1.0).append("collaboratorCode", 1.0)
-									.append("collaboratorName", 1.0).append("investorCode", 1.0)
-									.append("investorName", 1.0).append("transactionType", 1.0).append("amount", 1.0)
-									.append("currency", 1.0).append("approvalUser", 1.0)
-									.append("approvalDate",
-											new Document().append("$dateToString",
-													new Document().append("format", "%d/%m/%Y %H:%M:%S").append("date",
-															new Document().append("$toDate", "$approvalDate"))))
-									.append("note", 1.0)
-									.append("sessionDate", 1.0)));
+					new Document().append("$project", new Document()
+							.append("_id", new Document().append("$toString", "$_id")).append("memberCode", 1.0)
+							.append("memberName", 1.0).append("brokerCode", 1.0).append("brokerName", 1.0)
+							.append("collaboratorCode", 1.0).append("collaboratorName", 1.0).append("investorCode", 1.0)
+							.append("investorName", 1.0).append("transactionType", 1.0).append("amount", 1.0)
+							.append("currency", 1.0).append("approvalUser", 1.0)
+							.append("approvalDate", new Document().append("$dateToString",
+									new Document().append("format", "%d/%m/%Y %H:%M:%S").append("timezone", "+07")
+											.append("date", new Document().append("$toDate", "$approvalDate"))))
+							.append("createdUser", 1.0)
+							.append("createdDate", new Document().append("$dateToString",
+									new Document().append("format", "%d/%m/%Y %H:%M:%S").append("timezone", "+07")
+											.append("date", new Document().append("$toDate", "$createdDate"))))
+							.append("note", 1.0).append("sessionDate", 1.0)));
 
 			MongoDatabase database = MongoDBConnection.getMongoDatabase();
 			MongoCollection<Document> collection = database.getCollection("investor_margin_trans");
@@ -3040,6 +3046,7 @@ public class InvestorService {
 			marginTrans.setCurrency(Constant.CURRENCY_VND);
 			marginTrans.setApprovalDate(System.currentTimeMillis());
 			marginTrans.setApprovalUser(userInfo.getUsername());
+			marginTrans.setSessionDate(getSessionDate(refId));
 			invMarginTransRepo.save(marginTrans);
 
 		} catch (Exception e) {
@@ -3143,7 +3150,8 @@ public class InvestorService {
 					new Document().append("$project",
 							new Document().append("_id", 0.0).append("brokerCommodities", "$brokerObj.commodities")),
 					new Document().append("$unwind", new Document().append("path", "$brokerCommodities")),
-					new Document().append("$match", new Document().append("brokerCommodities.commodityCode", commodityCode)),
+					new Document().append("$match",
+							new Document().append("brokerCommodities.commodityCode", commodityCode)),
 					new Document().append("$project",
 							new Document().append("brokerCommodityFee", "$brokerCommodities.commodityFee")));
 			Document brokerCommFeeDoc = collection.aggregate(pipeline2).first();
@@ -3152,7 +3160,7 @@ public class InvestorService {
 			if (brokerCommodityFeeDto != null) {
 				invCommodityFeeDto.setBrokerCommodityFee(brokerCommodityFeeDto.getBrokerCommodityFee());
 			}
-			
+
 			return invCommodityFeeDto;
 		} catch (Exception e) {
 			AMLogger.logError(className, methodName, refId, e);

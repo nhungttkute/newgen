@@ -46,10 +46,16 @@ public class MarginTransCSV {
 	@CsvBindByName(column = "Ngày phê duyệt")
 	@CsvBindByPosition(position = 12)
 	private String approvalDate;
-	@CsvBindByName(column = "Ghi chú")
+	@CsvBindByName(column = "Người tạo")
 	@CsvBindByPosition(position = 13)
+	private String createdUser;
+	@CsvBindByName(column = "Ngày tạo")
+	@CsvBindByPosition(position = 14)
+	private String createdDate;
+	@CsvBindByName(column = "Ghi chú")
+	@CsvBindByPosition(position = 15)
 	private String note;
 	@CsvBindByName(column = "Ngày phiên")
-	@CsvBindByPosition(position = 14)
+	@CsvBindByPosition(position = 16)
 	private String sessionDate;
 }
