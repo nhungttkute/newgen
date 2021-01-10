@@ -16,7 +16,7 @@ import javax.validation.constraints.Size;
 import com.newgen.am.validation.FormatGroup;
 import com.newgen.am.validation.LengthGroup;
 import com.newgen.am.validation.UniqueGroup;
-import com.newgen.am.validation.UniqueTaxCode;
+import com.newgen.am.validation.UniqueMemberTaxCode;
 import com.newgen.am.validation.ValidNumber;
 import com.newgen.am.validation.ValidPhoneNumber;
 
@@ -27,7 +27,7 @@ import lombok.Data;
  * @author nhungtt
  */
 @Data
-public class Company implements Serializable {
+public class MemberCompany implements Serializable {
 	private static final long serialVersionUID = 1L;
 	@NotEmpty(message = "Required.")
 	@Size(min = 1, max = 200, message = "Invalid format.", groups = LengthGroup.class)
@@ -35,7 +35,7 @@ public class Company implements Serializable {
 	@NotEmpty(message = "Required.")
 	@ValidNumber(groups = FormatGroup.class)
 	@Size(min = 1, max = 20, message = "Invalid format.", groups = LengthGroup.class)
-	@UniqueTaxCode(groups = UniqueGroup.class)
+	@UniqueMemberTaxCode(groups = UniqueGroup.class)
     private String taxCode;
 	@NotEmpty(message = "Required.")
 	@Size(min = 1, max = 300, message = "Invalid format.", groups = LengthGroup.class)
@@ -51,5 +51,5 @@ public class Company implements Serializable {
     private String email;
     @NotNull(message = "Required.")
     @Valid
-    private Delegate delegate;
+    private MemberDelegate delegate;
 }

@@ -13,8 +13,6 @@ import javax.validation.constraints.Size;
 
 import com.newgen.am.validation.FormatGroup;
 import com.newgen.am.validation.LengthGroup;
-import com.newgen.am.validation.UniqueGroup;
-import com.newgen.am.validation.UniqueIdentityCard;
 import com.newgen.am.validation.ValidDate;
 import com.newgen.am.validation.ValidNumberCharacter;
 import com.newgen.am.validation.ValidPhoneNumber;
@@ -26,18 +24,17 @@ import lombok.Data;
  * @author nhungtt
  */
 @Data
-public class Individual implements Serializable {
+public class InvestorDelegate implements Serializable {
 	private static final long serialVersionUID = 1L;
 	@NotEmpty(message = "Required.")
-	@Size(min = 1, max = 200, message = "Invalid format.", groups = LengthGroup.class)
+	@Size(min = 1, max = 100, message = "Invalid format.", groups = LengthGroup.class)
     private String fullName;
 	@NotEmpty(message = "Required.")
 	@ValidDate(groups = FormatGroup.class)
     private String birthDay;
 	@NotEmpty(message = "Required.")
 	@ValidNumberCharacter(groups = FormatGroup.class)
-	@Size(min = 1, max = 20, groups = LengthGroup.class)
-	@UniqueIdentityCard(groups = UniqueGroup.class)
+	@Size(min = 1, max = 50, groups = LengthGroup.class)
     private String identityCard;
 	@NotEmpty(message = "Required.")
 	@ValidDate(groups = FormatGroup.class)
@@ -47,6 +44,7 @@ public class Individual implements Serializable {
     private String idCreatedLocation;
 	@NotEmpty(message = "Required.")
 	@Email(message = "Invalid format.", groups = FormatGroup.class)
+	@Size(min = 1, max = 100, message = "Invalid format.", groups = LengthGroup.class)
     private String email;
 	@NotEmpty(message = "Required.")
     @ValidPhoneNumber(groups = FormatGroup.class)

@@ -29,7 +29,7 @@ public class UpdateMemberDTO implements Serializable {
     @Size(max = 200, message = "Invalid format.", groups = LengthGroup.class)
     private String note;
     @Valid
-    private UpdateCompanyDTO company;
+    private UpdateMemberCompanyDTO company;
     private List<UserRole> roles;
     private List<RoleFunction> functions;
     private int orderLimit;

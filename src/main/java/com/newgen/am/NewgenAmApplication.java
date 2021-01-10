@@ -19,17 +19,21 @@ import com.newgen.am.model.InvestorMarginInfo;
 import com.newgen.am.model.InvestorMarginTransaction;
 import com.newgen.am.repository.InvestorMarginTransactionRepository;
 import com.newgen.am.service.InvestorMarginInfoService;
+import com.newgen.am.service.RedisTestService;
 
 @EnableMongoAuditing(auditorAwareRef = "auditorAware")
 @SpringBootApplication
 public class NewgenAmApplication {
 	private static ApplicationContext applicationContext;
 
-	@Autowired
-	private InvestorMarginTransactionRepository marginTransRepo;
+//	@Autowired
+//	private InvestorMarginTransactionRepository marginTransRepo;
+//	
+//	@Autowired
+//	private InvestorMarginInfoService marginInfoService;
 	
 	@Autowired
-	private InvestorMarginInfoService marginInfoService;
+	private RedisTestService redisService;
 	
     public static void main(String[] args) {
     	applicationContext = SpringApplication.run(NewgenAmApplication.class, args);
@@ -53,22 +57,29 @@ public class NewgenAmApplication {
 //        }
 //    }
     
-    @Bean
-    public CommandLineRunner dummyData() {
-    	return (args) -> {
-    		List<InvestorMarginTransaction> marginTransList = marginTransRepo.findAll();
-    		for (InvestorMarginTransaction marginTrans : marginTransList) {
-    			InvestorMarginInfo marginInfo = marginInfoService.getInvestorMarginInfo(marginTrans.getInvestorCode(), 1);
-    			
-    			marginTrans.setMemberCode(marginInfo.getMemberCode());
-				marginTrans.setMemberName(marginInfo.getMemberName());
-				marginTrans.setBrokerCode(marginInfo.getBrokerCode());
-				marginTrans.setBrokerName(marginInfo.getBrokerName());
-				marginTrans.setCollaboratorCode(marginInfo.getCollaboratorCode());
-				marginTrans.setCollaboratorName(marginInfo.getCollaboratorName());
-				
-				marginTransRepo.save(marginTrans);
-    		}
-    	};
-    }
+//    @Bean
+//    public CommandLineRunner dummyData() {
+//    	return (args) -> {
+//    		List<InvestorMarginTransaction> marginTransList = marginTransRepo.findAll();
+//    		for (InvestorMarginTransaction marginTrans : marginTransList) {
+//    			InvestorMarginInfo marginInfo = marginInfoService.getInvestorMarginInfo(marginTrans.getInvestorCode(), 1);
+//    			
+//    			marginTrans.setMemberCode(marginInfo.getMemberCode());
+//				marginTrans.setMemberName(marginInfo.getMemberName());
+//				marginTrans.setBrokerCode(marginInfo.getBrokerCode());
+//				marginTrans.setBrokerName(marginInfo.getBrokerName());
+//				marginTrans.setCollaboratorCode(marginInfo.getCollaboratorCode());
+//				marginTrans.setCollaboratorName(marginInfo.getCollaboratorName());
+//				
+//				marginTransRepo.save(marginTrans);
+//    		}
+//    	};
+//    }
+    
+//  @Bean
+//  public CommandLineRunner test() {
+//  	return (args) -> {
+//  		redisService.testApproveMagrinTrans();
+//  	};
+//  }
 }

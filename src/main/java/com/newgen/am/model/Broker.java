@@ -33,8 +33,8 @@ public class Broker extends AuditModel implements Serializable {
     private String note;
     private String status;
     private String type;
-    private Company company;
-    private Individual individual;
+    private BrokerCompany company;
+    private BrokerIndividual individual;
     private Contact contact;
     private BrokerUser user;
     private UserRole role;

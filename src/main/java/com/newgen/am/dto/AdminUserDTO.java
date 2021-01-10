@@ -35,7 +35,7 @@ import lombok.Data;
  */
 @Data
 @JsonInclude(JsonInclude.Include.NON_DEFAULT)
-public class UserDTO {
+public class AdminUserDTO {
     @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     private String _id;
     @ValidUpdateStringField
@@ -53,6 +53,7 @@ public class UserDTO {
     @NotEmpty(message = "Required.")
     @Email(message = "Invalid format.", groups = FormatGroup.class)
     @Size(min = 1, max = 50, message = "Invalid format.", groups = LengthGroup.class)
+    @UniqueAdminEmail(groups = UniqueGroup.class)
     private String email;
     @NotEmpty(message = "Required.")
     @ValidPhoneNumber(groups = FormatGroup.class)

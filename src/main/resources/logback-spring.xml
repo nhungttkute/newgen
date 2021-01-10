@@ -25,7 +25,7 @@
         <rollingPolicy
             class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
             <!-- daily rollover -->
-            <fileNamePattern>${LOG_PATH}/${LOG_FILE}.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <fileNamePattern>${LOG_PATH}/${LOG_FILE}.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
             <maxFileSize>1000MB</maxFileSize>
             <!-- <maxHistory>30</maxHistory>
             <totalSizeCap>500MB</totalSizeCap> -->
@@ -35,12 +35,12 @@
     <!-- LOG everything at INFO level -->
     <root level="INFO">
         <appender-ref ref="FILE" />
-        <appender-ref ref="CONSOLE" />
+        <!-- <appender-ref ref="CONSOLE" /> -->
     </root>
  
     <!-- LOG "com.newgen.am*" at TRACE level -->
     <logger name="com.newgen.am" level="TRACE" additivity="false">
         <appender-ref ref="FILE" />
-        <appender-ref ref="CONSOLE" />
+        <!-- <appender-ref ref="CONSOLE" /> -->
     </logger>
 </configuration>

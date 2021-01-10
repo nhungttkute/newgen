@@ -69,12 +69,12 @@ public class CQGConnectorService {
 			if (Utility.isNotNull(investorDto.getCompany())) {
 				cqgRequest.setEmail(investorDto.getCompany().getEmail());
 				cqgRequest.setPhone(investorDto.getCompany().getPhoneNumber());
-				cqgRequest.setFullName(investorDto.getCompany().getDelegate().getFullName());
+				cqgRequest.setFullName(investorDto.getInvestorName());
 				cqgRequest.setAddress(investorDto.getCompany().getAddress());
 			} else if (Utility.isNotNull(investorDto.getIndividual())) {
 				cqgRequest.setEmail(investorDto.getIndividual().getEmail());
 				cqgRequest.setPhone(investorDto.getIndividual().getPhoneNumber());
-				cqgRequest.setFullName(investorDto.getIndividual().getFullName());
+				cqgRequest.setFullName(investorDto.getInvestorName());
 				cqgRequest.setAddress(investorDto.getIndividual().getAddress());
 			}
 			
@@ -318,20 +318,93 @@ public class CQGConnectorService {
 			LocalServiceConnection serviceCon = new LocalServiceConnection();
 			CQGCMSRequestDTO cqgRequest = new CQGCMSRequestDTO();
 			cqgRequest.setAccountId(accountId);
-			if (marginMultiplier > 0) {
-				cqgRequest.setMarginMultiplier(marginMultiplier);
-			}
-			if (tradeSizeLimit > 0) {
-				cqgRequest.setTradeSizeLimit(tradeSizeLimit);
-			}
-			if (defaultPositionLimit > 0) {
-				cqgRequest.setDefaultPositionLimit(defaultPositionLimit);
-			}
+			cqgRequest.setMarginMultiplier(marginMultiplier);
+			cqgRequest.setTradeSizeLimit(tradeSizeLimit);
+			cqgRequest.setDefaultPositionLimit(defaultPositionLimit);
 			
 			String input = Utility.getGson().toJson(cqgRequest);
 			AMLogger.logMessage(className, methodName, refId, "INPUT: " + input);
 			
 			String[] res = serviceCon.sendPostRequest(serviceCon.getCMSServiceURL(ConfigLoader.getMainConfig().getString(Constant.SERVICE_CMS_ACCOUNT_RISK_PARAMS)), input, ConfigLoader.getMainConfig().getString(Constant.LOCAL_SECRET_KEY));
+			AMLogger.logMessage(className, methodName, refId, "OUTPUT: " + res[0] + " => " + res[1]);
+			if (res.length >=2 && "200".equals(res[0])) {
+				CQGResponseObj cmsResponse = Utility.getGson().fromJson(res[1], CQGResponseObj.class);
+				if (cmsResponse != null && Constant.RESPONSE_OK.equalsIgnoreCase(cmsResponse.getStatus())) {
+					return true;
+				}
+			}
+			return false;
+		} catch (Exception e) {
+			AMLogger.logError(className, methodName, refId, e);
+			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+	
+	public boolean updateCQGRiskParamsMM(String accountId, double marginMultiplier, long refId) {
+		String methodName = "updateCQGRiskParamsMM";
+		try {
+			LocalServiceConnection serviceCon = new LocalServiceConnection();
+			CQGCMSRequestDTO cqgRequest = new CQGCMSRequestDTO();
+			cqgRequest.setAccountId(accountId);
+			cqgRequest.setMarginMultiplier(marginMultiplier);
+			
+			String input = Utility.getGson().toJson(cqgRequest);
+			AMLogger.logMessage(className, methodName, refId, "INPUT: " + input);
+			
+			String[] res = serviceCon.sendPostRequest(serviceCon.getCMSServiceURL(ConfigLoader.getMainConfig().getString(Constant.SERVICE_CMS_ACCOUNT_RISK_PARAMS_MM)), input, ConfigLoader.getMainConfig().getString(Constant.LOCAL_SECRET_KEY));
+			AMLogger.logMessage(className, methodName, refId, "OUTPUT: " + res[0] + " => " + res[1]);
+			if (res.length >=2 && "200".equals(res[0])) {
+				CQGResponseObj cmsResponse = Utility.getGson().fromJson(res[1], CQGResponseObj.class);
+				if (cmsResponse != null && Constant.RESPONSE_OK.equalsIgnoreCase(cmsResponse.getStatus())) {
+					return true;
+				}
+			}
+			return false;
+		} catch (Exception e) {
+			AMLogger.logError(className, methodName, refId, e);
+			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+	
+	
+	public boolean updateCQGRiskParamsTSL(String accountId, long tradeSizeLimit, long refId) {
+		String methodName = "updateCQGRiskParamsTSL";
+		try {
+			LocalServiceConnection serviceCon = new LocalServiceConnection();
+			CQGCMSRequestDTO cqgRequest = new CQGCMSRequestDTO();
+			cqgRequest.setAccountId(accountId);
+			cqgRequest.setTradeSizeLimit(tradeSizeLimit);
+			
+			String input = Utility.getGson().toJson(cqgRequest);
+			AMLogger.logMessage(className, methodName, refId, "INPUT: " + input);
+			
+			String[] res = serviceCon.sendPostRequest(serviceCon.getCMSServiceURL(ConfigLoader.getMainConfig().getString(Constant.SERVICE_CMS_ACCOUNT_RISK_PARAMS_TSL)), input, ConfigLoader.getMainConfig().getString(Constant.LOCAL_SECRET_KEY));
+			AMLogger.logMessage(className, methodName, refId, "OUTPUT: " + res[0] + " => " + res[1]);
+			if (res.length >=2 && "200".equals(res[0])) {
+				CQGResponseObj cmsResponse = Utility.getGson().fromJson(res[1], CQGResponseObj.class);
+				if (cmsResponse != null && Constant.RESPONSE_OK.equalsIgnoreCase(cmsResponse.getStatus())) {
+					return true;
+				}
+			}
+			return false;
+		} catch (Exception e) {
+			AMLogger.logError(className, methodName, refId, e);
+			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+	
+	public boolean updateCQGRiskParamsPL(String accountId, long defaultPositionLimit, long refId) {
+		String methodName = "updateCQGRiskParamsPL";
+		try {
+			LocalServiceConnection serviceCon = new LocalServiceConnection();
+			CQGCMSRequestDTO cqgRequest = new CQGCMSRequestDTO();
+			cqgRequest.setAccountId(accountId);
+			cqgRequest.setDefaultPositionLimit(defaultPositionLimit);
+			
+			String input = Utility.getGson().toJson(cqgRequest);
+			AMLogger.logMessage(className, methodName, refId, "INPUT: " + input);
+			
+			String[] res = serviceCon.sendPostRequest(serviceCon.getCMSServiceURL(ConfigLoader.getMainConfig().getString(Constant.SERVICE_CMS_ACCOUNT_RISK_PARAMS_PL)), input, ConfigLoader.getMainConfig().getString(Constant.LOCAL_SECRET_KEY));
 			AMLogger.logMessage(className, methodName, refId, "OUTPUT: " + res[0] + " => " + res[1]);
 			if (res.length >=2 && "200".equals(res[0])) {
 				CQGResponseObj cmsResponse = Utility.getGson().fromJson(res[1], CQGResponseObj.class);

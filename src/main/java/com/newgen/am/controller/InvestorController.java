@@ -292,7 +292,7 @@ public class InvestorController {
 	}
 	
 	@PutMapping("/admin/investors/{investorCode}/cqgInfo")
-	@PreAuthorize("hasAuthority('clientManagement.investorManagement.investorInfo.update')")
+	@PreAuthorize("hasAuthority('clientManagement.investorManagement.cqgInfo.update')")
 	public AdminResponseObj updateInvestorCQGInfo(HttpServletRequest request, @PathVariable String investorCode,
 			@Validated(ValidationSequence.class) @RequestBody UpdateInvestorDTO investorDto) {
 		String methodName = "updateInvestorCQGInfo";

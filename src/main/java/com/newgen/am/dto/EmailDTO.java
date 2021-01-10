@@ -15,7 +15,7 @@ import lombok.Data;
 public class EmailDTO {
 	private String settingType;
 	private String sendingObject;
-    private String to;
+    private EmailListmsisdnDTO listmsisdn;
     private String subject;
     private String bodyStr;
 }

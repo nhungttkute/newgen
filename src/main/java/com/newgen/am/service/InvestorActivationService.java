@@ -1,10 +1,14 @@
 package com.newgen.am.service;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.servlet.http.HttpServletRequest;
 
 import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -18,11 +22,13 @@ import com.newgen.am.common.Constant;
 import com.newgen.am.common.ErrorMessage;
 import com.newgen.am.common.MongoDBConnection;
 import com.newgen.am.common.Utility;
+import com.newgen.am.dto.CQGCMSCommodityDTO;
 import com.newgen.am.dto.CQGResponseObj;
 import com.newgen.am.dto.InterestRateDTO;
 import com.newgen.am.dto.InvestorDTO;
 import com.newgen.am.dto.MemberDTO;
 import com.newgen.am.exception.CustomException;
+import com.newgen.am.model.Commodity;
 import com.newgen.am.model.CqgInfo;
 import com.newgen.am.model.InvestorActivationApproval;
 import com.newgen.am.repository.InvestorActivationApprovalRepository;
@@ -43,101 +49,130 @@ public class InvestorActivationService {
 	@Autowired
 	private CQGConnectorService cqgService;
 	
+	 @Autowired
+	    private RedisTemplate<String, String> redisTemplate;
+	
 	public void activateInvestor(HttpServletRequest request, String approvalId, InterestRateDTO interestRateDto, long refId) {
     	String methodName = "activateInvestor";
     	try {
-    		InvestorActivationApproval invActivationApproval = invActivationApprovalRepo.findById(approvalId).get();
-    		if (Constant.STATUS_PENDING.equals(invActivationApproval.getStatus())) {
-    			// check authorization
-        		if (AuthorityUtils.authorityListToSet(SecurityContextHolder.getContext().getAuthentication().getAuthorities()).contains(invActivationApproval.getFunctionCode())) {
-        			String investorCode = invActivationApproval.getPendingData().getQueryValue();
-        			
-        			MongoDatabase database = MongoDBConnection.getMongoDatabase();
-        			InvestorDTO investorDto = getInvestorInfo(database, investorCode, refId);
-        			
-        			if (Utility.isCQGSyncOn()) {
-        				// create cqg account
-            			CqgInfo cqgInfo = getMemberCQGInfo(database, investorDto.getMemberCode(), refId);
-            			if (cqgInfo != null) {
-            				// check if exist investor's customerId
-            				String customerId = "";
-            				if (Utility.isNotNull(investorDto.getCqgInfo()) && Utility.isNotNull(investorDto.getCqgInfo().getCustomerId())) {
-            					customerId = investorDto.getCqgInfo().getCustomerId();
-            				} else {
-            					// create cqg customer
-                				CQGResponseObj customerRes = cqgService.createCQGCustomer(investorDto, cqgInfo.getProfileId(), refId);
-                				if (customerRes != null) {
-                					customerId = customerRes.getData().getCustomerId();
+    		if (Utility.setApprovalIDonRedis(redisTemplate, approvalId, refId)) {
+    			InvestorActivationApproval invActivationApproval = invActivationApprovalRepo.findById(approvalId).get();
+        		if (Constant.STATUS_PENDING.equals(invActivationApproval.getStatus())) {
+        			// check authorization
+            		if (AuthorityUtils.authorityListToSet(SecurityContextHolder.getContext().getAuthentication().getAuthorities()).contains(invActivationApproval.getFunctionCode())) {
+            			String investorCode = invActivationApproval.getPendingData().getQueryValue();
+            			
+            			MongoDatabase database = MongoDBConnection.getMongoDatabase();
+            			InvestorDTO investorDto = getInvestorInfo(database, investorCode, refId);
+            			
+            			if (Utility.isCQGSyncOn()) {
+            				// create cqg account
+                			CqgInfo cqgInfo = getMemberCQGInfo(database, investorDto.getMemberCode(), refId);
+                			if (cqgInfo != null) {
+                				// check if exist investor's customerId
+                				String customerId = "";
+                				if (Utility.isNotNull(investorDto.getCqgInfo()) && Utility.isNotNull(investorDto.getCqgInfo().getCustomerId())) {
+                					customerId = investorDto.getCqgInfo().getCustomerId();
                 				} else {
-                					AMLogger.logMessage(className, methodName, refId, String.format("Activating investor %s. Error: timeout creating customer", investorDto.getInvestorCode()));
-                    				throw new CustomException(ErrorMessage.CQG_INFO_CREATED_UNSUCCESSFULLY, HttpStatus.OK);
-                    			}
-            				}
-            				
-            				// check if exist investor's customerId
-            				String accountId = "";
-            				if (Utility.isNotNull(investorDto.getCqgInfo()) && Utility.isNotNull(investorDto.getCqgInfo().getAccountId())) {
-            					accountId = investorDto.getCqgInfo().getAccountId();
-            				} else {
-            					if (Utility.isNotNull(customerId)) {
-            						// create cqg account
-                    				CQGResponseObj accountRes = cqgService.createCQGAccount(cqgInfo.getProfileId(), Utility.getCQGAccountName(investorDto), investorCode, customerId, refId);
-                        			if (accountRes != null) {
-                        				accountId = accountRes.getData().getAccountId();
-                        			} else {
-                        				AMLogger.logMessage(className, methodName, refId, String.format("Activating investor %s. Error: timeout creating account", investorDto.getInvestorCode()));
+                					// create cqg customer
+                    				CQGResponseObj customerRes = cqgService.createCQGCustomer(investorDto, cqgInfo.getProfileId(), refId);
+                    				if (customerRes != null) {
+                    					customerId = customerRes.getData().getCustomerId();
+                    				} else {
+                    					AMLogger.logMessage(className, methodName, refId, String.format("Activating investor %s. Error: timeout creating customer", investorDto.getInvestorCode()));
                         				throw new CustomException(ErrorMessage.CQG_INFO_CREATED_UNSUCCESSFULLY, HttpStatus.OK);
                         			}
-            					}
-            				}
-            				
-            				if (Utility.isNotNull(accountId)) {
-            					// add cqg account auth list
-                				String traderId = ConfigLoader.getMainConfig().getString(Constant.CQG_CMS_TRADER_ID);
-                				boolean isAccAuthListSuccessful = cqgService.updateCQGAccountAuthList(Utility.convertStringToLong(accountId), traderId, refId);
-                				if (!isAccAuthListSuccessful) {
-                					AMLogger.logMessage(className, methodName, refId, String.format("Activating investor %s. Error: timeout creating account authorization list", investorDto.getInvestorCode()));
-                					throw new CustomException(ErrorMessage.CQG_INFO_CREATED_UNSUCCESSFULLY, HttpStatus.OK);
                 				}
                 				
-                				// update risk params
-                				boolean isUpdateRiskParamsSuccessful = cqgService.updateCQGRiskParams(accountId, investorDto.getMarginMultiplier(), investorDto.getOrderLimit(), 0, refId);
-                				if (!isUpdateRiskParamsSuccessful) {
-                					AMLogger.logMessage(className, methodName, refId, String.format("Activating investor %s. Error: timeout setting account risk params", investorDto.getInvestorCode()));
-                					throw new CustomException(ErrorMessage.CQG_INFO_CREATED_UNSUCCESSFULLY, HttpStatus.OK);
+                				// check if exist investor's customerId
+                				String accountId = "";
+                				if (Utility.isNotNull(investorDto.getCqgInfo()) && Utility.isNotNull(investorDto.getCqgInfo().getAccountId())) {
+                					accountId = investorDto.getCqgInfo().getAccountId();
+                				} else {
+                					if (Utility.isNotNull(customerId)) {
+                						// create cqg account
+                        				CQGResponseObj accountRes = cqgService.createCQGAccount(cqgInfo.getProfileId(), Utility.getCQGAccountName(investorDto), investorCode, customerId, refId);
+                            			if (accountRes != null) {
+                            				accountId = accountRes.getData().getAccountId();
+                            			} else {
+                            				AMLogger.logMessage(className, methodName, refId, String.format("Activating investor %s. Error: timeout creating account", investorDto.getInvestorCode()));
+                            				throw new CustomException(ErrorMessage.CQG_INFO_CREATED_UNSUCCESSFULLY, HttpStatus.OK);
+                            			}
+                					}
                 				}
-            				}
-            			} else {
-            				AMLogger.logMessage(className, methodName, refId, String.format("Activating investor %s. Error: Member %s doesnt have cqgInfo", investorDto.getInvestorCode(), investorDto.getMemberCode()));
-            				throw new CustomException(ErrorMessage.CQG_INFO_CREATED_UNSUCCESSFULLY, HttpStatus.OK);
+                				
+                				if (Utility.isNotNull(accountId)) {
+                					// add cqg account auth list
+                    				String traderId = ConfigLoader.getMainConfig().getString(Constant.CQG_CMS_TRADER_ID);
+                    				boolean isAccAuthListSuccessful = cqgService.updateCQGAccountAuthList(Utility.convertStringToLong(accountId), traderId, refId);
+                    				if (!isAccAuthListSuccessful) {
+                    					AMLogger.logMessage(className, methodName, refId, String.format("Activating investor %s. Error: timeout creating account authorization list", investorDto.getInvestorCode()));
+                    					throw new CustomException(ErrorMessage.CQG_INFO_CREATED_UNSUCCESSFULLY, HttpStatus.OK);
+                    				}
+                    				
+                    				// update risk params (marginMultiplier, orderLimit, defaultPositionLimit)
+                    				boolean isUpdateRiskParamsSuccessful = cqgService.updateCQGRiskParams(accountId, investorDto.getMarginMultiplier(), investorDto.getOrderLimit(), investorDto.getDefaultPositionLimit(), refId);
+                    				if (!isUpdateRiskParamsSuccessful) {
+                    					AMLogger.logMessage(className, methodName, refId, String.format("Activating investor %s. Error: timeout setting account risk params", investorDto.getInvestorCode()));
+                    					throw new CustomException(ErrorMessage.CQG_INFO_CREATED_UNSUCCESSFULLY, HttpStatus.OK);
+                    				}
+                    				
+                    				// update commodities
+                    				if (investorDto.getCommodities() != null && investorDto.getCommodities().size() > 0) {
+                    					List<CQGCMSCommodityDTO> cqgCommodities = new ArrayList<CQGCMSCommodityDTO>();
+                    					for (Commodity comm : investorDto.getCommodities()) {
+                    						CQGCMSCommodityDTO cqgComm = new CQGCMSCommodityDTO();
+                    						cqgComm.setSymbol(comm.getCommodityCode());
+                    						cqgComm.setPositionLimit(comm.getPositionLimit());
+                    						cqgCommodities.add(cqgComm);
+                    					}
+                    					
+                    					boolean result = cqgService.updateCQGAccountMarketLimits(accountId,
+                								cqgCommodities, refId);
+                						if (!result) {
+                							throw new CustomException(ErrorMessage.CQG_INFO_CREATED_UNSUCCESSFULLY, HttpStatus.OK);
+                						}
+                    				}
+                				}
+                			} else {
+                				AMLogger.logMessage(className, methodName, refId, String.format("Activating investor %s. Error: Member %s doesnt have cqgInfo", investorDto.getInvestorCode(), investorDto.getMemberCode()));
+                				throw new CustomException(ErrorMessage.CQG_INFO_CREATED_UNSUCCESSFULLY, HttpStatus.OK);
+                			}
             			}
-        			}
-        			
-        			// update investor status to ACTIVE
-        			updateInvestor(database, investorCode, interestRateDto, refId);
-        			
-        			// update investor_login_users status to ACTIVE
-        			updateLoginInvestorUser(database, investorCode, refId);
-        			
-        			// update pending approval status
-        			invActivationApproval.setStatus(Constant.APPROVAL_STATUS_ACTIVATED);
-        			invActivationApproval.setMarginSurplusInterestRate(interestRateDto.getMarginSurplusInterestRate());
-        			invActivationApproval.setMarginDeficitInterestRate(interestRateDto.getMarginDeficitInterestRate());
-        			invActivationApproval.setApprovalUser(Utility.getCurrentUsername());
-        			invActivationApproval.setApprovalDate(System.currentTimeMillis());
-        			invActivationApprovalRepo.save(invActivationApproval);
-        			
-        			// update investor_margin_info
-        			marginInfoService.insertNewInvestorMarginInfo(investorDto, interestRateDto, refId);
-        	    } else {
-        	    	throw new CustomException(ErrorMessage.ACCESS_DENIED, HttpStatus.FORBIDDEN);
-        	    }
+            			
+            			// update investor status to ACTIVE
+            			updateInvestor(database, investorCode, interestRateDto, refId);
+            			
+            			// update investor_login_users status to ACTIVE
+            			updateLoginInvestorUser(database, investorCode, refId);
+            			
+            			// update pending approval status
+            			invActivationApproval.setStatus(Constant.APPROVAL_STATUS_ACTIVATED);
+            			invActivationApproval.setMarginSurplusInterestRate(interestRateDto.getMarginSurplusInterestRate());
+            			invActivationApproval.setMarginDeficitInterestRate(interestRateDto.getMarginDeficitInterestRate());
+            			invActivationApproval.setApprovalUser(Utility.getCurrentUsername());
+            			invActivationApproval.setApprovalDate(System.currentTimeMillis());
+            			invActivationApprovalRepo.save(invActivationApproval);
+            			
+            			// update investor_margin_info
+            			marginInfoService.insertNewInvestorMarginInfo(investorDto, interestRateDto, refId);
+            	    } else {
+            	    	throw new CustomException(ErrorMessage.ACCESS_DENIED, HttpStatus.FORBIDDEN);
+            	    }
+        		} else {
+        			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+        		}
+    		} else {
+    			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
     		}
     	} catch (CustomException e) {
     		throw e;
     	} catch (Exception e) {
     		AMLogger.logError(className, methodName, refId, e);
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+    	} finally {
+			// delete approvalId on Redis for the next try
+    		Utility.deleteApprovalIDonRedis(redisTemplate, approvalId, refId);
     	}
     }
 	
@@ -163,6 +198,8 @@ public class InvestorActivationService {
 			projection.append("cqgInfo", 1.0);
 			projection.append("orderLimit", 1.0);
 			projection.append("marginMultiplier", 1.0);
+			projection.append("defaultPositionLimit", 1.0);
+			projection.append("commodities", 1.0);
 			
 			Document result = collection.find(query).projection(projection).first();
 			InvestorDTO investorDto = mongoTemplate.getConverter().read(InvestorDTO.class, result);

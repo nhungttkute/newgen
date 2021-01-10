@@ -5,12 +5,12 @@ import javax.validation.ConstraintValidatorContext;
 
 import com.newgen.am.common.Utility;
 
-public class UniqueIdentityCardValidator implements ConstraintValidator<UniqueIdentityCard, String> {
+public class UniqueMemberTaxCodeValidator implements ConstraintValidator<UniqueMemberTaxCode, String> {
 
 	@Override
 	public boolean isValid(String value, ConstraintValidatorContext context) {
 		if (value == null || value.trim().length() == 0) return true;
-		return !Utility.checkExistedIdentityCard(value);
+		return !Utility.checkExistedMemberTaxCode(value);
 	}
 
 }

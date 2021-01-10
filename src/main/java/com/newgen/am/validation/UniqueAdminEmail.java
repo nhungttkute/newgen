@@ -8,11 +8,11 @@ import java.lang.annotation.Target;
 import javax.validation.Constraint;
 import javax.validation.Payload;
 
-@Constraint(validatedBy = UniqueIdentityCardValidator.class)
+@Constraint(validatedBy = UniqueAdminEmailValidator.class)
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.FIELD, ElementType.METHOD })
-public @interface UniqueIdentityCard {
-public String message() default "The identity card already existed.";
+public @interface UniqueAdminEmail {
+	public String message() default "This email already existed.";
 	
 	public Class<?>[] groups() default {};
 	

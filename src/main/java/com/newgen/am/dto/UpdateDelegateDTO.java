@@ -7,8 +7,6 @@ import javax.validation.constraints.Size;
 
 import com.newgen.am.validation.FormatGroup;
 import com.newgen.am.validation.LengthGroup;
-import com.newgen.am.validation.UniqueGroup;
-import com.newgen.am.validation.UniqueIdentityCard;
 import com.newgen.am.validation.ValidDate;
 import com.newgen.am.validation.ValidNumberCharacter;
 import com.newgen.am.validation.ValidPhoneNumber;
@@ -28,7 +26,6 @@ public class UpdateDelegateDTO implements Serializable {
 	@ValidUpdateStringField
 	@ValidNumberCharacter(groups = FormatGroup.class)
 	@Size(max = 20, groups = LengthGroup.class)
-	@UniqueIdentityCard(groups = UniqueGroup.class)
     private String identityCard;
 	@ValidUpdateStringField
 	@ValidDate(groups = FormatGroup.class)

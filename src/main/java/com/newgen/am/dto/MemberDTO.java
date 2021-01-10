@@ -10,11 +10,11 @@ import javax.validation.constraints.Size;
 
 import com.newgen.am.model.Commodity;
 import com.newgen.am.model.CommodityFee;
-import com.newgen.am.model.Company;
 import com.newgen.am.model.Contact;
 import com.newgen.am.model.CqgInfo;
 import com.newgen.am.model.GeneralFee;
 import com.newgen.am.model.MarginRatioAlert;
+import com.newgen.am.model.MemberCompany;
 import com.newgen.am.model.MemberUser;
 import com.newgen.am.model.RiskParameters;
 import com.newgen.am.model.RoleFunction;
@@ -47,7 +47,7 @@ public class MemberDTO implements Serializable{
     private long createdDate;
     @NotNull(message = "Required.")
     @Valid
-    private Company company;
+    private MemberCompany company;
     private Contact contact;
     private UserRole role;
     private List<RoleFunction> functions;

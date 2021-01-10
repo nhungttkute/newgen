@@ -11,7 +11,7 @@
 	</parent>
 	<groupId>com.newgen.am</groupId>
 	<artifactId>NEWGEN_AM_8899</artifactId>
-	<version>0.0.1</version>
+	<version>0.0.2</version>
 	<name>NEWGEN_AM</name>
 	<description>Newgen account management</description>
 	<properties>

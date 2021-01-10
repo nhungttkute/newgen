@@ -5,12 +5,12 @@ import javax.validation.ConstraintValidatorContext;
 
 import com.newgen.am.common.Utility;
 
-public class UniqueTaxCodeValidator implements ConstraintValidator<UniqueTaxCode, String> {
+public class UniqueAdminEmailValidator implements ConstraintValidator<UniqueAdminEmail, String> {
 
 	@Override
 	public boolean isValid(String value, ConstraintValidatorContext context) {
 		if (value == null || value.trim().length() == 0) return true;
-		return !Utility.checkExistedTaxCode(value);
+		return !Utility.checkExistedAdminEmail(value);
 	}
 
 }

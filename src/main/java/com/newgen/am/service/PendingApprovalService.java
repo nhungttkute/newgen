@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -43,57 +44,80 @@ public class PendingApprovalService {
     @Autowired
     private InvestorMarginTransApprovalRepository invMarginTransApprovalRepo;
     
+    @Autowired
+    private RedisTemplate<String, String> redisTemplate;
+    
     public void approve(HttpServletRequest request, String approvalId, long refId) {
     	String methodName = "approve";
     	try {
-    		PendingApproval pendingApproval = pendingApprovalRepo.findById(approvalId).get();
-    		
-    		if (Constant.STATUS_PENDING.equals(pendingApproval.getStatus())) {
-    			// check authorization
-        		if (AuthorityUtils.authorityListToSet(SecurityContextHolder.getContext().getAuthentication().getAuthorities()).contains(pendingApproval.getFunctionCode())) {
-        			invokeMethod (request, pendingApproval, refId);
-        			
-        			//update pending approval status
-        			pendingApproval.setStatus(Constant.APPROVAL_STATUS_APPROVED);
-        			pendingApproval.setApprovalUser(Utility.getCurrentUsername());
-        			pendingApproval.setApprovalDate(System.currentTimeMillis());
-        			pendingApprovalRepo.save(pendingApproval);
-        	    } else {
-        	    	throw new CustomException(ErrorMessage.ACCESS_DENIED, HttpStatus.FORBIDDEN);
-        	    }
+    		// check if approvalId is proccessing or not (on Redis)
+    		if (Utility.setApprovalIDonRedis(redisTemplate, approvalId, refId)) {
+    			PendingApproval pendingApproval = pendingApprovalRepo.findById(approvalId).get();
+        		
+        		if (Constant.STATUS_PENDING.equals(pendingApproval.getStatus())) {
+        			// check authorization
+            		if (AuthorityUtils.authorityListToSet(SecurityContextHolder.getContext().getAuthentication().getAuthorities()).contains(pendingApproval.getFunctionCode())) {
+            			invokeMethod (request, pendingApproval, refId);
+            			
+            			//update pending approval status
+            			pendingApproval.setStatus(Constant.APPROVAL_STATUS_APPROVED);
+            			pendingApproval.setApprovalUser(Utility.getCurrentUsername());
+            			pendingApproval.setApprovalDate(System.currentTimeMillis());
+            			pendingApprovalRepo.save(pendingApproval);
+            	    } else {
+            	    	throw new CustomException(ErrorMessage.ACCESS_DENIED, HttpStatus.FORBIDDEN);
+            	    }
+        		} else {
+        			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+        		}
+    		} else {
+    			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
     		}
     	} catch (CustomException e) {
     		throw e;
     	} catch (Exception e) {
     		AMLogger.logError(className, methodName, refId, e);
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+    	} finally {
+			// delete approvalId on Redis for the next try
+    		Utility.deleteApprovalIDonRedis(redisTemplate, approvalId, refId);
     	}
     }
     
     public void approveMarginTrans(HttpServletRequest request, String approvalId, long refId) {
     	String methodName = "approveMarginTrans";
     	try {
-    		InvestorMarginTransApproval marginTransApproval = invMarginTransApprovalRepo.findById(approvalId).get();
-    		
-    		if (Constant.STATUS_PENDING.equals(marginTransApproval.getStatus())) {
-    			// check authorization
-        		if (AuthorityUtils.authorityListToSet(SecurityContextHolder.getContext().getAuthentication().getAuthorities()).contains(marginTransApproval.getFunctionCode())) {
-        			invokeMethod2(request, marginTransApproval, refId);
-        			
-        			//update pending approval status
-        			marginTransApproval.setStatus(Constant.APPROVAL_STATUS_APPROVED);
-        			marginTransApproval.setApprovalUser(Utility.getCurrentUsername());
-        			marginTransApproval.setApprovalDate(System.currentTimeMillis());
-        			invMarginTransApprovalRepo.save(marginTransApproval);
-        	    } else {
-        	    	throw new CustomException(ErrorMessage.ACCESS_DENIED, HttpStatus.FORBIDDEN);
-        	    }
+    		// check if approvalId is proccessing or not (on Redis)
+    		if (Utility.setApprovalIDonRedis(redisTemplate, approvalId, refId)) {
+    			InvestorMarginTransApproval marginTransApproval = invMarginTransApprovalRepo.findById(approvalId).get();
+        		
+        		if (Constant.STATUS_PENDING.equals(marginTransApproval.getStatus())) {
+        			// check authorization
+            		if (AuthorityUtils.authorityListToSet(SecurityContextHolder.getContext().getAuthentication().getAuthorities()).contains(marginTransApproval.getFunctionCode())) {
+            			invokeMethod2(request, marginTransApproval, refId);
+            			
+            			//update pending approval status
+            			marginTransApproval.setStatus(Constant.APPROVAL_STATUS_APPROVED);
+            			marginTransApproval.setApprovalUser(Utility.getCurrentUsername());
+            			marginTransApproval.setApprovalDate(System.currentTimeMillis());
+            			invMarginTransApprovalRepo.save(marginTransApproval);
+            	    } else {
+            	    	throw new CustomException(ErrorMessage.ACCESS_DENIED, HttpStatus.FORBIDDEN);
+            	    }
+        		} else {
+        			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+        		}
+    		} else {
+    			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
     		}
     	} catch (CustomException e) {
     		throw e;
     	} catch (Exception e) {
     		AMLogger.logError(className, methodName, refId, e);
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+    	} finally {
+			// delete approvalId on Redis for the next try
+    		Utility.deleteApprovalIDonRedis(redisTemplate, approvalId, refId);
     	}
     }
     

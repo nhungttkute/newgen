@@ -30,7 +30,9 @@ import com.newgen.am.common.ErrorMessage;
 import com.newgen.am.common.Utility;
 import com.newgen.am.dto.AdminDataObj;
 import com.newgen.am.dto.AdminResponseObj;
+import com.newgen.am.dto.AdminUserDTO;
 import com.newgen.am.dto.ApprovalFunctionsDTO;
+import com.newgen.am.dto.ApprovalUpdateAdminUserDTO;
 import com.newgen.am.dto.ApprovalUpdateDepartmentDTO;
 import com.newgen.am.dto.ApprovalUpdateUserDTO;
 import com.newgen.am.dto.ApprovalUserRolesDTO;
@@ -249,7 +251,7 @@ public class DepartmentController {
 	@PostMapping("/admin/departments/{deptId}/users")
 	@PreAuthorize("hasAuthority('adminUserManagement.departmentManagement.loginAdminUserManagement.adminUserInfo.create')")
 	public AdminResponseObj createDepartmentUser(HttpServletRequest request, @PathVariable String deptId,
-			@Validated(ValidationSequence.class) @RequestBody UserDTO deptUserDto) {
+			@Validated(ValidationSequence.class) @RequestBody AdminUserDTO deptUserDto) {
 		String methodName = "createDepartmentUser";
 		long refId = System.currentTimeMillis();
 		AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [POST]/admin/departments/users");
@@ -267,7 +269,7 @@ public class DepartmentController {
 	@PutMapping("/admin/departments/{deptId}/users/{deptUserId}")
 	@PreAuthorize("hasAuthority('adminUserManagement.departmentManagement.loginAdminUserManagement.adminUserInfo.update')")
 	public AdminResponseObj updateDepartmentUser(HttpServletRequest request, @PathVariable String deptId,
-			@PathVariable String deptUserId, @Validated(ValidationSequence.class) @RequestBody ApprovalUpdateUserDTO deptUserDto) {
+			@PathVariable String deptUserId, @Validated(ValidationSequence.class) @RequestBody ApprovalUpdateAdminUserDTO deptUserDto) {
 		String methodName = "updateDepartmentUser";
 		long refId = System.currentTimeMillis();
 		AMLogger.logMessage(className, methodName, refId,

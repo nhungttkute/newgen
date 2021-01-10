@@ -39,7 +39,9 @@ import com.newgen.am.common.MongoDBConnection;
 import com.newgen.am.common.RequestParamsParser;
 import com.newgen.am.common.SystemFunctionCode;
 import com.newgen.am.common.Utility;
+import com.newgen.am.dto.AdminUserDTO;
 import com.newgen.am.dto.ApprovalFunctionsDTO;
+import com.newgen.am.dto.ApprovalUpdateAdminUserDTO;
 import com.newgen.am.dto.ApprovalUpdateDepartmentDTO;
 import com.newgen.am.dto.ApprovalUpdateUserDTO;
 import com.newgen.am.dto.ApprovalUserRolesDTO;
@@ -543,14 +545,16 @@ public class DepartmentService {
 			LoginAdminUser newLoginAdmUser = createLoginAdminUser(deptId, deptUserDto, password, pin, refId);
 
 			// send email
-			sendCreateNewUserEmail(deptUserDto.getEmail(), newLoginAdmUser.getUsername(), password, pin, refId);
+			if (Utility.isNotifyOn()) {
+				Utility.sendCreateNewUserEmail("", "", newLoginAdmUser.getUsername(), password, pin, refId);
+			}
 		} catch (Exception e) {
 			AMLogger.logError(className, methodName, refId, e);
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 	
-	public void createDepartmentUserPA(HttpServletRequest request, String deptId, UserDTO deptUserDto, long refId) {
+	public void createDepartmentUserPA(HttpServletRequest request, String deptId, AdminUserDTO deptUserDto, long refId) {
 		String methodName = "createDepartmentUserPA";
 		boolean existedUser = false;
 		try {
@@ -587,7 +591,7 @@ public class DepartmentService {
 		}
 	}
 
-	private String insertDepartmentUserCreatePA(UserInfoDTO userInfo, String deptId, UserDTO deptUserDto,
+	private String insertDepartmentUserCreatePA(UserInfoDTO userInfo, String deptId, AdminUserDTO deptUserDto,
 			long refId) {
 		String methodName = "insertDepartmentUserCreatePA";
 		String approvalId = "";
@@ -635,30 +639,6 @@ public class DepartmentService {
 			loginAdmUser.setCreatedDate(System.currentTimeMillis());
 			LoginAdminUser newLoginAdmUser = loginAdmUserRepo.save(loginAdmUser);
 			return newLoginAdmUser;
-		} catch (Exception e) {
-			AMLogger.logError(className, methodName, refId, e);
-			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
-		}
-	}
-
-	private void sendCreateNewUserEmail(String toEmail, String username, String password, String pin, long refId) {
-		String methodName = "sendCreateNewUserEmail";
-		try {
-			LocalServiceConnection serviceCon = new LocalServiceConnection();
-			EmailDTO email = new EmailDTO();
-			email.setSettingType(Constant.SERVICE_NOTIFICATION_SETTING_TYPE_CREATE_USER);
-			email.setSendingObject(Constant.SERVICE_NOTIFICATION_SENDING_OBJ);
-			email.setTo(toEmail);
-			email.setSubject(FileUtility.CREATE_NEW_USER_EMAIL_SUBJECT);
-
-			String emailBody = String.format(
-					FileUtility.loadFileContent(
-							ConfigLoader.getMainConfig().getString(FileUtility.CREATE_NEW_USER_EMAIL_FILE), refId),
-					username, password, pin);
-			email.setBodyStr(emailBody);
-			String emailJson = Utility.getGson().toJson(email);
-			AMLogger.logMessage(className, methodName, refId, "Email: " + emailJson);
-			serviceCon.sendPostRequest(serviceCon.getEmailNotificationServiceURL(), emailJson, null);
 		} catch (Exception e) {
 			AMLogger.logError(className, methodName, refId, e);
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -748,11 +728,11 @@ public class DepartmentService {
 	}
 	
 	public void updateDepartmentUserPA(HttpServletRequest request, String deptId, String deptUserId,
-			ApprovalUpdateUserDTO deptUserDto, long refId) {
+			ApprovalUpdateAdminUserDTO deptUserDto, long refId) {
 		String methodName = "updateDepartmentUserPA";
 		try {
 			//check if isPasswordExpiryCheck
-			if (deptUserDto.getPendingData().getIsPasswordExpiryCheck()) {
+			if (Utility.isNotNull(deptUserDto.getPendingData()) && Utility.isNotNull(deptUserDto.getPendingData().getIsPasswordExpiryCheck()) && deptUserDto.getPendingData().getIsPasswordExpiryCheck()) {
 				if (deptUserDto.getPendingData().getPasswordExpiryDays() <= 0 || deptUserDto.getPendingData().getExpiryAlertDays() <= 0) {
 					throw new CustomException(ErrorMessage.INVALID_REQUEST, HttpStatus.BAD_REQUEST);
 				}
@@ -772,7 +752,7 @@ public class DepartmentService {
 	}
 
 	private String insertDepartmentUserUpdatePA(UserInfoDTO userInfo, String deptId, String deptUserId,
-			ApprovalUpdateUserDTO deptUserDto, long refId) {
+			ApprovalUpdateAdminUserDTO deptUserDto, long refId) {
 		String methodName = "insertDepartmentUserUpdatePA";
 		String approvalId = "";
 		try {
@@ -1090,7 +1070,9 @@ public class DepartmentService {
 			// get redis user info
 			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
 			// insert data to pending_approvals
-			String approvalId = insertUserDepartmentChangePA(userInfo, fromDeptId, toDeptId, username, refId);
+			
+			UserDTO changedUser = getDepartmentUserByUsername(fromDeptId, username, refId);
+			String approvalId = insertUserDepartmentChangePA(changedUser, fromDeptId, toDeptId, username, refId);
 			// send activity log
 			activityLogService.sendActivityLog(userInfo, request, ActivityLogService.ACTIVITY_UPDATE_USER_DEPARTMENT,
 					ActivityLogService.ACTIVITY_UPDATE_USER_DEPARTMENT_DESC, username, approvalId);
@@ -1101,8 +1083,30 @@ public class DepartmentService {
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
+	
+	private UserDTO getDepartmentUserByUsername(String deptId, String username, long refId) {
+		String methodName = "getDepartmentUserByUsername";
+		try {
+			MongoDatabase database = MongoDBConnection.getMongoDatabase();
+			MongoCollection<Document> collection = database.getCollection("departments");
 
-	private String insertUserDepartmentChangePA(UserInfoDTO userInfo, String fromDeptId, String toDeptId,
+			List<? extends Bson> pipeline = Arrays.asList(
+					new Document().append("$match", new Document().append("_id", new ObjectId(deptId))),
+					new Document().append("$unwind", new Document().append("path", "$users")),
+					new Document().append("$match", new Document().append("users.username", username)),
+					new Document().append("$project", new Document().append("_id", 0.0).append("users", 1.0)),
+					new Document().append("$replaceRoot", new Document().append("newRoot", "$users")));
+
+			Document resultDoc = collection.aggregate(pipeline).first();
+			UserDTO deptUserDto = mongoTemplate.getConverter().read(UserDTO.class, resultDoc);
+			return deptUserDto;
+		} catch (Exception e) {
+			AMLogger.logError(className, methodName, refId, e);
+			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
+	private String insertUserDepartmentChangePA(UserDTO userInfo, String fromDeptId, String toDeptId,
 			String username, long refId) {
 		String methodName = "insertDeptUserFunctionsCreatePA";
 		String approvalId = "";
@@ -1118,7 +1122,7 @@ public class DepartmentService {
 			changeDeptDto.setEmail(userInfo.getEmail());
 			
 			NestedObjectInfo nestedObjInfo = new NestedObjectInfo();
-			nestedObjInfo.setDeptCode(userInfo.getDeptCode());
+			nestedObjInfo.setDeptCode(toDeptCode);
 			
 			
 			PendingData pendingData = new PendingData();

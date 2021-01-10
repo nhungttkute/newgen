@@ -58,9 +58,11 @@ public class MongoDBConnection {
         List<ServerAddress> hostList = new ArrayList<ServerAddress>();
         try {
 			String[] hosts = host.split(";");
-			for (String h : hosts) {
-				ServerAddress serverAdd = new ServerAddress(h, port);
-				hostList.add(serverAdd);
+			if (hosts != null) {
+				for (String h : hosts) {
+					ServerAddress serverAdd = new ServerAddress(h, port);
+					hostList.add(serverAdd);
+				}
 			}
 		} catch (Exception e) {
 			AMLogger.logError("MongoDBConnection", "getMongoDatabase", System.currentTimeMillis(), e);

@@ -8,9 +8,9 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
+import com.newgen.am.model.BrokerDelegate;
 import com.newgen.am.model.CollaboratorUser;
 import com.newgen.am.model.Contact;
-import com.newgen.am.model.Delegate;
 import com.newgen.am.model.RoleFunction;
 import com.newgen.am.model.UserRole;
 import com.newgen.am.validation.FormatGroup;
@@ -48,7 +48,7 @@ public class CollaboratorDTO implements Serializable {
     private long createdDate;
     @NotNull(message = "Required.")
     @Valid
-    private Delegate delegate;
+    private BrokerDelegate delegate;
     private Contact contact;
     private CollaboratorUser user;
     private UserRole role;

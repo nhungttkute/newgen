@@ -13,6 +13,7 @@ public class Constant {
     public static final String CONFIG_DIR = "/opt/account-management/settings/properties/";
 //    public static final String CONFIG_DIR = "C:/u01/apps/AM/settings/properties/";
     public static final String PROD_FLAG = "PROD_FLAG";
+    public static final String NOTIFY_FLAG = "NOTIFY_FLAG";
     public static final String CQG_SYNC_FLAG = "CQG_SYNC_FLAG";
     public static final String CQG_SYNC_BALANCE_FLAG = "CQG_SYNC_BALANCE_FLAG";
     
@@ -80,6 +81,9 @@ public class Constant {
     public static final String SERVICE_CMS_ACCOUNT_ROUTES = "SERVICE_CMS_ACCOUNT_ROUTES";
     public static final String SERVICE_CMS_ACCOUNT_BALANCE = "SERVICE_CMS_ACCOUNT_BALANCE";
     public static final String SERVICE_CMS_ACCOUNT_RISK_PARAMS = "SERVICE_CMS_ACCOUNT_RISK_PARAMS";
+    public static final String SERVICE_CMS_ACCOUNT_RISK_PARAMS_MM = "SERVICE_CMS_ACCOUNT_RISK_PARAMS_MM";
+    public static final String SERVICE_CMS_ACCOUNT_RISK_PARAMS_TSL = "SERVICE_CMS_ACCOUNT_RISK_PARAMS_TSL";
+    public static final String SERVICE_CMS_ACCOUNT_RISK_PARAMS_PL = "SERVICE_CMS_ACCOUNT_RISK_PARAMS_PL";
     public static final String SERVICE_CMS_ACCOUNT_USER_AUTH_LIST = "SERVICE_CMS_ACCOUNT_USER_AUTH_LIST";
     public static final String SERVICE_CMS_ACCOUNT_USER_MARKET_LIMITS = "SERVICE_CMS_ACCOUNT_USER_MARKET_LIMITS";
     public static final String SERVICE_CMS_REQUEST_ACC_BALANCE = "SERVICE_CMS_REQUEST_ACC_BALANCE";
@@ -135,8 +139,10 @@ public class Constant {
     
     public static final String INVESTOR_DEFAULT_ROLE = "TKGD";
     public static final String INVESTOR_USER_PREFIX = "TKGD_";
-    public static final String CQG_ACCOUNT_NAME_PREFIX = "SIM";
-    public static final String CQG_ACCOUNT_NUMBER_PREFIX_STG = "PS";
+//    public static final String CQG_ACCOUNT_NAME_PREFIX = "SIM";
+    public static final String CQG_ACCOUNT_NAME_PREFIX = "";
+//    public static final String CQG_ACCOUNT_NUMBER_PREFIX_STG = "PS";
+    public static final String CQG_ACCOUNT_NUMBER_PREFIX_STG = "";
     public static final String CQG_ACCOUNT_NUMBER_PREFIX_PROD = "MX";
     
     public static final String INVESTOR_TYPE_INNER_TRADING_COMPANY = "P";
@@ -164,4 +170,7 @@ public class Constant {
     public static final String EXCHANGE_PRICE_NONE = "NONE";
     
     public static final String CQG_CMS_TRADER_ID = "CQG_CMS_TRADER_ID";
+    
+    public static final String REDIS_APPROVAL_ID_TIMEOUT = "REDIS_APPROVAL_ID_TIMEOUT";
+    public static final String REDIS_APPROVAL_DEFAULT_VALUE = "L";
 }

@@ -95,6 +95,21 @@ public class MultipleLoginSecurityConfig {
             ).antMatchers(
                     HttpMethod.GET,
                     "/admin/info"
+            ).antMatchers(
+                    HttpMethod.GET,
+                    "/admin/adminUserListLocal"
+            ).antMatchers(
+                    HttpMethod.GET,
+                    "/admin/memberUserListLocal"
+            ).antMatchers(
+                    HttpMethod.GET,
+                    "/admin/brokerUserListLocal"
+            ).antMatchers(
+                    HttpMethod.GET,
+                    "/admin/collaboratorUserListLocal"
+            ).antMatchers(
+                    HttpMethod.GET,
+                    "/admin/investorUserListLocal"
             );
         }
 

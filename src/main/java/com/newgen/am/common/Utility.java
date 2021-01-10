@@ -28,8 +28,10 @@ import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.SerializationUtils;
 import org.apache.commons.lang.WordUtils;
+import org.bson.BsonRegularExpression;
 import org.bson.Document;
 import org.bson.json.JsonWriterSettings;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
@@ -41,11 +43,13 @@ import com.google.gson.Gson;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.newgen.am.dto.EmailDTO;
+import com.newgen.am.dto.EmailListmsisdnDTO;
 import com.newgen.am.dto.InvestorDTO;
 import com.newgen.am.dto.NotifyServiceDTO;
 import com.newgen.am.dto.Pagination;
 import com.newgen.am.dto.UserInfoDTO;
 import com.newgen.am.exception.CustomException;
+import com.newgen.am.model.Investor;
 
 /**
  *
@@ -301,6 +305,35 @@ public class Utility {
 		return Math.round(value * scale) / scale;
 	}
     
+    public static boolean checkExistedAdminEmail(String email) {
+    	// check in admin email exists
+    	MongoDatabase database = MongoDBConnection.getMongoDatabase();
+		MongoCollection<Document> loginAdminUser = database.getCollection("login_admin_users");
+		
+		Document query = new Document();
+        query.append("$and", Arrays.asList(
+                new Document()
+                        .append("username", new Document()
+                                .append("$not", new BsonRegularExpression(".*TVKD.*", "i"))
+                        ),
+                new Document()
+                        .append("username", new Document()
+                                .append("$not", new BsonRegularExpression(".*MG.*", "i"))
+                        ),
+                new Document()
+                        .append("username", new Document()
+                                .append("$not", new BsonRegularExpression(".*CTVMG.*", "i"))
+                        ),
+                new Document()
+                        .append("email", email)
+            )
+        );
+		
+		long investorCount = loginAdminUser.countDocuments(query);
+		
+		return (investorCount > 0) ? true : false;
+    }
+    
     public static boolean checkExistedMemberCode(String memberCode) {
     	// check in member code exists
     	MongoDatabase database = MongoDBConnection.getMongoDatabase();
@@ -340,9 +373,7 @@ public class Utility {
 		return (count > 0) ? true : false;
     }
     
-    public static boolean checkExistedTaxCode(String taxCode) {
-    	long totalCount = 0;
-    	
+    public static boolean checkExistedMemberTaxCode(String taxCode) {
     	// check in members
     	MongoDatabase database = MongoDBConnection.getMongoDatabase();
 		MongoCollection<Document> memberCollection = database.getCollection("members");
@@ -351,74 +382,67 @@ public class Utility {
 		memberQuery.append("company.taxCode", taxCode);
 		
 		long memberCount = memberCollection.countDocuments(memberQuery);
-		totalCount = totalCount + memberCount;
-		
-		// check in brokers
-		MongoCollection<Document> brokerCollection = database.getCollection("brokers");
-		
-		Document brokerQuery = new Document();
-		brokerQuery.append("company.taxCode", taxCode);
-		
-		long brokerCount = brokerCollection.countDocuments(brokerQuery);
-		totalCount = totalCount + brokerCount;
-		
-		// check in investors
+		return (memberCount > 0) ? true : false;
+    }
+    
+    public static boolean checkExistedInvestorTaxCode(String memberCode, String taxCode) {
+    	MongoDatabase database = MongoDBConnection.getMongoDatabase();
 		MongoCollection<Document> investorCollection = database.getCollection("investors");
-		
+
 		Document invQuery = new Document();
+		invQuery = new Document();
+		invQuery.append("memberCode", memberCode);
 		invQuery.append("company.taxCode", taxCode);
 		
 		long invCount = investorCollection.countDocuments(invQuery);
-		totalCount = totalCount + invCount;
 		
-		return (totalCount > 0) ? true : false;
+		return (invCount > 0) ? true : false;
     }
     
-    public static boolean checkExistedIdentityCard(String identityCard) {
-    	long totalCount = 0;
-    	
-    	// check in members
+    public static boolean checkExistedInvestorTaxCode2(String investorCode, String taxCode) {
     	MongoDatabase database = MongoDBConnection.getMongoDatabase();
-		MongoCollection<Document> memberCollection = database.getCollection("members");
+		MongoCollection<Document> investorCollection = database.getCollection("investors");
+
+		// get memberCode
+		String memberCode = investorCode.substring(0,3);
+		// count taxCode
+		Document invQuery = new Document();
+		invQuery = new Document();
+		invQuery.append("memberCode", memberCode);
+		invQuery.append("company.taxCode", taxCode);
 		
-		Document memberQuery = new Document();
-		memberQuery.append("company.delegate.identityCard", identityCard);
+		long invCount = investorCollection.countDocuments(invQuery);
 		
-		long memberCount = memberCollection.countDocuments(memberQuery);
-		
-		totalCount = totalCount + memberCount;
-		
-		// check in brokers
-		MongoCollection<Document> brokerCollection = database.getCollection("brokers");
-		
-		Document brokerQuery1 = new Document();
-		brokerQuery1.append("company.delegate.identityCard", identityCard);
-		
-		long brokerCount1 = brokerCollection.countDocuments(brokerQuery1);
-		totalCount = totalCount + brokerCount1;
-		
-		Document brokerQuery2 = new Document();
-		brokerQuery2.append("individual.identityCard", identityCard);
-		
-		long brokerCount2 = brokerCollection.countDocuments(brokerQuery2);
-		totalCount = totalCount + brokerCount2;
-		
-		// check in investors
+		return (invCount > 0) ? true : false;
+    }
+    
+    public static boolean checkExistedInvestorIdentityCard2(String investorCode, String identityCard) {
+    	MongoDatabase database = MongoDBConnection.getMongoDatabase();
 		MongoCollection<Document> investorCollection = database.getCollection("investors");
 		
-		Document invQuery1 = new Document();
-		invQuery1.append("company.delegate.identityCard", identityCard);
+		// get memberCode
+		String memberCode = investorCode.substring(0,3);
+		// count identityCard
+		Document invQuery = new Document();
+		invQuery = new Document();
+		invQuery.append("memberCode", memberCode);
+		invQuery.append("individual.identityCard", identityCard);
 		
-		long invCount1 = investorCollection.countDocuments(invQuery1);
-		totalCount = totalCount + invCount1;
+		long invCount = investorCollection.countDocuments(invQuery);
+		return (invCount > 0) ? true : false;
+    }
+    
+    public static boolean checkExistedInvestorIdentityCard(String memberCode, String identityCard) {
+    	MongoDatabase database = MongoDBConnection.getMongoDatabase();
+		MongoCollection<Document> investorCollection = database.getCollection("investors");
 		
-		Document invQuery2 = new Document();
-		invQuery2.append("individual.identityCard", identityCard);
+		Document invQuery = new Document();
+		invQuery.append("memberCode", memberCode);
+		invQuery.append("individual.identityCard", identityCard);
 		
-		long invCount2 = investorCollection.countDocuments(invQuery2);
-		totalCount = totalCount + invCount2;
+		long invCount = investorCollection.countDocuments(invQuery);
 		
-		return (totalCount > 0) ? true : false;
+		return (invCount > 0) ? true : false;
     }
     
     public static List<String> getNumberQueryFieldNames() {
@@ -526,7 +550,11 @@ public class Utility {
 			EmailDTO email = new EmailDTO();
 			email.setSettingType(Constant.SERVICE_NOTIFICATION_SETTING_TYPE_RESET_PASSWORD);
 			email.setSendingObject(Constant.SERVICE_NOTIFICATION_SENDING_OBJ);
-			email.setTo(toEmail);
+			
+			EmailListmsisdnDTO listmsisdn = new EmailListmsisdnDTO();
+			listmsisdn.setEmails(Arrays.asList(toEmail));
+			
+			email.setListmsisdn(listmsisdn);
 			email.setSubject(FileUtility.CHANGE_PASSWORD_EMAIL_SUBJECT);
 
 			String emailBody = String.format(
@@ -550,7 +578,11 @@ public class Utility {
 			EmailDTO email = new EmailDTO();
 			email.setSettingType(Constant.SERVICE_NOTIFICATION_SETTING_TYPE_RESET_PIN);
 			email.setSendingObject(Constant.SERVICE_NOTIFICATION_SENDING_OBJ);
-			email.setTo(toEmail);
+			
+			EmailListmsisdnDTO listmsisdn = new EmailListmsisdnDTO();
+			listmsisdn.setEmails(Arrays.asList(toEmail));
+			
+			email.setListmsisdn(listmsisdn);
 			email.setSubject(FileUtility.CHANGE_PIN_EMAIL_SUBJECT);
 
 			String emailBody = String.format(
@@ -572,6 +604,11 @@ public class Utility {
     	return false;
     }
     
+    public static boolean isNotifyOn() {
+    	if("1".equals(ConfigLoader.getMainConfig().getString(Constant.NOTIFY_FLAG))) return true;
+    	return false;
+    }
+    
     public static boolean isCQGSyncOn() {
     	if("1".equals(ConfigLoader.getMainConfig().getString(Constant.CQG_SYNC_FLAG))) return true;
     	return false;
@@ -584,26 +621,11 @@ public class Utility {
     
     public static String getCQGAccountName(InvestorDTO investor) {
     	String accountName = "";
-    	if (Utility.isProdMode()) {
-    		if (Utility.isNotNull(investor)) {
-        		if (Utility.isNotNull(investor.getCompany()) && Utility.isNotNull(investor.getCompany().getDelegate()) && Utility.isNotNull(investor.getCompany().getDelegate().getFullName())) {
-        			if(investor.getCompany().getDelegate().getFullName().length() > 64) {
-        				accountName = investor.getCompany().getDelegate().getFullName().substring(0, 64);
-            		} else {
-            			accountName = investor.getCompany().getDelegate().getFullName();
-            		}
-        		} else if (Utility.isNotNull(investor.getIndividual()) && Utility.isNotNull(investor.getIndividual().getFullName())) {
-        			if(investor.getIndividual().getFullName().length() > 64) {
-        				accountName = investor.getIndividual().getFullName().substring(0, 64);
-            		} else {
-            			accountName = investor.getIndividual().getFullName();
-            		}
-        		}
-        			
-        	}
-    	} else {
-    		accountName = Constant.CQG_ACCOUNT_NAME_PREFIX + investor.getInvestorCode();
-    	}
+    	if(investor.getInvestorName().length() > 64) {
+			accountName = investor.getInvestorName().substring(0, 64);
+		} else {
+			accountName = investor.getInvestorName();
+		}
     	
     	return accountName;
     }
@@ -612,5 +634,63 @@ public class Utility {
     	Date date = new Date(timestamp);
     	SimpleDateFormat formater = new SimpleDateFormat("yyyy-MM-dd");
     	return formater.format(date);
+    }
+    
+    public static void sendCreateNewUserEmail(String userType, String code, String username, String password, String pin, long refId) {
+		String methodName = "sendCreateNewUserEmail";
+		try {
+			LocalServiceConnection serviceCon = new LocalServiceConnection();
+			EmailDTO email = new EmailDTO();
+			email.setSettingType(Constant.SERVICE_NOTIFICATION_SETTING_TYPE_CREATE_USER);
+			email.setSendingObject(Constant.SERVICE_NOTIFICATION_SENDING_OBJ);
+			
+			EmailListmsisdnDTO listmsisdn = new EmailListmsisdnDTO();
+			switch(userType) {
+				case Constant.MEMBER_MASTER_USER_PREFIX:
+					listmsisdn.setMemberUser(Arrays.asList(username));
+					break;
+				case Constant.BROKER_USER_PREFIX:
+					listmsisdn.setBroker(Arrays.asList(code));
+					break;
+				case Constant.COLLABORATOR_USER_PREFIX:
+					listmsisdn.setCollaborator(Arrays.asList(code));
+					break;
+				case Constant.INVESTOR_USER_PREFIX:
+					listmsisdn.setInvestorUser(Arrays.asList(username));
+					break;
+				default:
+					listmsisdn.setAdmin(Arrays.asList(username));
+					break;
+			}
+			
+			email.setListmsisdn(listmsisdn);
+			email.setSubject(FileUtility.CREATE_NEW_USER_EMAIL_SUBJECT);
+
+			String emailBody = String.format(
+					FileUtility.loadFileContent(
+							ConfigLoader.getMainConfig().getString(FileUtility.CREATE_NEW_USER_EMAIL_FILE), refId),
+					username, password, pin);
+			email.setBodyStr(emailBody);
+			String emailJson = Utility.getGson().toJson(email);
+			AMLogger.logMessage(className, methodName, refId, "Email: " + emailJson);
+			serviceCon.sendPostRequest(serviceCon.getEmailNotificationServiceURL(), emailJson, null);
+		} catch (Exception e) {
+			AMLogger.logError(className, methodName, refId, e);
+			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+    
+    public static boolean setApprovalIDonRedis(RedisTemplate<String, String> template, String approvalId, long refId) {
+    	long beginDate = System.currentTimeMillis();
+    	long approvalIdTimeout = ConfigLoader.getMainConfig().getLong(Constant.REDIS_APPROVAL_ID_TIMEOUT);
+		boolean result = template.opsForValue().setIfAbsent(approvalId, Constant.REDIS_APPROVAL_DEFAULT_VALUE, Duration.ofMillis(approvalIdTimeout));
+		long endDate = System.currentTimeMillis();
+		AMLogger.logMessage(className, "checkApprovalIDonRedis", refId, "Result=" + result + ", Duration=" + (endDate - beginDate));
+		return result;
+    }
+    
+    public static void deleteApprovalIDonRedis(RedisTemplate<String, String> template, String approvalId, long refId) {
+    	AMLogger.logMessage(className, "deleteApprovalIDonRedis", refId, "REDIS_DELETE: key=" + approvalId);
+		template.delete(approvalId);
     }
 }

@@ -8,10 +8,10 @@ import java.lang.annotation.Target;
 import javax.validation.Constraint;
 import javax.validation.Payload;
 
-@Constraint(validatedBy = UniqueTaxCodeValidator.class)
+@Constraint(validatedBy = UniqueMemberTaxCodeValidator.class)
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.FIELD, ElementType.METHOD })
-public @interface UniqueTaxCode {
+public @interface UniqueMemberTaxCode {
 	public String message() default "The tax code already existed.";
 	
 	public Class<?>[] groups() default {};

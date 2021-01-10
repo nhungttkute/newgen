@@ -31,7 +31,7 @@ public class Collaborator extends AuditModel implements Serializable {
     private String name;
     private String note;
     private String status;
-    private Delegate delegate;
+    private BrokerDelegate delegate;
     private Contact contact;
     private CollaboratorUser user;
     private UserRole role;

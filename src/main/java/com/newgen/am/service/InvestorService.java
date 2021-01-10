@@ -592,7 +592,7 @@ public class InvestorService {
 		}
 
 		NestedObjectInfo nestedObjInfo = new NestedObjectInfo();
-		nestedObjInfo.setDeptCode(userInfo.getDeptCode());
+		nestedObjInfo.setMemberCode(investorDto.getMemberCode());
 
 		PendingData pendingData = new PendingData();
 		pendingData.setServiceFunctionName(ApprovalConstant.INVESTOR_ACTIVATE);
@@ -627,9 +627,19 @@ public class InvestorService {
 					if (Utility.isNull(investorDto.getCompany())) {
 						throw new CustomException(ErrorMessage.INVALID_REQUEST, HttpStatus.BAD_REQUEST);
 					}
+					
+					// check unique taxCode
+					if (Utility.checkExistedInvestorTaxCode(investorDto.getMemberCode(), investorDto.getCompany().getTaxCode())) {
+						throw new CustomException(ErrorMessage.TAX_CODE_ALREADY_EXISTED, HttpStatus.BAD_REQUEST);
+					}
 				} else if (Utility.isInvestorIndividual(investorDto.getType())) {
 					if (Utility.isNull(investorDto.getIndividual())) {
 						throw new CustomException(ErrorMessage.INVALID_REQUEST, HttpStatus.BAD_REQUEST);
+					}
+					
+					// check unique indentityCard
+					if (Utility.checkExistedInvestorIdentityCard(investorDto.getMemberCode(), investorDto.getIndividual().getIdentityCard())) {
+						throw new CustomException(ErrorMessage.IDENTITY_CARD_ALREADY_EXISTED, HttpStatus.BAD_REQUEST);
 					}
 				} else {
 					throw new CustomException(ErrorMessage.INVALID_REQUEST, HttpStatus.BAD_REQUEST);
@@ -753,7 +763,9 @@ public class InvestorService {
 				createDefaultLoginInvestorUser(investorDto.getInvestorCode(), investorUserDto, password, pin, refId);
 
 				// send email
-				sendCreateNewUserEmail(email, username, password, pin, refId);
+				if (Utility.isNotifyOn()) {
+					Utility.sendCreateNewUserEmail(Constant.INVESTOR_USER_PREFIX, "", username, password, pin, refId);
+				}
 			} catch (Exception e) {
 				AMLogger.logError(className, methodName, refId, e);
 				throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -802,30 +814,6 @@ public class InvestorService {
 			loginInvUser.setCreatedDate(System.currentTimeMillis());
 			LoginInvestorUser newLoginInvUser = loginInvUserRepo.save(loginInvUser);
 			return newLoginInvUser;
-		} catch (Exception e) {
-			AMLogger.logError(className, methodName, refId, e);
-			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
-		}
-	}
-
-	private void sendCreateNewUserEmail(String toEmail, String username, String password, String pin, long refId) {
-		String methodName = "sendCreateNewUserEmail";
-		try {
-			LocalServiceConnection serviceCon = new LocalServiceConnection();
-			EmailDTO email = new EmailDTO();
-			email.setSettingType(Constant.SERVICE_NOTIFICATION_SETTING_TYPE_CREATE_USER);
-			email.setSendingObject(Constant.SERVICE_NOTIFICATION_SENDING_OBJ);
-			email.setTo(toEmail);
-			email.setSubject(FileUtility.CREATE_NEW_USER_EMAIL_SUBJECT);
-
-			String emailBody = String.format(
-					FileUtility.loadFileContent(
-							ConfigLoader.getMainConfig().getString(FileUtility.CREATE_NEW_USER_EMAIL_FILE), refId),
-					username, password, pin);
-			email.setBodyStr(emailBody);
-			String emailJson = Utility.getGson().toJson(email);
-			AMLogger.logMessage(className, methodName, refId, "Email: " + emailJson);
-			serviceCon.sendPostRequest(serviceCon.getEmailNotificationServiceURL(), emailJson, null);
 		} catch (Exception e) {
 			AMLogger.logError(className, methodName, refId, e);
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -1046,6 +1034,26 @@ public class InvestorService {
 				throw new CustomException(ErrorMessage.RESULT_NOT_FOUND, HttpStatus.OK);
 			}
 
+			if (Utility.isNull(investorDto.getPendingData())) {
+				throw new CustomException(ErrorMessage.INVALID_REQUEST, HttpStatus.BAD_REQUEST);
+			}
+			
+			if (Utility.isNotNull(investorDto.getPendingData().getCompany()) && Utility.isNotNull(investorDto.getPendingData().getCompany().getTaxCode())) {
+				if (!investorDto.getPendingData().getCompany().getTaxCode().equals(investorDto.getOldData().getCompany().getTaxCode())) {
+					// check unique taxCode
+					if (Utility.checkExistedInvestorTaxCode2(investorDto.getOldData().getInvestorCode(), investorDto.getPendingData().getCompany().getTaxCode())) {
+						throw new CustomException(ErrorMessage.TAX_CODE_ALREADY_EXISTED, HttpStatus.BAD_REQUEST);
+					}
+				}
+			} else if (Utility.isNotNull(investorDto.getPendingData().getIndividual()) && Utility.isNotNull(investorDto.getPendingData().getIndividual().getIdentityCard())) {
+				if (!investorDto.getPendingData().getIndividual().getIdentityCard().equals(investorDto.getOldData().getIndividual().getIdentityCard())) {
+					// check unique indentityCard
+					if (Utility.checkExistedInvestorIdentityCard2(investorDto.getOldData().getInvestorCode(), investorDto.getPendingData().getIndividual().getIdentityCard())) {
+						throw new CustomException(ErrorMessage.IDENTITY_CARD_ALREADY_EXISTED, HttpStatus.BAD_REQUEST);
+					}
+				}
+			}
+			
 			// get redis user info
 			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
 			// insert data to pending_approvals
@@ -1137,11 +1145,13 @@ public class InvestorService {
 		try {
 			Document query = new Document();
 			query.append("investorCode", investorCode);
+			
+			Document projection = new Document();
 
 			MongoDatabase database = MongoDBConnection.getMongoDatabase();
 			MongoCollection<Document> collection = database.getCollection("investors");
 
-			Document investorDoc = collection.find(query).first();
+			Document investorDoc = collection.find(query).projection(projection).first();
 			if (investorDoc == null) {
 				throw new CustomException(ErrorMessage.RESULT_NOT_FOUND, HttpStatus.OK);
 			}
@@ -1179,11 +1189,19 @@ public class InvestorService {
 		try {
 			Document query = new Document();
 			query.append("investorCode", investorCode);
+			
+			Document projection = new Document();
+			projection.append("_id", 0.0);
+			projection.append("individual", 0.0);
+			projection.append("company", 0.0);
+			projection.append("contact", 0.0);
+			projection.append("users", 0.0);
+			projection.append("role", 0.0);
 
 			MongoDatabase database = MongoDBConnection.getMongoDatabase();
 			MongoCollection<Document> collection = database.getCollection("investors");
 
-			Document investorDoc = collection.find(query).first();
+			Document investorDoc = collection.find(query).projection(projection).first();
 			if (investorDoc == null) {
 				throw new CustomException(ErrorMessage.RESULT_NOT_FOUND, HttpStatus.OK);
 			}
@@ -1191,20 +1209,6 @@ public class InvestorService {
 			Investor investor = mongoTemplate.getConverter().read(Investor.class, investorDoc);
 
 			if (investor != null) {
-				// clear some fields
-				investor.setUsers(null);
-				if (investor.getCompany() != null && investor.getCompany().getDelegate() != null) {
-					investor.getCompany().getDelegate().setScannedBackIdCard(null);
-					investor.getCompany().getDelegate().setScannedFrontIdCard(null);
-					investor.getCompany().getDelegate().setScannedSignature(null);
-				}
-
-				if (investor.getIndividual() != null) {
-					investor.getIndividual().setScannedBackIdCard(null);
-					investor.getIndividual().setScannedFrontIdCard(null);
-					investor.getIndividual().setScannedSignature(null);
-				}
-
 				MarginInfoDTO marginInfo = new MarginInfoDTO();
 				marginInfo.setInvestorCode(investor.getInvestorCode());
 				marginInfo.setInvestorName(investor.getInvestorName());
@@ -1452,7 +1456,9 @@ public class InvestorService {
 			LoginInvestorUser newLoginInvUser = createLoginInvestorUser(investorDto, userDto, password, pin, refId);
 
 			// send email
-			sendCreateNewUserEmail(userDto.getEmail(), newLoginInvUser.getUsername(), password, pin, refId);
+			if (Utility.isNotifyOn()) {
+				Utility.sendCreateNewUserEmail(Constant.INVESTOR_USER_PREFIX, "", newLoginInvUser.getUsername(), password, pin, refId);
+			}
 
 			// insert into investor's users
 			Document newUser = new Document();
@@ -1567,70 +1573,73 @@ public class InvestorService {
 			}
 
 			Document updateDocument = new Document();
-			if (investorDto.getDefaultPositionLimit() > 0) {
-				updateDocument.append("defaultPositionLimit", investorDto.getDefaultPositionLimit());
+			updateDocument.append("defaultPositionLimit", investorDto.getDefaultPositionLimit());
+			updateDocument.append("lastModifiedUser", Utility.getCurrentUsername());
+			updateDocument.append("lastModifiedDate", System.currentTimeMillis());
+
+			MongoDatabase database = MongoDBConnection.getMongoDatabase();
+			MongoCollection<Document> collection = database.getCollection("investors");
+
+			Document query = new Document();
+			query.append("investorCode", investorCode);
+
+			// update default position litmit and fee for all commodities
+			List<Document> newCommodities = new ArrayList<Document>();
+			List<CQGCMSCommodityDTO> cqgCommodities = new ArrayList<CQGCMSCommodityDTO>();
+
+			Document projection = new Document();
+			projection.append("_id", 0.0);
+			projection.append("commodities", 1.0);
+
+			Document resultDoc = collection.find(query).projection(projection).first();
+			InvestorDTO invComm = mongoTemplate.getConverter().read(InvestorDTO.class, resultDoc);
+			if (invComm != null && invComm.getCommodities() != null) {
+				for (Commodity comm : invComm.getCommodities()) {
+					Document newComm = new Document();
+					newComm.append("commodityCode", comm.getCommodityCode());
+					newComm.append("commodityName", comm.getCommodityCode());
+					newComm.append("currency", Constant.CURRENCY_VND);
+					if (Constant.POSITION_INHERITED.equalsIgnoreCase(comm.getPositionLimitType())) {
+						newComm.append("positionLimitType", Constant.POSITION_INHERITED);
+						newComm.append("positionLimit", investorDto.getDefaultPositionLimit());
+
+						CQGCMSCommodityDTO cqgComm = new CQGCMSCommodityDTO();
+						cqgComm.setSymbol(comm.getCommodityCode());
+						cqgComm.setPositionLimit(investorDto.getDefaultPositionLimit());
+						cqgCommodities.add(cqgComm);
+						
+//						if (investorDto.getDefaultPositionLimit() > 0) {
+//							newComm.append("positionLimitType", Constant.POSITION_INHERITED);
+//							newComm.append("positionLimit", investorDto.getDefaultPositionLimit());
+//
+//							CQGCMSCommodityDTO cqgComm = new CQGCMSCommodityDTO();
+//							cqgComm.setSymbol(comm.getCommodityCode());
+//							cqgComm.setPositionLimit(investorDto.getDefaultPositionLimit());
+//							cqgCommodities.add(cqgComm);
+//						} else {
+//							newComm.append("positionLimitType", Constant.POSITION_INHERITED);
+//							newComm.append("positionLimit", comm.getPositionLimit());
+//						}
+					} else {
+						newComm.append("positionLimitType", comm.getPositionLimitType());
+						newComm.append("positionLimit", comm.getPositionLimit());
+					}
+					newComm.append("commodityFee", comm.getCommodityFee());
+					newCommodities.add(newComm);
+				}
 			}
 
-			if (updateDocument.isEmpty()) {
-				throw new CustomException(ErrorMessage.INVALID_REQUEST, HttpStatus.BAD_REQUEST);
-			} else {
-				MongoDatabase database = MongoDBConnection.getMongoDatabase();
-				MongoCollection<Document> collection = database.getCollection("investors");
+			updateDocument.append("commodities", newCommodities);
 
-				Document query = new Document();
-				query.append("investorCode", investorCode);
+			Document update = new Document();
+			update.append("$set", updateDocument);
 
-				updateDocument.append("lastModifiedUser", Utility.getCurrentUsername());
-				updateDocument.append("lastModifiedDate", System.currentTimeMillis());
-
-				// update default position litmit and fee for all commodities
-				List<Document> newCommodities = new ArrayList<Document>();
-				List<CQGCMSCommodityDTO> cqgCommodities = new ArrayList<CQGCMSCommodityDTO>();
-
-				Document projection = new Document();
-				projection.append("_id", 0.0);
-				projection.append("commodities", 1.0);
-
-				Document resultDoc = collection.find(query).projection(projection).first();
-				InvestorDTO invComm = mongoTemplate.getConverter().read(InvestorDTO.class, resultDoc);
-				if (invComm != null && invComm.getCommodities() != null) {
-					for (Commodity comm : invComm.getCommodities()) {
-						Document newComm = new Document();
-						newComm.append("commodityCode", comm.getCommodityCode());
-						newComm.append("commodityName", comm.getCommodityCode());
-						newComm.append("currency", Constant.CURRENCY_VND);
-						if (Constant.POSITION_INHERITED.equalsIgnoreCase(comm.getPositionLimitType())) {
-							if (investorDto.getDefaultPositionLimit() > 0) {
-								newComm.append("positionLimitType", Constant.POSITION_INHERITED);
-								newComm.append("positionLimit", investorDto.getDefaultPositionLimit());
-
-								CQGCMSCommodityDTO cqgComm = new CQGCMSCommodityDTO();
-								cqgComm.setSymbol(comm.getCommodityCode());
-								cqgComm.setPositionLimit(investorDto.getDefaultPositionLimit());
-								cqgCommodities.add(cqgComm);
-							} else {
-								newComm.append("positionLimitType", Constant.POSITION_INHERITED);
-								newComm.append("positionLimit", comm.getPositionLimit());
-							}
-						} else {
-							newComm.append("positionLimitType", comm.getPositionLimitType());
-							newComm.append("positionLimit", comm.getPositionLimit());
-						}
-						newComm.append("commodityFee", comm.getCommodityFee());
-						newCommodities.add(newComm);
-					}
-				}
-
-				updateDocument.append("commodities", newCommodities);
-
-				Document update = new Document();
-				update.append("$set", updateDocument);
-
-				// sync to CQG
-				if (Utility.isCQGSyncOn()) {
+			// sync to CQG
+			if (Utility.isCQGSyncOn()) {
+				InvestorDTO investorInfo = getInvestorInfo(investorCode, refId);
+				if (Constant.STATUS_ACTIVE.equals(investorInfo.getStatus())) {
 					// update cqg risk params
-					InvestorDTO investorInfo = getInvestorInfo(investorCode, refId);
-					boolean result = cqgService.updateCQGRiskParams(investorInfo.getCqgInfo().getAccountId(), 0, 0,
+					boolean result = cqgService.updateCQGRiskParamsPL(investorInfo.getCqgInfo().getAccountId(),
 							investorDto.getDefaultPositionLimit(), refId);
 					if (!result) {
 						throw new CustomException(ErrorMessage.CQG_INFO_CREATED_UNSUCCESSFULLY, HttpStatus.OK);
@@ -1643,10 +1652,10 @@ public class InvestorService {
 						throw new CustomException(ErrorMessage.CQG_INFO_CREATED_UNSUCCESSFULLY, HttpStatus.OK);
 					}
 				}
-
-				// update to DB
-				collection.updateOne(query, update);
 			}
+
+			// update to DB
+			collection.updateOne(query, update);
 		} catch (CustomException e) {
 			throw e;
 		} catch (Exception e) {
@@ -1727,11 +1736,13 @@ public class InvestorService {
 				if (Utility.isCQGSyncOn()) {
 					// update cqg account market limits
 					InvestorDTO investorDto = getInvestorInfo(investorCode, refId);
-					setRemovedCommoditiesMarkerLimits(cqgCommodities, investorDto);
-					boolean result = cqgService.updateCQGAccountMarketLimits(investorDto.getCqgInfo().getAccountId(),
-							cqgCommodities, refId);
-					if (!result) {
-						throw new CustomException(ErrorMessage.CQG_INFO_CREATED_UNSUCCESSFULLY, HttpStatus.OK);
+					if (Constant.STATUS_ACTIVE.equals(investorDto.getStatus())) {
+						setRemovedCommoditiesMarkerLimits(cqgCommodities, investorDto);
+						boolean result = cqgService.updateCQGAccountMarketLimits(investorDto.getCqgInfo().getAccountId(),
+								cqgCommodities, refId);
+						if (!result) {
+							throw new CustomException(ErrorMessage.CQG_INFO_CREATED_UNSUCCESSFULLY, HttpStatus.OK);
+						}
 					}
 				}
 
@@ -1821,14 +1832,16 @@ public class InvestorService {
 	}
 
 	private void setRemovedCommoditiesMarkerLimits(List<CQGCMSCommodityDTO> cqgCommodities, InvestorDTO investorDto) {
-		for (Commodity comm : investorDto.getCommodities()) {
-			if (!existCommodityInCQGCommodities(cqgCommodities, comm.getCommodityCode())) {
-				CQGCMSCommodityDTO cqgComm = new CQGCMSCommodityDTO();
-				cqgComm.setSymbol(comm.getCommodityCode());
-				cqgComm.setPositionLimit(0);
-				cqgCommodities.add(cqgComm);
-			} else {
-				continue;
+		if (investorDto.getCommodities() != null ) {
+			for (Commodity comm : investorDto.getCommodities()) {
+				if (!existCommodityInCQGCommodities(cqgCommodities, comm.getCommodityCode())) {
+					CQGCMSCommodityDTO cqgComm = new CQGCMSCommodityDTO();
+					cqgComm.setSymbol(comm.getCommodityCode());
+					cqgComm.setPositionLimit(0);
+					cqgCommodities.add(cqgComm);
+				} else {
+					continue;
+				}
 			}
 		}
 	}
@@ -2046,10 +2059,12 @@ public class InvestorService {
 			// update cqg risk params
 			if (Utility.isCQGSyncOn()) {
 				InvestorDTO investorInfo = getInvestorInfo(investorCode, refId);
-				boolean result = cqgService.updateCQGRiskParams(investorInfo.getCqgInfo().getAccountId(),
-						marginMultDto.getMarginMultiplier(), 0, 0, refId);
-				if (!result) {
-					throw new CustomException(ErrorMessage.CQG_INFO_CREATED_UNSUCCESSFULLY, HttpStatus.OK);
+				if (Constant.STATUS_ACTIVE.equals(investorInfo.getStatus())) {
+					boolean result = cqgService.updateCQGRiskParamsMM(investorInfo.getCqgInfo().getAccountId(),
+							marginMultDto.getMarginMultiplier(), refId);
+					if (!result) {
+						throw new CustomException(ErrorMessage.CQG_INFO_CREATED_UNSUCCESSFULLY, HttpStatus.OK);
+					}
 				}
 			}
 
@@ -2518,6 +2533,7 @@ public class InvestorService {
 		String methodName = "depositMargin";
 		try {
 			String investorCode = pendingApproval.getPendingData().getQueryValue();
+			
 			MarginTransactionDTO marginTransDto = Utility.getGson()
 					.fromJson(pendingApproval.getPendingData().getPendingValue(), MarginTransactionDTO.class);
 
@@ -2535,6 +2551,10 @@ public class InvestorService {
 			try {
 				// update changedAmount in investor_margin_info
 				InvestorMarginInfo marginInfo = marginInfoService.getInvestorMarginInfo(investorCode, refId);
+				if (marginInfo == null) {
+					throw new CustomException(ErrorMessage.INVESTOR_IS_NOT_ACTIVATED, HttpStatus.OK);
+				}
+				
 				double changedAmount = marginInfo.getChangedAmount() + marginTransDto.getAmount();
 
 				marginInfoService.updateChangedAmount(investorCode, changedAmount, refId);
@@ -2549,8 +2569,9 @@ public class InvestorService {
 				marginTrans.setBrokerName(marginInfo.getBrokerName());
 				marginTrans.setCollaboratorCode(marginInfo.getCollaboratorCode());
 				marginTrans.setCollaboratorName(marginInfo.getCollaboratorName());
-
 				marginTrans.setCurrency(Constant.CURRENCY_VND);
+				marginTrans.setCreatedUser(pendingApproval.getCreatedUser());
+				marginTrans.setCreatedDate(pendingApproval.getCreatedDate());
 				marginTrans.setApprovalDate(System.currentTimeMillis());
 				marginTrans.setApprovalUser(userInfo.getUsername());
 				marginTrans.setSessionDate(getSessionDate(refId));
@@ -2562,6 +2583,8 @@ public class InvestorService {
 				}
 				throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
 			}
+		} catch (CustomException e) {
+			throw e;
 		} catch (Exception e) {
 			AMLogger.logError(className, methodName, refId, e);
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -2607,7 +2630,9 @@ public class InvestorService {
 		try {
 			// check if investor is activated
 			InvestorDTO investorDto = getInvestorInfo(marginTransDto.getInvestorCode(), refId);
-			if (Utility.isCQGSyncOn() && Utility.isNull(investorDto.getCqgInfo())) {
+			if (!Constant.STATUS_ACTIVE.equals(investorDto.getStatus())) {
+				throw new CustomException(ErrorMessage.INVESTOR_IS_NOT_ACTIVATED, HttpStatus.OK);
+			} else if (Utility.isCQGSyncOn() && Utility.isNull(investorDto.getCqgInfo())) {
 				throw new CustomException(ErrorMessage.INVESTOR_IS_NOT_ACTIVATED, HttpStatus.OK);
 			} else {
 				// get redis user info
@@ -2634,8 +2659,7 @@ public class InvestorService {
 		String approvalId = "";
 		try {
 			NestedObjectInfo nestedObjInfo = new NestedObjectInfo();
-			nestedObjInfo.setDeptCode(userInfo.getDeptCode());
-			nestedObjInfo.setMemberCode(userInfo.getMemberCode());
+			nestedObjInfo.setMemberCode(marginTransDto.getMemberCode());
 
 			PendingData pendingData = new PendingData();
 			pendingData.setServiceFunctionName(ApprovalConstant.INVESTOR_DEPOSIT_MONEY);
@@ -2685,6 +2709,10 @@ public class InvestorService {
 			try {
 				// update changedAmount, pendingWithdrawalAmount in investor_margin_info
 				InvestorMarginInfo marginInfo = marginInfoService.getInvestorMarginInfo(investorCode, refId);
+				if (marginInfo == null) {
+					throw new CustomException(ErrorMessage.INVESTOR_IS_NOT_ACTIVATED, HttpStatus.OK);
+				}
+				
 				double changedAmount = marginInfo.getChangedAmount() - marginTransDto.getAmount();
 				double pendingWithdrawalAmount = marginInfo.getPendingWithdrawalAmount() - marginTransDto.getAmount();
 
@@ -2701,8 +2729,9 @@ public class InvestorService {
 				marginTrans.setBrokerName(marginInfo.getBrokerName());
 				marginTrans.setCollaboratorCode(marginInfo.getCollaboratorCode());
 				marginTrans.setCollaboratorName(marginInfo.getCollaboratorName());
-
 				marginTrans.setCurrency(Constant.CURRENCY_VND);
+				marginTrans.setCreatedUser(pendingApproval.getCreatedUser());
+				marginTrans.setCreatedDate(pendingApproval.getCreatedDate());
 				marginTrans.setApprovalDate(System.currentTimeMillis());
 				marginTrans.setApprovalUser(userInfo.getUsername());
 				marginTrans.setSessionDate(getSessionDate(refId));
@@ -2729,6 +2758,15 @@ public class InvestorService {
 	public void withdrawMarginPA(HttpServletRequest request, MarginTransactionDTO marginTransDto, long refId) {
 		String methodName = "withdrawMarginPA";
 		try {
+			// check if investor is activated
+			InvestorDTO investorDto = getInvestorInfo(marginTransDto.getInvestorCode(), refId);
+			if (!Constant.STATUS_ACTIVE.equals(investorDto.getStatus())) {
+				throw new CustomException(ErrorMessage.INVESTOR_IS_NOT_ACTIVATED, HttpStatus.OK);
+			} else if (Utility.isCQGSyncOn() && Utility.isNull(investorDto.getCqgInfo())) {
+				throw new CustomException(ErrorMessage.INVESTOR_IS_NOT_ACTIVATED, HttpStatus.OK);
+			}
+			
+			// check if valid withdraw amount
 			if (marginTransDto.getAmount() > getInvestorWithdrawalAmount(marginTransDto.getInvestorCode(), refId)) {
 				throw new CustomException(ErrorMessage.INVALID_REQUEST, HttpStatus.BAD_REQUEST);
 			}
@@ -2739,30 +2777,24 @@ public class InvestorService {
 
 			if (Utility.isNull(member.getRiskParameters()) || (Utility.isNotNull(member.getRiskParameters())
 					&& "N".equals(member.getRiskParameters().getMarginWithdrawalLock()))) {
-				// check if investor is activated
-				InvestorDTO investorDto = getInvestorInfo(marginTransDto.getInvestorCode(), refId);
-				if (Utility.isNotNull(investorDto.getCqgInfo())) {
-					// get redis user info
-					UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
-					// insert data to inv_margin_trans_approvals
-					String approvalId = insertInvestorMarginWithdrawPA(userInfo, marginTransDto, refId);
-					// send activity log
-					activityLogService.sendActivityLog(userInfo, request,
-							ActivityLogService.ACTIVITY_CREATE_INVESTOR_WITHDRAWAL_MONEY,
-							ActivityLogService.ACTIVITY_CREATE_INVESTOR_WITHDRAWAL_MONEY_DESC,
-							marginTransDto.getInvestorCode(), approvalId);
+				// get redis user info
+				UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
+				// insert data to inv_margin_trans_approvals
+				String approvalId = insertInvestorMarginWithdrawPA(userInfo, marginTransDto, refId);
+				// send activity log
+				activityLogService.sendActivityLog(userInfo, request,
+						ActivityLogService.ACTIVITY_CREATE_INVESTOR_WITHDRAWAL_MONEY,
+						ActivityLogService.ACTIVITY_CREATE_INVESTOR_WITHDRAWAL_MONEY_DESC,
+						marginTransDto.getInvestorCode(), approvalId);
 
-					// update pendingWithdrawalAmount in investor_margin_info
-					InvestorMarginInfo marginInfo = marginInfoService
-							.getInvestorMarginInfo(marginTransDto.getInvestorCode(), refId);
-					double pendingWithdrawalAmount = marginInfo.getPendingWithdrawalAmount()
-							+ marginTransDto.getAmount();
+				// update pendingWithdrawalAmount in investor_margin_info
+				InvestorMarginInfo marginInfo = marginInfoService
+						.getInvestorMarginInfo(marginTransDto.getInvestorCode(), refId);
+				double pendingWithdrawalAmount = marginInfo.getPendingWithdrawalAmount()
+						+ marginTransDto.getAmount();
 
-					marginInfoService.updatePendingWithdrawalAmount(marginTransDto.getInvestorCode(),
-							pendingWithdrawalAmount, refId);
-				} else {
-					throw new CustomException(ErrorMessage.INVESTOR_IS_NOT_ACTIVATED, HttpStatus.OK);
-				}
+				marginInfoService.updatePendingWithdrawalAmount(marginTransDto.getInvestorCode(),
+						pendingWithdrawalAmount, refId);
 			} else {
 				throw new CustomException(ErrorMessage.WITHDRAWAL_DENIED, HttpStatus.OK);
 			}
@@ -2807,7 +2839,7 @@ public class InvestorService {
 					"Exchange Rate Serivce Reseponse: " + res[0] + " => " + res[1]);
 			if (res.length >= 2 && "200".equals(res[0])) {
 				ExchangeRateReponseDTO response = Utility.getGson().fromJson(res[1], ExchangeRateReponseDTO.class);
-				if (response != null && Constant.RESPONSE_OK.equalsIgnoreCase(response.getStatus())) {
+				if (response != null && Constant.RESPONSE_OK.equalsIgnoreCase(response.getStatus()) && response.getData() != null) {
 					for (ExchangeRateDTO exRate : response.getData()) {
 						if (Constant.CURRENCY_USD.equals(exRate.getMonetaryBase())
 								&& Constant.STATUS_ACTIVE.equalsIgnoreCase(exRate.getStatus())) {
@@ -2830,8 +2862,7 @@ public class InvestorService {
 		String approvalId = "";
 		try {
 			NestedObjectInfo nestedObjInfo = new NestedObjectInfo();
-			nestedObjInfo.setDeptCode(userInfo.getDeptCode());
-			nestedObjInfo.setMemberCode(userInfo.getMemberCode());
+			nestedObjInfo.setMemberCode(marginTransDto.getMemberCode());
 
 			PendingData pendingData = new PendingData();
 			pendingData.setServiceFunctionName(ApprovalConstant.INVESTOR_WITHDRAW_MONEY);
@@ -3085,8 +3116,7 @@ public class InvestorService {
 			refundTransDto.setTransactionType(Constant.MARGIN_TRANS_TYPE_REFUND);
 
 			NestedObjectInfo nestedObjInfo = new NestedObjectInfo();
-			nestedObjInfo.setDeptCode(userInfo.getDeptCode());
-			nestedObjInfo.setMemberCode(userInfo.getMemberCode());
+			nestedObjInfo.setMemberCode(refundTransDto.getMemberCode());
 
 			PendingData pendingData = new PendingData();
 			pendingData.setServiceFunctionName(ApprovalConstant.INVESTOR_REFUND_DEPOSIT_MONEY);
@@ -3166,5 +3196,22 @@ public class InvestorService {
 			AMLogger.logError(className, methodName, refId, e);
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
+	}
+	
+	private String getInvestorStatus(String investorCode) {
+		Document query = new Document();
+		query.append("investorCode", investorCode);
+		
+		Document projection = new Document();
+		projection.append("_id", 0.0);
+		projection.append("status", 1.0);
+
+		MongoDatabase database = MongoDBConnection.getMongoDatabase();
+		MongoCollection<Document> collection = database.getCollection("investors");
+
+		Document investorDoc = collection.find(query).projection(projection).first();
+		Investor investor = mongoTemplate.getConverter().read(Investor.class, investorDoc);
+		if (investor != null) return investor.getStatus();
+		else return "";
 	}
 }

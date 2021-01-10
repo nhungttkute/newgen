@@ -13,8 +13,6 @@ import javax.validation.constraints.Size;
 
 import com.newgen.am.validation.FormatGroup;
 import com.newgen.am.validation.LengthGroup;
-import com.newgen.am.validation.UniqueGroup;
-import com.newgen.am.validation.UniqueIdentityCard;
 import com.newgen.am.validation.ValidDate;
 import com.newgen.am.validation.ValidNumberCharacter;
 import com.newgen.am.validation.ValidPhoneNumber;
@@ -26,7 +24,7 @@ import lombok.Data;
  * @author nhungtt
  */
 @Data
-public class Delegate implements Serializable {
+public class MemberDelegate implements Serializable {
 	private static final long serialVersionUID = 1L;
 	@NotEmpty(message = "Required.")
 	@Size(min = 1, max = 100, message = "Invalid format.", groups = LengthGroup.class)
@@ -37,7 +35,6 @@ public class Delegate implements Serializable {
 	@NotEmpty(message = "Required.")
 	@ValidNumberCharacter(groups = FormatGroup.class)
 	@Size(min = 1, max = 50, groups = LengthGroup.class)
-	@UniqueIdentityCard(groups = UniqueGroup.class)
     private String identityCard;
 	@NotEmpty(message = "Required.")
 	@ValidDate(groups = FormatGroup.class)

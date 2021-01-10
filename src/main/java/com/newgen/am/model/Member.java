@@ -33,7 +33,7 @@ public class Member extends AuditModel implements Serializable {
     private String name;
     private String note;
     private String status;
-    private Company company;
+    private MemberCompany company;
     private Contact contact;
     private UserRole role;
     private List<RoleFunction> functions;

@@ -444,7 +444,9 @@ public class BrokerService {
 				createLoginAdminUser(brokerUserDto, password, pin, refId);
 
 				// send email
-				sendCreateNewUserEmail(email, username, password, pin, refId);
+				if (Utility.isNotifyOn()) {
+					Utility.sendCreateNewUserEmail(Constant.BROKER_USER_PREFIX, brokerCode, username, password, pin, refId);
+				}
 			} catch (Exception e) {
 				AMLogger.logError(className, methodName, refId, e);
 				throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -467,30 +469,6 @@ public class BrokerService {
 			loginAdmUser.setCreatedDate(System.currentTimeMillis());
 			LoginAdminUser newLoginAdmUser = loginAdmUserRepo.save(loginAdmUser);
 			return newLoginAdmUser;
-		} catch (Exception e) {
-			AMLogger.logError(className, methodName, refId, e);
-			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
-		}
-	}
-	
-	private void sendCreateNewUserEmail(String toEmail, String username, String password, String pin, long refId) {
-		String methodName = "sendCreateNewUserEmail";
-		try {
-			LocalServiceConnection serviceCon = new LocalServiceConnection();
-			EmailDTO email = new EmailDTO();
-			email.setSettingType(Constant.SERVICE_NOTIFICATION_SETTING_TYPE_CREATE_USER);
-			email.setSendingObject(Constant.SERVICE_NOTIFICATION_SENDING_OBJ);
-			email.setTo(toEmail);
-			email.setSubject(FileUtility.CREATE_NEW_USER_EMAIL_SUBJECT);
-
-			String emailBody = String.format(
-					FileUtility.loadFileContent(
-							ConfigLoader.getMainConfig().getString(FileUtility.CREATE_NEW_USER_EMAIL_FILE), refId),
-					username, password, pin);
-			email.setBodyStr(emailBody);
-			String emailJson = Utility.getGson().toJson(email);
-			AMLogger.logMessage(className, methodName, refId, "Email: " + emailJson);
-			serviceCon.sendPostRequest(serviceCon.getEmailNotificationServiceURL(), emailJson, null);
 		} catch (Exception e) {
 			AMLogger.logError(className, methodName, refId, e);
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);

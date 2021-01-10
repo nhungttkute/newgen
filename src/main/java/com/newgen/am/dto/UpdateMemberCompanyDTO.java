@@ -8,6 +8,7 @@ import javax.validation.constraints.Size;
 
 import com.newgen.am.validation.FormatGroup;
 import com.newgen.am.validation.LengthGroup;
+import com.newgen.am.validation.UniqueMemberTaxCode;
 import com.newgen.am.validation.ValidNumber;
 import com.newgen.am.validation.ValidPhoneNumber;
 import com.newgen.am.validation.ValidUpdateStringField;
@@ -15,7 +16,7 @@ import com.newgen.am.validation.ValidUpdateStringField;
 import lombok.Data;
 
 @Data
-public class UpdateCompanyDTO implements Serializable {
+public class UpdateMemberCompanyDTO implements Serializable {
 	private static final long serialVersionUID = 1L;
 	@ValidUpdateStringField
 	@Size(max = 200, message = "Invalid format.", groups = LengthGroup.class)
@@ -23,6 +24,7 @@ public class UpdateCompanyDTO implements Serializable {
 	@ValidUpdateStringField
 	@ValidNumber(groups = FormatGroup.class)
 	@Size(max = 20, message = "Invalid format.", groups = LengthGroup.class)
+	@UniqueMemberTaxCode
     private String taxCode;
 	@ValidUpdateStringField
 	@Size(max = 300, message = "Invalid format.", groups = LengthGroup.class)

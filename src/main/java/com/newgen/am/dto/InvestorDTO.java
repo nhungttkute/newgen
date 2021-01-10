@@ -8,11 +8,11 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Size;
 
 import com.newgen.am.model.Commodity;
-import com.newgen.am.model.Company;
 import com.newgen.am.model.Contact;
 import com.newgen.am.model.CqgInfo;
 import com.newgen.am.model.GeneralFee;
-import com.newgen.am.model.Individual;
+import com.newgen.am.model.InvestorCompany;
+import com.newgen.am.model.InvestorIndividual;
 import com.newgen.am.model.InvestorUser;
 import com.newgen.am.model.MarginRatioAlert;
 import com.newgen.am.model.RiskParameters;
@@ -69,9 +69,9 @@ public class InvestorDTO implements Serializable {
     private String type;
     private long createdDate;
     @Valid
-    private Company company;
+    private InvestorCompany company;
     @Valid
-    private Individual individual;
+    private InvestorIndividual individual;
     private Contact contact;
     private CqgInfo cqgInfo;
     private MarginInfoDTO account;

@@ -27,8 +27,8 @@ public class Investor extends AuditModel implements Serializable {
     private String status;
     private String note;
     private String type;
-    private Company company;
-    private Individual individual;
+    private InvestorCompany company;
+    private InvestorIndividual individual;
     private Contact contact;
     private CqgInfo cqgInfo;
 	private InvestorAccount account;

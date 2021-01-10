@@ -8,7 +8,7 @@ import lombok.Data;
 
 @Data
 @Document(collection = "investor_margin_trans")
-public class InvestorMarginTransaction extends AuditModel implements Serializable {
+public class InvestorMarginTransaction implements Serializable {
 	private static final long serialVersionUID = 1L;
 	private String id;
     private String memberCode;
@@ -26,4 +26,6 @@ public class InvestorMarginTransaction extends AuditModel implements Serializabl
     private long approvalDate;
     private String note;
     private String sessionDate;
+    private String createdUser;
+    private Long createdDate;
 }

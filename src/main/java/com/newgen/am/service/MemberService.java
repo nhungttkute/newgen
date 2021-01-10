@@ -18,7 +18,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.google.gson.Gson;
 import com.mongodb.BasicDBObject;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
@@ -26,11 +25,8 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Updates;
 import com.newgen.am.common.AMLogger;
 import com.newgen.am.common.ApprovalConstant;
-import com.newgen.am.common.ConfigLoader;
 import com.newgen.am.common.Constant;
 import com.newgen.am.common.ErrorMessage;
-import com.newgen.am.common.FileUtility;
-import com.newgen.am.common.LocalServiceConnection;
 import com.newgen.am.common.MongoDBConnection;
 import com.newgen.am.common.RequestParamsParser;
 import com.newgen.am.common.SystemFunctionCode;
@@ -56,7 +52,6 @@ import com.newgen.am.dto.ChangeGroupDTO;
 import com.newgen.am.dto.CommoditiesDTO;
 import com.newgen.am.dto.CommodityFeesDTO;
 import com.newgen.am.dto.DefaultPositionLimitDTO;
-import com.newgen.am.dto.EmailDTO;
 import com.newgen.am.dto.FunctionsDTO;
 import com.newgen.am.dto.GeneralFeeDTO;
 import com.newgen.am.dto.InvestorDTO;
@@ -479,7 +474,9 @@ public class MemberService {
 				createLoginAdminUser(memberCode, memberDto.getName(), memberUser, password, pin, refId);
 
 				// send email
-				sendCreateNewUserEmail(memberDto.getCompany().getDelegate().getEmail(), username, password, pin, refId);
+				if (Utility.isNotifyOn()) {
+					Utility.sendCreateNewUserEmail(Constant.MEMBER_MASTER_USER_PREFIX, "", username, password, pin, refId);
+				}
 			} catch (Exception e) {
 				AMLogger.logError(className, methodName, refId, e);
 				throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -504,30 +501,6 @@ public class MemberService {
 			loginAdmUser.setCreatedDate(System.currentTimeMillis());
 			LoginAdminUser newLoginAdmUser = loginAdmUserRepo.save(loginAdmUser);
 			return newLoginAdmUser;
-		} catch (Exception e) {
-			AMLogger.logError(className, methodName, refId, e);
-			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
-		}
-	}
-	
-	private void sendCreateNewUserEmail(String toEmail, String username, String password, String pin, long refId) {
-		String methodName = "sendCreateNewUserEmail";
-		try {
-			LocalServiceConnection serviceCon = new LocalServiceConnection();
-			EmailDTO email = new EmailDTO();
-			email.setSettingType(Constant.SERVICE_NOTIFICATION_SETTING_TYPE_CREATE_USER);
-			email.setSendingObject(Constant.SERVICE_NOTIFICATION_SENDING_OBJ);
-			email.setTo(toEmail);
-			email.setSubject(FileUtility.CREATE_NEW_USER_EMAIL_SUBJECT);
-
-			String emailBody = String.format(
-					FileUtility.loadFileContent(
-							ConfigLoader.getMainConfig().getString(FileUtility.CREATE_NEW_USER_EMAIL_FILE), refId),
-					username, password, pin);
-			email.setBodyStr(emailBody);
-			String emailJson = Utility.getGson().toJson(email);
-			AMLogger.logMessage(className, methodName, refId, "Email: " + emailJson);
-			serviceCon.sendPostRequest(serviceCon.getEmailNotificationServiceURL(), emailJson, null);
 		} catch (Exception e) {
 			AMLogger.logError(className, methodName, refId, e);
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -1216,10 +1189,12 @@ public class MemberService {
 				// update cqg risk params
 				if (Utility.isCQGSyncOn()) {
 					List<Investor> investors = getInvestorsByMemberCode(memberCode, refId);
-					for (Investor inv : investors) {
-						boolean result = cqgService.updateCQGRiskParams(inv.getCqgInfo().getAccountId(), 0, memberDto.getOrderLimit(), 0, refId);
-						if (!result) {
-							AMLogger.logMessage(className, methodName, refId, "Cannot update trade size limit for " + inv.getInvestorCode());
+					if (investors != null) {
+						for (Investor inv : investors) {
+							boolean result = cqgService.updateCQGRiskParamsTSL(inv.getCqgInfo().getAccountId(), memberDto.getOrderLimit(), refId);
+							if (!result) {
+								AMLogger.logMessage(className, methodName, refId, "Cannot update trade size limit for " + inv.getInvestorCode());
+							}
 						}
 					}
 				}
@@ -1805,10 +1780,12 @@ public class MemberService {
 			// update cqg risk params
 			if (Utility.isCQGSyncOn()) {
 				List<Investor> investors = getInvestorsByMemberCode(memberCode, refId);
-				for (Investor inv : investors) {
-					boolean result = cqgService.updateCQGRiskParams(inv.getCqgInfo().getAccountId(), memberDto.getMarginMultiplier(), 0, 0, refId);
-					if (!result) {
-						AMLogger.logMessage(className, methodName, refId, "Cannot update trade size limit for " + inv.getInvestorCode());
+				if (investors != null) {
+					for (Investor inv : investors) {
+						boolean result = cqgService.updateCQGRiskParamsMM(inv.getCqgInfo().getAccountId(), memberDto.getMarginMultiplier(), refId);
+						if (!result) {
+							AMLogger.logMessage(className, methodName, refId, "Cannot update trade size limit for " + inv.getInvestorCode());
+						}
 					}
 				}
 			}
@@ -2796,7 +2773,9 @@ public class MemberService {
 			LoginAdminUser newLoginAdmUser = createLoginAdminUser(memberCode, memberDto.getName(), memberUserDto, password, pin, refId);
 
 			// send email
-			sendCreateNewUserEmail(memberUserDto.getEmail(), newLoginAdmUser.getUsername(), password, pin, refId);
+			if (Utility.isNotifyOn()) {
+				Utility.sendCreateNewUserEmail(Constant.MEMBER_MASTER_USER_PREFIX, "", newLoginAdmUser.getUsername(), password, pin, refId);
+			}
 		} catch (Exception e) {
 			AMLogger.logError(className, methodName, refId, e);
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);

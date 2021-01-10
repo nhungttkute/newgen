@@ -7,19 +7,17 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Size;
 
+import com.newgen.am.model.BrokerCompany;
+import com.newgen.am.model.BrokerIndividual;
 import com.newgen.am.model.BrokerUser;
-import com.newgen.am.model.Company;
 import com.newgen.am.model.Contact;
-import com.newgen.am.model.Individual;
 import com.newgen.am.model.RoleFunction;
 import com.newgen.am.model.UserRole;
 import com.newgen.am.validation.FormatGroup;
 import com.newgen.am.validation.LengthGroup;
 import com.newgen.am.validation.UniqueBrokerCode;
 import com.newgen.am.validation.UniqueGroup;
-import com.newgen.am.validation.UniqueInvestorCode;
 import com.newgen.am.validation.ValidBrokerCode;
-import com.newgen.am.validation.ValidInvestorCode;
 import com.newgen.am.validation.ValidNumber;
 
 import lombok.Data;
@@ -52,9 +50,9 @@ public class BrokerDTO implements Serializable {
     private String type;
     private long createdDate;
     @Valid
-    private Company company;
+    private BrokerCompany company;
     @Valid
-    private Individual individual;
+    private BrokerIndividual individual;
     private Contact contact;
     private BrokerUser user;
     private UserRole role;
