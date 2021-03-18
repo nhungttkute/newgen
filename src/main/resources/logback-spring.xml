@@ -4,7 +4,7 @@
     <include resource="org/springframework/boot/logging/logback/file-appender.xml" />
 <!--     <property name="LOG_PATH" value="C:/u01/apps/AM/log/"/> -->
     <property name="LOG_PATH" value="/opt/account-management/log/"/>
-    <property name="LOG_FILE" value="am.8899"/>
+    <property name="LOG_FILE" value="am.8898"/>
     
     <appender name="CONSOLE"
         class="ch.qos.logback.core.ConsoleAppender">

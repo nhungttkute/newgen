@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.google.gson.Gson;
 import com.newgen.am.common.AMLogger;
 import com.newgen.am.common.Constant;
 import com.newgen.am.common.CustomMappingStrategy;
@@ -68,7 +67,7 @@ private String className = "MemberRoleController";
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
         }
         
-        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
+        AMLogger.logMessage(className, methodName, refId, "OUTPUT: OK");
         return response;
     }
     
@@ -112,8 +111,7 @@ private String className = "MemberRoleController";
     public AdminResponseObj createMemberRole(HttpServletRequest request, @PathVariable String memberCode, @Valid @RequestBody RoleDTO roleDto) {
         String methodName = "createMemberRole";
         long refId = System.currentTimeMillis();
-        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: " + String.format("[POST]/admin/members/%s/memberRoles", memberCode));
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(roleDto));
+        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: " + String.format("[POST]/admin/members/%s/memberRoles", memberCode) + ", INPUT:" + Utility.getGson().toJson(roleDto));
         
         memberRoleService.createMemberRolePA(request, memberCode, roleDto, refId);
         
@@ -129,8 +127,7 @@ private String className = "MemberRoleController";
     public AdminResponseObj updateMemberRole(HttpServletRequest request, @PathVariable String memberCode, @PathVariable String roleId, @Valid @RequestBody ApprovalUpdateRoleDTO roleDto) {
         String methodName = "updateMemberRole";
         long refId = System.currentTimeMillis();
-        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: " + String.format("[PUT]/admin/members/%s/memberRoles/%s", memberCode, roleId));
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(roleDto));
+        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: " + String.format("[PUT]/admin/members/%s/memberRoles/%s", memberCode, roleId) + ", INPUT:" + Utility.getGson().toJson(roleDto));
         
         memberRoleService.updateMemberRolePA(request, memberCode, roleId, roleDto, refId);
         
@@ -146,8 +143,7 @@ private String className = "MemberRoleController";
     public AdminResponseObj createMemberRoleFunctions(HttpServletRequest request, @PathVariable String memberCode, @PathVariable String roleId, @Valid @RequestBody ApprovalFunctionsDTO roleDto) {
         String methodName = "createMemberRoleFunctions";
         long refId = System.currentTimeMillis();
-        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: " + String.format("[POST]/admin/members/%s/memberRoles/%s/functions", memberCode, roleId));
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(roleDto));
+        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: " + String.format("[POST]/admin/members/%s/memberRoles/%s/functions", memberCode, roleId) + ", INPUT:" + Utility.getGson().toJson(roleDto));
         
         memberRoleService.createMemberRoleFunctionsPA(request, memberCode, roleId, roleDto, refId);
         

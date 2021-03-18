@@ -14,17 +14,13 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-//import com.google.gson.Gson;
-import com.google.gson.Gson;
 import com.newgen.am.common.AMLogger;
 import com.newgen.am.common.Constant;
 import com.newgen.am.common.ErrorMessage;
 import com.newgen.am.common.Utility;
-import com.newgen.am.dto.AdminResponseObj;
 import com.newgen.am.dto.ChangePasswordDTO;
 import com.newgen.am.dto.DataObj;
 import com.newgen.am.dto.ListUserDTO;
@@ -51,8 +47,9 @@ public class LoginInvestorUserController {
     public ResponseObj login(HttpServletRequest request, @RequestBody LoginUserDataInputDTO userDto) {
         String methodName = "login";
         long refId = System.currentTimeMillis();
-        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [POST]/users/login");
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(userDto));
+        LoginUserDataInputDTO logUserDto = (LoginUserDataInputDTO) SerializationUtils.clone(userDto);
+        logUserDto.setPassword("******");
+        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [POST]/users/login, INPUT:" + Utility.getGson().toJson(logUserDto));
         
         LoginInvestorUserOutputDTO loginUserDto = loginInvUserService.signin(request, userDto.getUsername(), userDto.getPassword(), refId);
         
@@ -64,6 +61,8 @@ public class LoginInvestorUserController {
         ResponseObj logResponse = (ResponseObj) SerializationUtils.clone(response);
         if (logResponse != null && logResponse.getData() != null) {
         	logResponse.getData().setLayout("");
+        	logResponse.getData().getUser().setFunctions(null);
+        	logResponse.getData().getUser().setTableSetting("");
         }
         AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(logResponse));
         return response;
@@ -91,8 +90,7 @@ public class LoginInvestorUserController {
     public ResponseObj logout(HttpServletRequest request, @PathVariable String userId) {
         String methodName = "logout";
         long refId = System.currentTimeMillis();
-        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [POST]/users/logout");
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + userId);
+        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [POST]/users/logout, INPUT:" + userId);
         
         loginInvUserService.logout(request, userId, refId);
         
@@ -108,7 +106,6 @@ public class LoginInvestorUserController {
         String methodName = "verifyPin";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [POST]/users/verifyPin/" + userId);
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(user));
         
         ResponseObj response = new ResponseObj();
         if (loginInvUserService.verifyPin(userId, user.getPin(), refId)) {
@@ -127,7 +124,6 @@ public class LoginInvestorUserController {
         String methodName = "saveWatchList";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, "REQUEST_API: " + String.format("[POST]/users/%s/watchlist", userId));
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(input));
         
         ResponseObj response = new ResponseObj();
         try {
@@ -156,7 +152,6 @@ public class LoginInvestorUserController {
         String methodName = "saveLayout";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, "REQUEST_API: " + String.format("[POST]/users/%s/layout", userId));
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(input));
         
         ResponseObj response = new ResponseObj();
         try {
@@ -174,6 +169,9 @@ public class LoginInvestorUserController {
                 if (Utility.isNotNull(input.getFontSize()) && input.getFontSize() > 0) {
                     user.setFontSize(input.getFontSize());
                 }
+                if (Utility.isNotNull(input.getTableSetting())) {
+                	user.setTableSetting(input.getTableSetting());
+                }
                 LoginInvestorUser newUser = loginInvUserService.save(user, refId);
                 response.setStatus(Constant.RESPONSE_OK);
                 response.setData(new DataObj());
@@ -181,6 +179,7 @@ public class LoginInvestorUserController {
                 response.getData().setLanguage(newUser.getLanguage());
                 response.getData().setTheme(newUser.getTheme());
                 response.getData().setFontSize(newUser.getFontSize());
+                response.getData().setTableSetting(newUser.getTableSetting());
             } else {
                 response.setStatus(Constant.RESPONSE_ERROR);
                 response.setErrMsg(ErrorMessage.USER_DOES_NOT_EXIST);
@@ -199,7 +198,6 @@ public class LoginInvestorUserController {
         String methodName = "changePassword";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, "REQUEST_API: " + String.format("[POST]/users/%s/password", userId));
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(input));
         
         loginInvUserService.changePassword(request, userId, input.getOldPassword(), input.getNewPassword(), refId);
         
@@ -215,7 +213,6 @@ public class LoginInvestorUserController {
         String methodName = "getUserDetail";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, "REQUEST_API: " + String.format("[GET]/users/%s", userId));
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + userId);
         
         ResponseObj response = new ResponseObj();
         LoginInvestorUser user = loginInvUserService.search(userId, refId);
@@ -257,7 +254,7 @@ public class LoginInvestorUserController {
             response.setErrMsg(ErrorMessage.RESULT_NOT_FOUND);
         }
         
-        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
+        AMLogger.logMessage(className, methodName, refId, "OUTPUT: OK");
         return response;
     }
 

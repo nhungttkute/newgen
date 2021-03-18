@@ -13,12 +13,19 @@ import org.springframework.data.domain.AuditorAware;
 import org.springframework.data.mongodb.config.EnableMongoAuditing;
 
 import com.newgen.am.common.Constant;
+import com.newgen.am.dto.InvestorDTO;
+import com.newgen.am.dto.LoginUserDataInputDTO;
 import com.newgen.am.model.AuditorAwareImpl;
+import com.newgen.am.model.Broker;
 import com.newgen.am.model.Investor;
 import com.newgen.am.model.InvestorMarginInfo;
 import com.newgen.am.model.InvestorMarginTransaction;
+import com.newgen.am.repository.BrokerRepository;
 import com.newgen.am.repository.InvestorMarginTransactionRepository;
+import com.newgen.am.repository.InvestorRepository;
 import com.newgen.am.service.InvestorMarginInfoService;
+import com.newgen.am.service.InvestorService;
+import com.newgen.am.service.LoginAdminUserService;
 import com.newgen.am.service.RedisTestService;
 
 @EnableMongoAuditing(auditorAwareRef = "auditorAware")
@@ -26,11 +33,17 @@ import com.newgen.am.service.RedisTestService;
 public class NewgenAmApplication {
 	private static ApplicationContext applicationContext;
 
-//	@Autowired
-//	private InvestorMarginTransactionRepository marginTransRepo;
-//	
-//	@Autowired
-//	private InvestorMarginInfoService marginInfoService;
+	@Autowired
+	private BrokerRepository brokerRepo;
+	
+	@Autowired
+	private InvestorRepository investorRepo;
+	
+	@Autowired
+	private InvestorService investorService;
+	
+	@Autowired
+	private LoginAdminUserService loginAdmUserService;
 	
 	@Autowired
 	private RedisTestService redisService;
@@ -50,36 +63,37 @@ public class NewgenAmApplication {
         return new AuditorAwareImpl();
     }
 
-//    public static void displayAllBeans() {
-//        String[] allBeanNames = applicationContext.getBeanDefinitionNames();
-//        for(String beanName : allBeanNames) {
-//            System.out.println(beanName);
-//        }
-//    }
-    
 //    @Bean
-//    public CommandLineRunner dummyData() {
+//    public CommandLineRunner sendResetPasswordBroker() {
 //    	return (args) -> {
-//    		List<InvestorMarginTransaction> marginTransList = marginTransRepo.findAll();
-//    		for (InvestorMarginTransaction marginTrans : marginTransList) {
-//    			InvestorMarginInfo marginInfo = marginInfoService.getInvestorMarginInfo(marginTrans.getInvestorCode(), 1);
+//    		List<Broker> brokerList = brokerRepo.findAll();
+//    		for (Broker broker : brokerList) {
+//    			System.out.println("Reset password for: " + broker.getCode());
+//    			LoginUserDataInputDTO input = new LoginUserDataInputDTO();
+//    			input.setUsername(Constant.BROKER_USER_PREFIX + broker.getCode());
+//    			input.setEmail(broker.getContact().getEmail());
 //    			
-//    			marginTrans.setMemberCode(marginInfo.getMemberCode());
-//				marginTrans.setMemberName(marginInfo.getMemberName());
-//				marginTrans.setBrokerCode(marginInfo.getBrokerCode());
-//				marginTrans.setBrokerName(marginInfo.getBrokerName());
-//				marginTrans.setCollaboratorCode(marginInfo.getCollaboratorCode());
-//				marginTrans.setCollaboratorName(marginInfo.getCollaboratorName());
-//				
-//				marginTransRepo.save(marginTrans);
+//    			loginAdmUserService.resetAdminUserPassword2(input, 202101202l);
 //    		}
+//    		
 //    	};
 //    }
     
-//  @Bean
-//  public CommandLineRunner test() {
-//  	return (args) -> {
-//  		redisService.testApproveMagrinTrans();
-//  	};
-//  }
+//    @Bean
+//    public CommandLineRunner sendResetPasswordInvestor() {
+//    	return (args) -> {
+//    		List<InvestorDTO> investorList = investorService.listInvestors();
+//    		
+//    		System.out.println("Counts: " + investorList.size());
+//    		for (InvestorDTO investor : investorList) {
+//    			System.out.println("Reset password for: " + investor.getInvestorCode());
+//    			LoginUserDataInputDTO input = new LoginUserDataInputDTO();
+//    			input.setUsername(investor.getInvestorCode());
+//    			input.setEmail(investor.getContact().getEmail());
+//    			
+//    			loginAdmUserService.resetInvestorUserPassword2(input, 20210127l);
+//    		}
+//    		
+//    	};
+//    }
 }

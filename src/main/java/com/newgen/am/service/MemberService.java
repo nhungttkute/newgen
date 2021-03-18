@@ -524,11 +524,17 @@ public class MemberService {
 			
 			boolean isUserUpdated = false;
 			boolean isStatusUpdated = false;
+			boolean isNameUpdated = false;
 			
-			if (Utility.isNotNull(memberDto.getName())) updateMember.append("name", memberDto.getName());
+			if (Utility.isNotNull(memberDto.getName())) {
+				updateMember.append("name", memberDto.getName());
+				updateLoginAdmUser.append("memberName", memberDto.getName());
+				isNameUpdated = true;
+			}
 			if (Utility.isNotNull(memberDto.getStatus())) {
 				isStatusUpdated = true;
 				updateMember.append("status", memberDto.getStatus().toUpperCase());
+				updateLoginAdmUser.append("status", memberDto.getStatus().toUpperCase());
 			}
 			if (Utility.isNotNull(memberDto.getNote())) {
 				updateMember.append("note", memberDto.getNote());
@@ -602,6 +608,14 @@ public class MemberService {
 				if (isStatusUpdated) {
 					// set member to redis
 					setMemberInfoRedis(collection, memberCode, refId);
+					
+					String memberUsername = Constant.BROKER_USER_PREFIX + memberCode;
+					// logout all users if status is inactive
+					if (Constant.STATUS_INACTIVE.equalsIgnoreCase(memberDto.getStatus())) {
+						List<String> userList = new ArrayList<String>();
+						userList.add(memberUsername);
+						Utility.sendHandleLogout(userList, refId);
+					}
 				}
 				
 				// update login_admin_users if there's any change
@@ -615,6 +629,21 @@ public class MemberService {
 					MongoCollection<Document> loginAdmCollection = database.getCollection("login_admin_users");
 					loginAdmCollection.updateOne(logiAdmQuery, loginAdmUpdate);
 				}
+				
+				if (isNameUpdated) {
+					// update broker's memberName
+					updateBrokerMemberName(memberCode, memberDto.getName());
+					// update collaborator's memberName
+					updateCollaboratorMemberName(memberCode, memberDto.getName());
+					// update investors's memberName
+					updateInvestorMemberName(memberCode, memberDto.getName());
+					// update login_admin_users' memberName
+					updateLoginAdminUserMemberName(memberCode, memberDto.getName());
+					// update login_investor_users' memberName
+					updateLoginInvestorUserMemberName(memberCode, memberDto.getName());
+					// update investor_margin_info's memberName
+					updateInvestorMarginInfoMemberName(memberCode, memberDto.getName());
+				}
 			}
 		} catch (CustomException e) {
 			throw e;
@@ -622,6 +651,101 @@ public class MemberService {
 			AMLogger.logError(className, methodName, refId, e);
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
+	}
+	private void updateBrokerMemberName(String memberCode, String memberName) {
+		MongoDatabase database = MongoDBConnection.getMongoDatabase();
+		MongoCollection<Document> collection = database.getCollection("brokers");
+		
+		Document query = new Document();
+		query.append("memberCode", memberCode);
+		
+		Document updateDoc = new Document();
+		updateDoc.append("memberName", memberName);
+		
+		Document update = new Document();
+		update.append("$set", updateDoc);
+		
+		collection.updateMany(query, update);
+	}
+	
+	private void updateCollaboratorMemberName(String memberCode, String memberName) {
+		MongoDatabase database = MongoDBConnection.getMongoDatabase();
+		MongoCollection<Document> collection = database.getCollection("collaborators");
+		
+		Document query = new Document();
+		query.append("memberCode", memberCode);
+		
+		Document updateDoc = new Document();
+		updateDoc.append("memberName", memberName);
+		
+		Document update = new Document();
+		update.append("$set", updateDoc);
+		
+		collection.updateMany(query, update);
+	}
+	
+	private void updateInvestorMemberName(String memberCode, String memberName) {
+		MongoDatabase database = MongoDBConnection.getMongoDatabase();
+		MongoCollection<Document> collection = database.getCollection("investors");
+		
+		Document query = new Document();
+		query.append("memberCode", memberCode);
+		
+		Document updateDoc = new Document();
+		updateDoc.append("memberName", memberName);
+		
+		Document update = new Document();
+		update.append("$set", updateDoc);
+		
+		collection.updateMany(query, update);
+	}
+	
+	private void updateLoginAdminUserMemberName(String memberCode, String memberName) {
+		MongoDatabase database = MongoDBConnection.getMongoDatabase();
+		MongoCollection<Document> collection = database.getCollection("login_admin_users");
+		
+		Document query = new Document();
+		query.append("memberCode", memberCode);
+		
+		Document updateDoc = new Document();
+		updateDoc.append("memberName", memberName);
+		
+		Document update = new Document();
+		update.append("$set", updateDoc);
+		
+		collection.updateMany(query, update);
+	}
+	
+	private void updateLoginInvestorUserMemberName(String memberCode, String memberName) {
+		MongoDatabase database = MongoDBConnection.getMongoDatabase();
+		MongoCollection<Document> collection = database.getCollection("login_investor_users");
+		
+		Document query = new Document();
+		query.append("memberCode", memberCode);
+		
+		Document updateDoc = new Document();
+		updateDoc.append("memberName", memberName);
+		
+		Document update = new Document();
+		update.append("$set", updateDoc);
+		
+		collection.updateMany(query, update);
+	}
+	
+	private void updateInvestorMarginInfoMemberName(String memberCode, String memberName) {
+		MongoDatabase database = MongoDBConnection.getMongoDatabase();
+		MongoCollection<Document> collection = database.getCollection("investor_margin_info");
+		
+		Document query = new Document();
+		query.append("memberCode", memberCode);
+		
+		Document updateDoc = new Document();
+		updateDoc.append("memberName", memberName);
+		
+		Document update = new Document();
+		update.append("$set", updateDoc);
+		
+		collection.updateMany(query, update);
 	}
 
 	public void updateMemberPA(HttpServletRequest request, String memberCode, ApprovalUpdateMemberDTO memberDto, long refId) {

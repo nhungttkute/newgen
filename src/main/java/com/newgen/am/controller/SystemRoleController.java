@@ -77,7 +77,7 @@ public class SystemRoleController {
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
         }
         
-        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
+        AMLogger.logMessage(className, methodName, refId, "OUTPUT: OK");
         return response;
     }
     
@@ -121,8 +121,7 @@ public class SystemRoleController {
     public AdminResponseObj createSystemRole(HttpServletRequest request, @Valid @RequestBody RoleDTO sysRoleDto) {
         String methodName = "createSystemRole";
         long refId = System.currentTimeMillis();
-        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [POST]/admin/systemRoles");
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(sysRoleDto));
+        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [POST]/admin/systemRoles, INPUT:" + Utility.getGson().toJson(sysRoleDto));
         
         sysRoleService.createSystemRolePA(request, sysRoleDto, refId);
         
@@ -138,8 +137,7 @@ public class SystemRoleController {
     public AdminResponseObj updateSystemRole(HttpServletRequest request, @PathVariable String sysRoleId, @Valid @RequestBody ApprovalUpdateRoleDTO sysRoleDto) {
         String methodName = "updateSystemRole";
         long refId = System.currentTimeMillis();
-        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [PUT]/admin/systemRoles/" + sysRoleId);
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(sysRoleDto));
+        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [PUT]/admin/systemRoles/" + sysRoleId + ", INPUT:" + Utility.getGson().toJson(sysRoleDto));
         
         sysRoleService.updateSystemRolePA(request, sysRoleId, sysRoleDto, refId);
         
@@ -155,8 +153,7 @@ public class SystemRoleController {
     public AdminResponseObj createSystemRoleFunctions(HttpServletRequest request, @PathVariable String sysRoleId, @Valid @RequestBody ApprovalFunctionsDTO sysRoleDto) {
         String methodName = "createSystemRoleFunctions";
         long refId = System.currentTimeMillis();
-        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: " + String.format("[POST]/admin/systemRoles/%s/functions", sysRoleId));
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(sysRoleDto));
+        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: " + String.format("[POST]/admin/systemRoles/%s/functions", sysRoleId) + ", INPUT:" + Utility.getGson().toJson(sysRoleDto));
         
         sysRoleService.createSystemRoleFunctionsPA(request, sysRoleId, sysRoleDto, refId);
         

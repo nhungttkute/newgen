@@ -84,7 +84,7 @@ public class DepartmentController {
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 		
-		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT: OK");
 		return response;
 	}
 
@@ -124,8 +124,7 @@ public class DepartmentController {
 	public AdminResponseObj createDepartment(HttpServletRequest request, @Validated(ValidationSequence.class) @RequestBody DepartmentDTO deptDto) {
 		String methodName = "createDepartment";
 		long refId = System.currentTimeMillis();
-		AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [POST]/admin/deparments");
-		AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(deptDto));
+		AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [POST]/admin/deparments, INPUT:" + Utility.getGson().toJson(deptDto));
 
 		if (Utility.isNotNull(deptDto)) {
 			deptService.createDepartmentPA(request, deptDto, refId);
@@ -146,8 +145,7 @@ public class DepartmentController {
 			@Validated(ValidationSequence.class) @RequestBody ApprovalUpdateDepartmentDTO deptDto) {
 		String methodName = "updateDepartment";
 		long refId = System.currentTimeMillis();
-		AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [PUT]/admin/deparments/" + deptId);
-		AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(deptDto));
+		AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [PUT]/admin/deparments/" + deptId + ", INPUT:" + Utility.getGson().toJson(deptDto));
 
 		if (Utility.isNotNull(deptDto)) {
 			deptService.updateDepartmentPA(request, deptId, deptDto, refId);
@@ -210,7 +208,7 @@ public class DepartmentController {
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 
-		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT: OK");
 		return response;
 	}
 
@@ -254,8 +252,7 @@ public class DepartmentController {
 			@Validated(ValidationSequence.class) @RequestBody AdminUserDTO deptUserDto) {
 		String methodName = "createDepartmentUser";
 		long refId = System.currentTimeMillis();
-		AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [POST]/admin/departments/users");
-		AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(deptUserDto));
+		AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [POST]/admin/departments/users" + ", INPUT:" + Utility.getGson().toJson(deptUserDto));
 
 		deptService.createDepartmentUserPA(request, deptId, deptUserDto, refId);
 
@@ -273,8 +270,7 @@ public class DepartmentController {
 		String methodName = "updateDepartmentUser";
 		long refId = System.currentTimeMillis();
 		AMLogger.logMessage(className, methodName, refId,
-				String.format("REQUEST_API: [PUT]/admin/departments/%s/users/%s", deptId, deptUserId));
-		AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(deptUserDto));
+				String.format("REQUEST_API: [PUT]/admin/departments/%s/users/%s", deptId, deptUserId) + ", INPUT:" + Utility.getGson().toJson(deptUserDto));
 
 		deptService.updateDepartmentUserPA(request, deptId, deptUserId, deptUserDto, refId);
 
@@ -315,7 +311,7 @@ public class DepartmentController {
 		String methodName = "saveDepartmentUserRoles";
 		long refId = System.currentTimeMillis();
 		AMLogger.logMessage(className, methodName, refId,
-				String.format("REQUEST_API: [POST]/admin/departments/%s/users/%s/roles", deptId, deptUserId));
+				String.format("REQUEST_API: [POST]/admin/departments/%s/users/%s/roles", deptId, deptUserId) + ", INPUT:" + Utility.getGson().toJson(deptUserDto));
 
 		deptService.saveDepartmentUserRolesPA(request, deptId, deptUserId, deptUserDto, refId);
 
@@ -333,7 +329,7 @@ public class DepartmentController {
 		String methodName = "saveDepartmentUserFunctions";
 		long refId = System.currentTimeMillis();
 		AMLogger.logMessage(className, methodName, refId,
-				String.format("REQUEST_API: [POST]/admin/departments/%s/users/%s/functions", deptId, deptUserId));
+				String.format("REQUEST_API: [POST]/admin/departments/%s/users/%s/functions", deptId, deptUserId) + ", INPUT:" + Utility.getGson().toJson(deptUserDto));
 
 		deptService.saveDepartmentUserFunctionsPA(request, deptId, deptUserId, deptUserDto, refId);
 

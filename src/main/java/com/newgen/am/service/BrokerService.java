@@ -526,10 +526,18 @@ public class BrokerService {
 			
 			boolean isUserUpdated = false;
 			boolean isStatusUpdated = false;
+			boolean isNameUpdated = false;
 			
-			if (Utility.isNotNull(brokerDto.getName())) updateBroker.append("name", brokerDto.getName());
+			if (Utility.isNotNull(brokerDto.getName())) {
+				updateBroker.append("name", brokerDto.getName());
+				updateLoginAdmUser.append("brokerName", brokerDto.getName());
+				isNameUpdated = true;
+			}
 			if (Utility.isNotNull(brokerDto.getStatus())) {
 				updateBroker.append("status", brokerDto.getStatus().toUpperCase());
+				updateBroker.append("user.status", brokerDto.getStatus().toUpperCase());
+				updateLoginAdmUser.append("status", brokerDto.getStatus().toUpperCase());
+				isUserUpdated = true;
 				isStatusUpdated = true;
 			}
 			if (Utility.isNotNull(brokerDto.getNote())) {
@@ -585,6 +593,7 @@ public class BrokerService {
 					updateBroker.append("individual.fullName", brokerDto.getIndividual().getFullName());
 					updateBroker.append("user.fullName", brokerDto.getIndividual().getFullName());
 					updateBroker.append("contact.fullName", brokerDto.getIndividual().getFullName());
+					updateLoginAdmUser.append("fullName", brokerDto.getIndividual().getFullName());
 					isUserUpdated = true;
 				}
 				if (Utility.isNotNull(brokerDto.getIndividual().getBirthDay())) updateBroker.append("individual.birthDay", brokerDto.getIndividual().getBirthDay());
@@ -595,12 +604,14 @@ public class BrokerService {
 					updateBroker.append("individual.email", brokerDto.getIndividual().getEmail());
 					updateBroker.append("user.email", brokerDto.getIndividual().getEmail());
 					updateBroker.append("contact.email", brokerDto.getIndividual().getEmail());
+					updateLoginAdmUser.append("email", brokerDto.getIndividual().getEmail());
 					isUserUpdated = true;
 				}
 				if (Utility.isNotNull(brokerDto.getIndividual().getPhoneNumber()))  {
 					updateBroker.append("individual.phoneNumber", brokerDto.getIndividual().getPhoneNumber());
 					updateBroker.append("user.phoneNumber", brokerDto.getIndividual().getPhoneNumber());
 					updateBroker.append("contact.phoneNumber", brokerDto.getIndividual().getPhoneNumber());
+					updateLoginAdmUser.append("phoneNumber", brokerDto.getIndividual().getPhoneNumber());
 					isUserUpdated = true;
 				}
 				if (Utility.isNotNull(brokerDto.getIndividual().getAddress()))  updateBroker.append("individual.address", brokerDto.getIndividual().getAddress());
@@ -641,39 +652,26 @@ public class BrokerService {
 				}
 				
 				if (isStatusUpdated) {
-					// update status of broker user
-					Document brokerQuery = new Document();
-					brokerQuery.append("code", brokerCode);
-					
-					Document updateDoc = new Document();
-					updateDoc.append("user.status", brokerDto.getStatus().toUpperCase());
-					
-					Document brokerUpdate = new Document();
-					brokerUpdate.append("$set", updateDoc);
-					
-					collection.updateMany(brokerQuery, brokerUpdate);
-					
-					// update status of all login broker user
-					MongoCollection<Document> loginAdmCollection = database.getCollection("login_admin_users");
-					
 					String brokerUsername = Constant.BROKER_USER_PREFIX + brokerCode;
-					Document loginAdmQuery = new Document();
-					loginAdmQuery.append("username", brokerUsername);
-					
-					Document loginAdmUpdateDoc = new Document();
-					loginAdmUpdateDoc.append("status", brokerDto.getStatus().toUpperCase());
-					
-					Document loginAdmUpdate = new Document();
-					loginAdmUpdate.append("$set", loginAdmUpdateDoc);
-					
-					loginAdmCollection.updateMany(loginAdmQuery, loginAdmUpdate);
-					
-					// logout all users if status is invactive
+					// logout all users if status is inactive
 					if (Constant.STATUS_INACTIVE.equalsIgnoreCase(brokerDto.getStatus())) {
 						List<String> userList = new ArrayList<String>();
 						userList.add(brokerUsername);
 						Utility.sendHandleLogout(userList, refId);
 					}
+				}
+				
+				if (isNameUpdated) {
+					// update collaborator's brokerName
+					updateCollaboratorBrokerName(brokerCode, brokerDto.getName());
+					// update investors's brokerName
+					updateInvestorBrokerName(brokerCode, brokerDto.getName());
+					// update login_admin_users' brokerName
+					updateLoginAdminUserBrokerName(brokerCode, brokerDto.getName());
+					// update login_investor_users' brokerName
+					updateLoginInvestorUserBrokerName(brokerCode, brokerDto.getName());
+					// update investor_margin_info's brokerName
+					updateInvestorMarginInfoBrokerName(brokerCode, brokerDto.getName());
 				}
 			}
 		} catch (CustomException e) {
@@ -682,6 +680,86 @@ public class BrokerService {
 			AMLogger.logError(className, methodName, refId, e);
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
+	}
+	
+	private void updateCollaboratorBrokerName(String brokerCode, String brokerName) {
+		MongoDatabase database = MongoDBConnection.getMongoDatabase();
+		MongoCollection<Document> collection = database.getCollection("collaborators");
+		
+		Document query = new Document();
+		query.append("brokerCode", brokerCode);
+		
+		Document updateDoc = new Document();
+		updateDoc.append("brokerName", brokerName);
+		
+		Document update = new Document();
+		update.append("$set", updateDoc);
+		
+		collection.updateMany(query, update);
+	}
+	
+	private void updateInvestorBrokerName(String brokerCode, String brokerName) {
+		MongoDatabase database = MongoDBConnection.getMongoDatabase();
+		MongoCollection<Document> collection = database.getCollection("investors");
+		
+		Document query = new Document();
+		query.append("brokerCode", brokerCode);
+		
+		Document updateDoc = new Document();
+		updateDoc.append("brokerName", brokerName);
+		
+		Document update = new Document();
+		update.append("$set", updateDoc);
+		
+		collection.updateMany(query, update);
+	}
+	
+	private void updateLoginAdminUserBrokerName(String brokerCode, String brokerName) {
+		MongoDatabase database = MongoDBConnection.getMongoDatabase();
+		MongoCollection<Document> collection = database.getCollection("login_admin_users");
+		
+		Document query = new Document();
+		query.append("brokerCode", brokerCode);
+		
+		Document updateDoc = new Document();
+		updateDoc.append("brokerName", brokerName);
+		
+		Document update = new Document();
+		update.append("$set", updateDoc);
+		
+		collection.updateMany(query, update);
+	}
+	
+	private void updateLoginInvestorUserBrokerName(String brokerCode, String brokerName) {
+		MongoDatabase database = MongoDBConnection.getMongoDatabase();
+		MongoCollection<Document> collection = database.getCollection("login_investor_users");
+		
+		Document query = new Document();
+		query.append("brokerCode", brokerCode);
+		
+		Document updateDoc = new Document();
+		updateDoc.append("brokerName", brokerName);
+		
+		Document update = new Document();
+		update.append("$set", updateDoc);
+		
+		collection.updateMany(query, update);
+	}
+	
+	private void updateInvestorMarginInfoBrokerName(String brokerCode, String brokerName) {
+		MongoDatabase database = MongoDBConnection.getMongoDatabase();
+		MongoCollection<Document> collection = database.getCollection("investor_margin_info");
+		
+		Document query = new Document();
+		query.append("brokerCode", brokerCode);
+		
+		Document updateDoc = new Document();
+		updateDoc.append("brokerName", brokerName);
+		
+		Document update = new Document();
+		update.append("$set", updateDoc);
+		
+		collection.updateMany(query, update);
 	}
 	
 	public void updateBrokerPA(HttpServletRequest request, String brokerCode, ApprovalUpdateBrokerDTO brokerDto, long refId) {

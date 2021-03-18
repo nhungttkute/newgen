@@ -119,8 +119,7 @@ public class InvestorController {
     public AdminResponseObj getInvestorInfo(HttpServletRequest request, @RequestBody InvestorDetailDTO investorDetailDto) {
         String methodName = "getInvestorInfo";
         long refId = System.currentTimeMillis();
-        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: /admin/investorInfo");
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(investorDetailDto));
+        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: /admin/investorInfo, INPUT:" + Utility.getGson().toJson(investorDetailDto));
         
         if (!Utility.isLocalRequest(request)) throw new CustomException(ErrorMessage.ACCESS_DENIED, HttpStatus.FORBIDDEN);
         
@@ -145,8 +144,7 @@ public class InvestorController {
     public AdminResponseObj getInvestorInfoByCQGAccountId(HttpServletRequest request, @RequestBody InvestorDetailDTO investorDetailDto) {
         String methodName = "getInvestorInfoByCQGAccountId";
         long refId = System.currentTimeMillis();
-        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: /admin/getInvestorInfoByCQGAccountId");
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(investorDetailDto));
+        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: /admin/getInvestorInfoByCQGAccountId, INPUT:" + Utility.getGson().toJson(investorDetailDto));
         
         if (!Utility.isLocalRequest(request)) throw new CustomException(ErrorMessage.ACCESS_DENIED, HttpStatus.FORBIDDEN);
         
@@ -192,7 +190,7 @@ public class InvestorController {
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 		
-		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT: OK");
 		return response;
 	}
 
@@ -232,7 +230,7 @@ public class InvestorController {
 	public AdminResponseObj createInvestor(HttpServletRequest request, @Validated(ValidationSequence.class) @RequestBody InvestorDTO investorDto) {
 		String methodName = "createInvestor";
 		long refId = System.currentTimeMillis();
-		AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [POST]/admin/investors");
+		
 		// set null for image data
 		InvestorDTO logRequest = (InvestorDTO) SerializationUtils.clone(investorDto);
 		if (logRequest.getCompany() != null && logRequest.getCompany().getDelegate() != null) {
@@ -247,7 +245,7 @@ public class InvestorController {
 			logRequest.getIndividual().setScannedSignature(null);
 		}
 		
-		AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(logRequest));
+		AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [POST]/admin/investors, INPUT:" + Utility.getGson().toJson(logRequest));
 
 		investorService.createInvestorPA(request, investorDto, refId);
 
@@ -264,10 +262,21 @@ public class InvestorController {
 			@Validated(ValidationSequence.class) @RequestBody ApprovalUpdateInvestorDTO investorDto) {
 		String methodName = "updateInvestor";
 		long refId = System.currentTimeMillis();
-		AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [PUT]/admin/investors/" + investorCode);
 		
 		// set null for image data
 		ApprovalUpdateInvestorDTO logRequest = (ApprovalUpdateInvestorDTO) SerializationUtils.clone(investorDto);
+		if (logRequest.getOldData().getCompany() != null && logRequest.getOldData().getCompany().getDelegate() != null) {
+			logRequest.getOldData().getCompany().getDelegate().setScannedBackIdCard(null);
+			logRequest.getOldData().getCompany().getDelegate().setScannedFrontIdCard(null);
+			logRequest.getOldData().getCompany().getDelegate().setScannedSignature(null);
+		}
+		
+		if (logRequest.getOldData().getIndividual() != null) {
+			logRequest.getOldData().getIndividual().setScannedBackIdCard(null);
+			logRequest.getOldData().getIndividual().setScannedFrontIdCard(null);
+			logRequest.getOldData().getIndividual().setScannedSignature(null);
+		}
+		
 		if (logRequest.getPendingData().getCompany() != null && logRequest.getPendingData().getCompany().getDelegate() != null) {
 			logRequest.getPendingData().getCompany().getDelegate().setScannedBackIdCard(null);
 			logRequest.getPendingData().getCompany().getDelegate().setScannedFrontIdCard(null);
@@ -279,8 +288,8 @@ public class InvestorController {
 			logRequest.getPendingData().getIndividual().setScannedFrontIdCard(null);
 			logRequest.getPendingData().getIndividual().setScannedSignature(null);
 		}
-				
-		AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(logRequest));
+		
+		AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [PUT]/admin/investors/" + investorCode + ", INPUT:" + Utility.getGson().toJson(logRequest));
 
 		investorService.updateInvestorPA(request, investorCode, investorDto, refId);
 
@@ -297,8 +306,7 @@ public class InvestorController {
 			@Validated(ValidationSequence.class) @RequestBody UpdateInvestorDTO investorDto) {
 		String methodName = "updateInvestorCQGInfo";
 		long refId = System.currentTimeMillis();
-		AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [PUT]/admin/investors/" + investorCode + "/cqgInfo");
-		AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(investorDto));
+		AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [PUT]/admin/investors/" + investorCode + "/cqgInfo" + ", INPUT:" + Utility.getGson().toJson(investorDto));
 
 		investorService.updateInvestorCQGInfo(request, investorCode, investorDto, refId);
 
@@ -432,8 +440,7 @@ public class InvestorController {
 			@Validated(ValidationSequence.class) @RequestBody UserDTO userDto) {
 		String methodName = "createInvestorUser";
 		long refId = System.currentTimeMillis();
-		AMLogger.logMessage(className, methodName, refId, String.format("REQUEST_API: [POST]/admin/investors/%s/users", investorCode));
-		AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(userDto));
+		AMLogger.logMessage(className, methodName, refId, String.format("REQUEST_API: [POST]/admin/investors/%s/users", investorCode) + ", INPUT:" + Utility.getGson().toJson(userDto));
 
 		investorService.createInvestorUserPA(request, investorCode, userDto, refId);
 
@@ -449,8 +456,7 @@ public class InvestorController {
     public AdminResponseObj createInvestorDefaultSetting(HttpServletRequest request, @PathVariable String memberCode, @PathVariable String investorCode, @Validated(ValidationSequence.class) @RequestBody DefaultSettingDTO investorDto) {
         String methodName = "createInvestorDefaultSetting";
         long refId = System.currentTimeMillis();
-        AMLogger.logMessage(className, methodName, refId, String.format("REQUEST_API: [POST]/admin/investors/%s/%s/defaultSetting", memberCode, investorCode));
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(investorDto));
+        AMLogger.logMessage(className, methodName, refId, String.format("REQUEST_API: [POST]/admin/investors/%s/%s/defaultSetting", memberCode, investorCode) + ", INPUT:" + Utility.getGson().toJson(investorDto));
         
         investorService.createDefaultSetting(request, memberCode, investorCode, investorDto, refId);
         
@@ -466,8 +472,7 @@ public class InvestorController {
     public AdminResponseObj createInvestorCommoditiesSetting(HttpServletRequest request, @PathVariable String memberCode, @PathVariable String investorCode, @Validated(ValidationSequence.class) @RequestBody CommoditiesDTO investorDto) {
         String methodName = "createInvestorCommoditiesSetting";
         long refId = System.currentTimeMillis();
-        AMLogger.logMessage(className, methodName, refId, String.format("REQUEST_API: [POST]/admin/investors/%s/%s/commoditiesSetting", memberCode, investorCode));
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(investorDto));
+        AMLogger.logMessage(className, methodName, refId, String.format("REQUEST_API: [POST]/admin/investors/%s/%s/commoditiesSetting", memberCode, investorCode) + ", INPUT:" + Utility.getGson().toJson(investorDto));
         
         investorService.createInvestorCommodities(request, memberCode, investorCode, investorDto, refId);
         
@@ -483,8 +488,7 @@ public class InvestorController {
     public AdminResponseObj setInvestorNewPositionOrderLock(HttpServletRequest request, @PathVariable String investorCode, @Validated(ValidationSequence.class) @RequestBody ApprovalRiskParametersDTO investorDto) {
         String methodName = "setInvestorNewPositionOrderLock";
         long refId = System.currentTimeMillis();
-        AMLogger.logMessage(className, methodName, refId, String.format("REQUEST_API: [PUT]/admin/members/%s/newPositionOrderLock", investorCode));
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(investorDto));
+        AMLogger.logMessage(className, methodName, refId, String.format("REQUEST_API: [PUT]/admin/members/%s/newPositionOrderLock", investorCode) + ", INPUT:" + Utility.getGson().toJson(investorDto));
         
         if (Utility.isNull(investorDto) || Utility.isNull(investorDto.getPendingData()) || Utility.isNull(investorDto.getPendingData().getRiskParameters()) || Utility.isNull(investorDto.getPendingData().getRiskParameters().getNewPositionOrderLock())) {
         	throw new CustomException(ErrorMessage.INVALID_REQUEST, HttpStatus.BAD_REQUEST);
@@ -503,8 +507,7 @@ public class InvestorController {
     public AdminResponseObj setInvestorOrderLock(HttpServletRequest request, @PathVariable String investorCode, @Validated(ValidationSequence.class) @RequestBody ApprovalRiskParametersDTO investorDto) {
         String methodName = "setInvestorOrderLock";
         long refId = System.currentTimeMillis();
-        AMLogger.logMessage(className, methodName, refId, String.format("REQUEST_API: [PUT]/admin/investors/%s/orderLock", investorCode));
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(investorDto));
+        AMLogger.logMessage(className, methodName, refId, String.format("REQUEST_API: [PUT]/admin/investors/%s/orderLock", investorCode) + ", INPUT:" + Utility.getGson().toJson(investorDto));
         
         if (Utility.isNull(investorDto) || Utility.isNull(investorDto.getPendingData()) || Utility.isNull(investorDto.getPendingData().getRiskParameters()) || Utility.isNull(investorDto.getPendingData().getRiskParameters().getOrderLock())) {
         	throw new CustomException(ErrorMessage.INVALID_REQUEST, HttpStatus.BAD_REQUEST);
@@ -523,8 +526,7 @@ public class InvestorController {
     public AdminResponseObj setMarginMultiplier(HttpServletRequest request, @PathVariable String investorCode, @Validated(ValidationSequence.class) @RequestBody MarginMultiplierDTO investorDto) {
         String methodName = "setMarginMultiplier";
         long refId = System.currentTimeMillis();
-        AMLogger.logMessage(className, methodName, refId, String.format("REQUEST_API: [PUT]/admin/investors/%s/marginMultiplier", investorCode));
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(investorDto));
+        AMLogger.logMessage(className, methodName, refId, String.format("REQUEST_API: [PUT]/admin/investors/%s/marginMultiplier", investorCode) + ", INPUT:" + Utility.getGson().toJson(investorDto));
         
         investorService.setMarginMultiplier(request, investorCode, investorDto, refId);
         
@@ -540,8 +542,7 @@ public class InvestorController {
     public AdminResponseObj setMarginRatio(HttpServletRequest request, @PathVariable String investorCode, @Validated(ValidationSequence.class) @RequestBody MarginRatioAlertDTO investorDto) {
         String methodName = "setMarginRatio";
         long refId = System.currentTimeMillis();
-        AMLogger.logMessage(className, methodName, refId, String.format("REQUEST_API: [PUT]/admin/investors/%s/marginRatio", investorCode));
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(investorDto));
+        AMLogger.logMessage(className, methodName, refId, String.format("REQUEST_API: [PUT]/admin/investors/%s/marginRatio", investorCode) + ", INPUT:" + Utility.getGson().toJson(investorDto));
         
         investorService.setMarginRatioAlert(request, investorCode, investorDto, refId);
         
@@ -557,8 +558,7 @@ public class InvestorController {
     public AdminResponseObj setGeneralFee(HttpServletRequest request, @PathVariable String investorCode, @Validated(ValidationSequence.class) @RequestBody GeneralFeeDTO investorDto) {
         String methodName = "setGeneralFee";
         long refId = System.currentTimeMillis();
-        AMLogger.logMessage(className, methodName, refId, String.format("REQUEST_API: [PUT]/admin/investors/%s/setGeneralFee", investorCode));
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(investorDto));
+        AMLogger.logMessage(className, methodName, refId, String.format("REQUEST_API: [PUT]/admin/investors/%s/setGeneralFee", investorCode) + ", INPUT:" + Utility.getGson().toJson(investorDto));
         
         investorService.setGeneralFee(request, investorCode, investorDto, refId);
         
@@ -574,8 +574,7 @@ public class InvestorController {
     public AdminResponseObj updateGeneralFee(HttpServletRequest request, @PathVariable String investorCode, @Validated(ValidationSequence.class) @RequestBody GeneralFeeDTO investorDto) {
         String methodName = "updateGeneralFee";
         long refId = System.currentTimeMillis();
-        AMLogger.logMessage(className, methodName, refId, String.format("REQUEST_API: [PUT]/admin/investors/%s/updateGeneralFee", investorCode));
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(investorDto));
+        AMLogger.logMessage(className, methodName, refId, String.format("REQUEST_API: [PUT]/admin/investors/%s/updateGeneralFee", investorCode) + ", INPUT:" + Utility.getGson().toJson(investorDto));
         
         investorService.updateGeneralFee(request, investorCode, investorDto, refId);
         
@@ -591,8 +590,7 @@ public class InvestorController {
     public AdminResponseObj changeBroker(HttpServletRequest request, @PathVariable String investorCode, @Validated(ValidationSequence.class) @RequestBody ApprovalChangeGroupDTO groupDto) {
         String methodName = "changeBroker";
         long refId = System.currentTimeMillis();
-        AMLogger.logMessage(className, methodName, refId, String.format("REQUEST_API: [PUT]/admin/investors/%s/changeBroker", investorCode));
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(groupDto));
+        AMLogger.logMessage(className, methodName, refId, String.format("REQUEST_API: [PUT]/admin/investors/%s/changeBroker", investorCode) + ", INPUT:" + Utility.getGson().toJson(groupDto));
         
         investorService.changeBrokerPA(request, investorCode, groupDto, refId);
         
@@ -608,8 +606,7 @@ public class InvestorController {
     public AdminResponseObj changeCollaborator(HttpServletRequest request, @PathVariable String investorCode, @Validated(ValidationSequence.class) @RequestBody ApprovalChangeGroupDTO groupDto) {
         String methodName = "changeCollaborator";
         long refId = System.currentTimeMillis();
-        AMLogger.logMessage(className, methodName, refId, String.format("REQUEST_API: [PUT]/admin/investors/%s/changeCollaborator", investorCode));
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(groupDto));
+        AMLogger.logMessage(className, methodName, refId, String.format("REQUEST_API: [PUT]/admin/investors/%s/changeCollaborator", investorCode) + ", INPUT:" + Utility.getGson().toJson(groupDto));
         
         investorService.changeCollaboratorPA(request, investorCode, groupDto, refId);
         
@@ -625,7 +622,7 @@ public class InvestorController {
     public AdminResponseObj updateMarginInfo(HttpServletRequest request, @PathVariable String investorCode, @Validated(ValidationSequence.class) @RequestBody MarginInfoDTO marginInfoDto) {
         String methodName = "updateMarginInfo";
         long refId = System.currentTimeMillis();
-        AMLogger.logMessage(className, methodName, refId, String.format("REQUEST_API: [PUT]/admin/investors/%s/marginInfo", investorCode));
+        AMLogger.logMessage(className, methodName, refId, String.format("REQUEST_API: [PUT]/admin/investors/%s/marginInfo", investorCode) + ", INPUT:" + Utility.getGson().toJson(marginInfoDto));
         
         investorService.updateMarginInfo(request, investorCode, marginInfoDto, refId);
         
@@ -660,8 +657,7 @@ public class InvestorController {
     public AdminResponseObj depositMargin(HttpServletRequest request, @Validated(ValidationSequence.class) @RequestBody MarginTransactionDTO marginTransDto) {
         String methodName = "depositMargin";
         long refId = System.currentTimeMillis();
-        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [PUT]/am/admin/investors/moneyDeposit");
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(marginTransDto));
+        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [PUT]/am/admin/investors/moneyDeposit, INPUT:" + Utility.getGson().toJson(marginTransDto));
         
         investorService.depositMarginPA(request, marginTransDto, refId);
         
@@ -677,8 +673,7 @@ public class InvestorController {
     public AdminResponseObj withdrawMargin(HttpServletRequest request, @Validated(ValidationSequence.class) @RequestBody MarginTransactionDTO marginTransDto) {
         String methodName = "withdrawMargin";
         long refId = System.currentTimeMillis();
-        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [PUT]/am/admin/investors/moneyWithdrawal");
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(marginTransDto));
+        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [PUT]/am/admin/investors/moneyWithdrawal, INPUT:" + Utility.getGson().toJson(marginTransDto));
         
         investorService.withdrawMarginPA(request, marginTransDto, refId);
         
@@ -714,7 +709,7 @@ public class InvestorController {
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 		
-		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT: OK");
 		return response;
 	}
 	
@@ -771,8 +766,7 @@ public class InvestorController {
         if (!Utility.isLocalRequest(request)) throw new CustomException(ErrorMessage.ACCESS_DENIED, HttpStatus.FORBIDDEN);
         
         long refId = System.currentTimeMillis();
-        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [POST]/am/admin/investors/commodityFee");
-        AMLogger.logMessage(className, methodName, refId, "INPUT: " + Utility.getGson().toJson(invCommdityFeeDto));
+        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [POST]/am/admin/investors/commodityFee, INPUT: " + Utility.getGson().toJson(invCommdityFeeDto));
         
         InvestorCommodityFeeDTO invCommFee = investorService.getInvestorCommodityFee(invCommdityFeeDto.getInvestorCode(), invCommdityFeeDto.getCommodityCode(), refId);
         
@@ -782,6 +776,30 @@ public class InvestorController {
         response.getData().setInvCommodityFee(invCommFee);
         
         AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
+        return response;
+    }
+	
+	@GetMapping("/admin/investorInfoList")
+    public AdminResponseObj getInvestorInfoList(HttpServletRequest request) {
+        String methodName = "getInvestorInfoList";
+        if (!Utility.isLocalRequest(request)) throw new CustomException(ErrorMessage.ACCESS_DENIED, HttpStatus.FORBIDDEN);
+        
+        long refId = System.currentTimeMillis();
+        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: /admin/investorInfoList");
+        
+        List<InvestorDTO> investorList = investorService.getInvestorInfoList(refId);
+        
+        AdminResponseObj response = new AdminResponseObj();
+        if (investorList != null && investorList.size() > 0) {
+            response.setStatus(Constant.RESPONSE_OK);
+            response.setData(new AdminDataObj());
+            response.getData().setInvestors(investorList);
+        } else {
+            response.setStatus(Constant.RESPONSE_ERROR);
+            response.setErrMsg(ErrorMessage.RESULT_NOT_FOUND);
+        }
+        
+        AMLogger.logMessage(className, methodName, refId, "OUTPUT: OK");
         return response;
     }
 }

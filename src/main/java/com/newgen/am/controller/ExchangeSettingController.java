@@ -39,8 +39,7 @@ public class ExchangeSettingController {
 	public AdminResponseObj setUsersExchanges(HttpServletRequest request, @Validated(ValidationSequence.class) @RequestBody ExchangeSettingDTO exchangeDto) {
 		String methodName = "setUsersExchanges";
 		long refId = System.currentTimeMillis();
-		AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [POST]/admin/exchangeSetting");
-		AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(exchangeDto));
+		AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [POST]/admin/exchangeSetting, INPUT:" + Utility.getGson().toJson(exchangeDto));
 
 		exchangeSettingService.setExchangeSettingPA(request, exchangeDto, refId);
 		
@@ -56,8 +55,7 @@ public class ExchangeSettingController {
 	public AdminResponseObj updateUsersExchanges(HttpServletRequest request, @Validated(ValidationSequence.class) @RequestBody ApprovalExchangeSettingDTO exchangeDto) {
 		String methodName = "updateUsersExchanges";
 		long refId = System.currentTimeMillis();
-		AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [GET]/admin/exchangeSetting");
-		AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(exchangeDto));
+		AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [GET]/admin/exchangeSetting, INPUT:" + Utility.getGson().toJson(exchangeDto));
 
 		exchangeSettingService.updateExchangeSettingPA(request, exchangeDto, refId);
 		
@@ -92,7 +90,7 @@ public class ExchangeSettingController {
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 		
-		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT: OK");
 		return response;
 	}
 	
@@ -120,7 +118,7 @@ public class ExchangeSettingController {
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 		
-		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT: OK");
 		return response;
 	}
 	

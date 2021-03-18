@@ -8,6 +8,7 @@ package com.newgen.am.common;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -42,6 +43,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import com.google.gson.Gson;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+import com.newgen.am.dto.AdminResponseObj;
 import com.newgen.am.dto.EmailDTO;
 import com.newgen.am.dto.EmailListmsisdnDTO;
 import com.newgen.am.dto.InvestorDTO;
@@ -564,7 +566,7 @@ public class Utility {
 			email.setBodyStr(emailBody);
 			String emailJson = gson.toJson(email);
 			AMLogger.logMessage(className, methodName, refId, "Email: " + emailJson);
-			serviceCon.sendPostRequest(serviceCon.getEmailNotificationServiceURL(), emailJson, null);
+			serviceCon.sendPostRequest(serviceCon.getEmailNotificationServiceURL(), emailJson, ConfigLoader.getMainConfig().getString(Constant.LOCAL_SECRET_KEY));
 		} catch (Exception e) {
 			AMLogger.logError(className, methodName, refId, e);
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -592,7 +594,7 @@ public class Utility {
 			email.setBodyStr(emailBody);
 			String emailJson = gson.toJson(email);
 			AMLogger.logMessage(className, methodName, refId, "Email: " + emailJson);
-			serviceCon.sendPostRequest(serviceCon.getEmailNotificationServiceURL(), emailJson, null);
+			serviceCon.sendPostRequest(serviceCon.getEmailNotificationServiceURL(), emailJson, ConfigLoader.getMainConfig().getString(Constant.LOCAL_SECRET_KEY));
 		} catch (Exception e) {
 			AMLogger.logError(className, methodName, refId, e);
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -673,7 +675,7 @@ public class Utility {
 			email.setBodyStr(emailBody);
 			String emailJson = Utility.getGson().toJson(email);
 			AMLogger.logMessage(className, methodName, refId, "Email: " + emailJson);
-			serviceCon.sendPostRequest(serviceCon.getEmailNotificationServiceURL(), emailJson, null);
+			serviceCon.sendPostRequest(serviceCon.getEmailNotificationServiceURL(), emailJson, ConfigLoader.getMainConfig().getString(Constant.LOCAL_SECRET_KEY));
 		} catch (Exception e) {
 			AMLogger.logError(className, methodName, refId, e);
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -692,5 +694,43 @@ public class Utility {
     public static void deleteApprovalIDonRedis(RedisTemplate<String, String> template, String approvalId, long refId) {
     	AMLogger.logMessage(className, "deleteApprovalIDonRedis", refId, "REDIS_DELETE: key=" + approvalId);
 		template.delete(approvalId);
+    }
+    
+    public static String getSessionDate(long refId) {
+		String methodName = "getSessionDate";
+		String sessionDate = "";
+		try {
+			LocalServiceConnection serviceCon = new LocalServiceConnection();
+			String[] res = serviceCon.sendGetRequest(serviceCon.getSessionDateServiceURL(),
+					ConfigLoader.getMainConfig().getString(Constant.LOCAL_SECRET_KEY));
+			if (res.length >= 2 && "200".equals(res[0])) {
+				AdminResponseObj response = Utility.getGson().fromJson(res[1], AdminResponseObj.class);
+				if (response != null && Constant.RESPONSE_OK.equalsIgnoreCase(response.getStatus())) {
+					sessionDate = response.getData().getDate();
+				}
+			}
+			return sessionDate;
+		} catch (Exception e) {
+			AMLogger.logError(className, methodName, refId, e);
+			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+    
+    public static String formatAmount(String input) {
+		String formatted = "";
+		if (isNotNull(input)) {
+			for (int i = 0; i < input.length(); i++) {
+				if (((i + 1) % 3 == input.length() % 3) && (i != input.length() - 1)) {
+					formatted += input.charAt(i) + ".";
+				} else {
+					formatted += input.charAt(i);
+				}
+			}
+		}
+		return formatted;
+	}
+    
+    public static String convertDoubleToString(double d) {
+    	return new DecimalFormat("#.##").format(d);
     }
 }

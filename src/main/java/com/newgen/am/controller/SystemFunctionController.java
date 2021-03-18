@@ -41,7 +41,7 @@ public class SystemFunctionController {
             response.setErrMsg(ErrorMessage.RESULT_NOT_FOUND);
         }
         
-        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
+        AMLogger.logMessage(className, methodName, refId, "OUTPUT: OK");
         return response;
     }
 }

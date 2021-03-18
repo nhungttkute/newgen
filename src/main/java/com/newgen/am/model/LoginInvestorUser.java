@@ -66,4 +66,5 @@ public class LoginInvestorUser extends AuditModel implements Serializable {
     private int fontSize;
     private List<WatchList> watchlists;
     private List<Exchange> exchanges;
+    private String tableSetting;
 }

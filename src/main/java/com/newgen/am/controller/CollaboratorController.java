@@ -71,7 +71,7 @@ private String className = "CollaboratorController";
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 		
-		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT: OK");
 		return response;
 	}
 
@@ -111,7 +111,6 @@ private String className = "CollaboratorController";
 	public AdminResponseObj createCollaborator(HttpServletRequest request, @Validated(ValidationSequence.class) @RequestBody CollaboratorDTO collaboratorDto) {
 		String methodName = "createCollaborator";
 		long refId = System.currentTimeMillis();
-		AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [POST]/admin/collaborators");
 		
 		// set null for image data
 		CollaboratorDTO logRequest = (CollaboratorDTO) SerializationUtils.clone(collaboratorDto);
@@ -121,7 +120,7 @@ private String className = "CollaboratorController";
 			logRequest.getDelegate().setScannedSignature(null);
 		}
 		
-		AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(logRequest));
+		AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [POST]/admin/collaborators, INPUT:" + Utility.getGson().toJson(logRequest));
 
 		collaboratorService.createCollaboratorPA(request, collaboratorDto, refId);
 
@@ -138,17 +137,22 @@ private String className = "CollaboratorController";
 			@Validated(ValidationSequence.class) @RequestBody ApprovalUpdateCollaboratorDTO collaboratorDto) {
 		String methodName = "updateCollaborator";
 		long refId = System.currentTimeMillis();
-		AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [PUT]/admin/collaborators/" + collaboratorCode);
 		
 		// set null for image data
 		ApprovalUpdateCollaboratorDTO logRequest = (ApprovalUpdateCollaboratorDTO) SerializationUtils.clone(collaboratorDto);
+		if (logRequest.getOldData().getDelegate() != null) {
+			logRequest.getOldData().getDelegate().setScannedBackIdCard(null);
+			logRequest.getOldData().getDelegate().setScannedFrontIdCard(null);
+			logRequest.getOldData().getDelegate().setScannedSignature(null);
+		}
+		
 		if (logRequest.getPendingData().getDelegate() != null) {
 			logRequest.getPendingData().getDelegate().setScannedBackIdCard(null);
 			logRequest.getPendingData().getDelegate().setScannedFrontIdCard(null);
 			logRequest.getPendingData().getDelegate().setScannedSignature(null);
 		}
-				
-		AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(logRequest));
+		
+		AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [PUT]/admin/collaborators/" + collaboratorCode + ", INPUT:" + Utility.getGson().toJson(logRequest));
 
 		collaboratorService.updateCollaboratorPA(request, collaboratorCode, collaboratorDto, refId);
 
@@ -215,8 +219,7 @@ private String className = "CollaboratorController";
     public AdminResponseObj createCollaboratorFunctions(HttpServletRequest request, @PathVariable String collaboratorCode, @Validated(ValidationSequence.class) @RequestBody ApprovalFunctionsDTO collaboratorDto) {
         String methodName = "createCollaboratorFunctions";
         long refId = System.currentTimeMillis();
-        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: " + String.format("[POST]/admin/collaborators/%s/functions", collaboratorCode));
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(collaboratorDto));
+        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: " + String.format("[POST]/admin/collaborators/%s/functions", collaboratorCode) + ", INPUT:" + Utility.getGson().toJson(collaboratorDto));
         
         collaboratorService.createCollaboratorFunctionsPA(request, collaboratorCode, collaboratorDto, refId);
         

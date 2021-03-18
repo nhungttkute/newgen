@@ -267,6 +267,7 @@ public class LoginInvestorUserService {
 				userInfoDto.setTheme(user.getTheme());
 				userInfoDto.setLanguage(user.getLanguage());
 				userInfoDto.setFontSize(user.getFontSize());
+				userInfoDto.setTableSetting(user.getTableSetting());
 				userInfoDto.setExchanges(user.getExchanges());
 			}
 			

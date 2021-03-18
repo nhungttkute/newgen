@@ -74,7 +74,7 @@ public class BrokerController {
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 		
-		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT: OK");
 		return response;
 	}
 
@@ -114,7 +114,6 @@ public class BrokerController {
 	public AdminResponseObj createBroker(HttpServletRequest request, @Validated(ValidationSequence.class) @RequestBody BrokerDTO brokerDto) {
 		String methodName = "createBroker";
 		long refId = System.currentTimeMillis();
-		AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [POST]/admin/brokers");
 		
 		// set null for image data
 		BrokerDTO logRequest = (BrokerDTO) SerializationUtils.clone(brokerDto);
@@ -130,7 +129,7 @@ public class BrokerController {
 			logRequest.getIndividual().setScannedSignature(null);
 		}
 		
-		AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(logRequest));
+		AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [POST]/admin/brokers, INPUT:" + Utility.getGson().toJson(logRequest));
 
 		brokerService.createBrokerPA(request, brokerDto, refId);
 
@@ -147,10 +146,21 @@ public class BrokerController {
 			@Validated(ValidationSequence.class) @RequestBody ApprovalUpdateBrokerDTO brokerDto) {
 		String methodName = "updateBroker";
 		long refId = System.currentTimeMillis();
-		AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [PUT]/admin/brokers/" + brokerCode);
 		
 		// set null for image data
 		ApprovalUpdateBrokerDTO logRequest = (ApprovalUpdateBrokerDTO) SerializationUtils.clone(brokerDto);
+		if (logRequest.getOldData().getCompany() != null && logRequest.getOldData().getCompany().getDelegate() != null) {
+			logRequest.getOldData().getCompany().getDelegate().setScannedBackIdCard(null);
+			logRequest.getOldData().getCompany().getDelegate().setScannedFrontIdCard(null);
+			logRequest.getOldData().getCompany().getDelegate().setScannedSignature(null);
+		}
+		
+		if (logRequest.getOldData().getIndividual() != null) {
+			logRequest.getOldData().getIndividual().setScannedBackIdCard(null);
+			logRequest.getOldData().getIndividual().setScannedFrontIdCard(null);
+			logRequest.getOldData().getIndividual().setScannedSignature(null);
+		}
+		
 		if (logRequest.getPendingData().getCompany() != null && logRequest.getPendingData().getCompany().getDelegate() != null) {
 			logRequest.getPendingData().getCompany().getDelegate().setScannedBackIdCard(null);
 			logRequest.getPendingData().getCompany().getDelegate().setScannedFrontIdCard(null);
@@ -162,8 +172,8 @@ public class BrokerController {
 			logRequest.getPendingData().getIndividual().setScannedFrontIdCard(null);
 			logRequest.getPendingData().getIndividual().setScannedSignature(null);
 		}
-				
-		AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(logRequest));
+		
+		AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [PUT]/admin/brokers/" + brokerCode + ", INPUT:" + Utility.getGson().toJson(logRequest));
 
 		brokerService.updateBrokerPA(request, brokerCode, brokerDto, refId);
 
@@ -234,8 +244,7 @@ public class BrokerController {
     public AdminResponseObj createBrokerFunctions(HttpServletRequest request, @PathVariable String brokerCode, @Validated(ValidationSequence.class) @RequestBody ApprovalFunctionsDTO brokerDto) {
         String methodName = "createBrokerFunctions";
         long refId = System.currentTimeMillis();
-        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: " + String.format("[POST]/admin/brokers/%s/functions", brokerCode));
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(brokerDto));
+        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: " + String.format("[POST]/admin/brokers/%s/functions", brokerCode) + ", INPUT:" + Utility.getGson().toJson(brokerDto));
         
         brokerService.createBrokerFunctionsPA(request, brokerCode, brokerDto, refId);
         
@@ -251,8 +260,7 @@ public class BrokerController {
     public AdminResponseObj createBrokerDefaultSetting(HttpServletRequest request, @PathVariable String brokerCode, @Validated(ValidationSequence.class) @RequestBody DefaultCommodityFeeDTO brokerDto) {
         String methodName = "createBrokerDefaultSetting";
         long refId = System.currentTimeMillis();
-        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: " + String.format("[POST]/admin/brokers/%s/defaultSetting", brokerCode));
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(brokerDto));
+        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: " + String.format("[POST]/admin/brokers/%s/defaultSetting", brokerCode) + ", INPUT:" + Utility.getGson().toJson(brokerDto));
         
         brokerService.createDefaultSetting(request, brokerCode, brokerDto, refId);
         
@@ -268,8 +276,7 @@ public class BrokerController {
     public AdminResponseObj createBrokerCommoditiesSetting(HttpServletRequest request, @PathVariable String brokerCode, @Validated(ValidationSequence.class) @RequestBody BrokerCommoditiesDTO brokerDto) {
         String methodName = "createBrokerCommoditiesSetting";
         long refId = System.currentTimeMillis();
-        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: " + String.format("[POST]/admin/brokers/%s/commoditiesSetting", brokerCode));
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(brokerDto));
+        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: " + String.format("[POST]/admin/brokers/%s/commoditiesSetting", brokerCode) + ", INPUT:" + Utility.getGson().toJson(brokerDto));
         
         brokerService.createBrokerCommodities(request, brokerCode, brokerDto, refId);
         
@@ -299,7 +306,7 @@ public class BrokerController {
 			response.setErrMsg(ErrorMessage.RESULT_NOT_FOUND);
 		}
 
-		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT: OK");
 		return response;
 	}
 }

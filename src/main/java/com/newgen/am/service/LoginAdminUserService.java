@@ -643,6 +643,35 @@ public class LoginAdminUserService {
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
+	
+//	public void resetAdminUserPassword2(LoginUserDataInputDTO user, long refId) {
+//		String methodName = "resetAdminUserPassword";
+//		try {
+//			MongoDatabase database = MongoDBConnection.getMongoDatabase();
+//			MongoCollection<Document> collection = database.getCollection("login_admin_users");
+//
+//			BasicDBObject query = new BasicDBObject();
+//			query.put("username", user.getUsername());
+//
+//			String newPassword = Utility.generateRandomPassword();
+//			BasicDBObject newDocument = new BasicDBObject();
+//			newDocument.put("password", passwordEncoder.encode(newPassword));
+//			newDocument.put("mustChangePassword", true);
+//			newDocument.put("lastModifiedUser", "msystem");
+//			newDocument.put("lastModifiedDate", System.currentTimeMillis());
+//
+//			BasicDBObject update = new BasicDBObject();
+//			update.put("$set", newDocument);
+//
+//			collection.updateOne(query, update);
+//
+//			// send email
+//			Utility.sendChangePasswordEmail(user.getEmail(), user.getUsername(), newPassword, refId);
+//		} catch (Exception e) {
+//			AMLogger.logError(className, methodName, refId, e);
+//			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+//		}
+//	}
 
 	public void resetAdminUserPin(HttpServletRequest request, LoginUserDataInputDTO user, long refId) {
 		String methodName = "resetAdminUserPin";
@@ -712,6 +741,35 @@ public class LoginAdminUserService {
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
+	
+//	public void resetInvestorUserPassword2(LoginUserDataInputDTO user, long refId) {
+//		String methodName = "resetInvestorUserPassword2";
+//		try {
+//			MongoDatabase database = MongoDBConnection.getMongoDatabase();
+//			MongoCollection<Document> collection = database.getCollection("login_investor_users");
+//
+//			BasicDBObject query = new BasicDBObject();
+//			query.put("username", user.getUsername());
+//
+//			String newPassword = Utility.generateRandomPassword();
+//			BasicDBObject newDocument = new BasicDBObject();
+//			newDocument.put("password", passwordEncoder.encode(newPassword));
+//			newDocument.put("mustChangePassword", true);
+//			newDocument.put("lastModifiedUser", "msystem");
+//			newDocument.put("lastModifiedDate", System.currentTimeMillis());
+//
+//			BasicDBObject update = new BasicDBObject();
+//			update.put("$set", newDocument);
+//
+//			collection.updateOne(query, update);
+//
+//			// send email
+//			Utility.sendChangePasswordEmail(user.getEmail(), user.getUsername(), newPassword, refId);
+//		} catch (Exception e) {
+//			AMLogger.logError(className, methodName, refId, e);
+//			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+//		}
+//	}
 
 	public void resetInvestorUserPin(HttpServletRequest request, LoginUserDataInputDTO user, long refId) {
 		String methodName = "resetInvestorUserPin";

@@ -12,6 +12,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.mongodb.client.MongoCollection;
@@ -27,11 +28,14 @@ import com.newgen.am.dto.CQGResponseObj;
 import com.newgen.am.dto.InterestRateDTO;
 import com.newgen.am.dto.InvestorDTO;
 import com.newgen.am.dto.MemberDTO;
+import com.newgen.am.dto.UserInfoDTO;
 import com.newgen.am.exception.CustomException;
 import com.newgen.am.model.Commodity;
 import com.newgen.am.model.CqgInfo;
 import com.newgen.am.model.InvestorActivationApproval;
+import com.newgen.am.model.LoginInvestorUser;
 import com.newgen.am.repository.InvestorActivationApprovalRepository;
+import com.newgen.am.repository.LoginInvestorUserRepository;
 
 @Service
 public class InvestorActivationService {
@@ -49,8 +53,14 @@ public class InvestorActivationService {
 	@Autowired
 	private CQGConnectorService cqgService;
 	
-	 @Autowired
-	    private RedisTemplate<String, String> redisTemplate;
+	@Autowired
+    private RedisTemplate<String, String> redisTemplate;
+	
+	@Autowired
+	private LoginInvestorUserRepository loginInvUserRepo;
+	
+	@Autowired
+	private PasswordEncoder passwordEncoder;
 	
 	public void activateInvestor(HttpServletRequest request, String approvalId, InterestRateDTO interestRateDto, long refId) {
     	String methodName = "activateInvestor";
@@ -143,9 +153,6 @@ public class InvestorActivationService {
             			// update investor status to ACTIVE
             			updateInvestor(database, investorCode, interestRateDto, refId);
             			
-            			// update investor_login_users status to ACTIVE
-            			updateLoginInvestorUser(database, investorCode, refId);
-            			
             			// update pending approval status
             			invActivationApproval.setStatus(Constant.APPROVAL_STATUS_ACTIVATED);
             			invActivationApproval.setMarginSurplusInterestRate(interestRateDto.getMarginSurplusInterestRate());
@@ -154,8 +161,37 @@ public class InvestorActivationService {
             			invActivationApproval.setApprovalDate(System.currentTimeMillis());
             			invActivationApprovalRepo.save(invActivationApproval);
             			
-            			// update investor_margin_info
+            			// insert to investor_margin_info
             			marginInfoService.insertNewInvestorMarginInfo(investorDto, interestRateDto, refId);
+            			
+            			// insert loginAdminUser
+            			String password = Utility.generateRandomPassword();
+        				String pin = Utility.generateRandomPin();
+        				
+        				LoginInvestorUser investorUser = new LoginInvestorUser();
+        				investorUser.setMemberCode(investorDto.getMemberCode());
+        				investorUser.setMemberName(investorDto.getMemberName());
+        				investorUser.setBrokerCode(investorDto.getBrokerCode());
+        				investorUser.setBrokerName(investorDto.getBrokerName());
+        				investorUser.setCollaboratorCode(investorDto.getCollaboratorCode());
+        				investorUser.setCollaboratorName(investorDto.getCollaboratorName());
+        				investorUser.setInvestorCode(investorDto.getInvestorCode());
+        				investorUser.setInvestorName(investorDto.getInvestorName());
+        				investorUser.setUsername(investorDto.getInvestorCode());
+        				investorUser.setPassword(passwordEncoder.encode(password));
+        				investorUser.setPin(passwordEncoder.encode(pin));
+        				investorUser.setStatus(Constant.STATUS_ACTIVE);
+        				investorUser.setCreatedUser(Utility.getCurrentUsername());
+        				investorUser.setCreatedDate(System.currentTimeMillis());
+        				loginInvUserRepo.save(investorUser);
+        				
+        				// send email
+        				if (Utility.isNotifyOn()) {
+        					Utility.sendCreateNewUserEmail(Constant.INVESTOR_USER_PREFIX, "", investorDto.getInvestorCode(), password, pin, refId);
+        				}
+        				
+//            			// update investor_login_users status to ACTIVE
+//            			updateLoginInvestorUser(database, investorCode, refId);
             	    } else {
             	    	throw new CustomException(ErrorMessage.ACCESS_DENIED, HttpStatus.FORBIDDEN);
             	    }
@@ -195,6 +231,7 @@ public class InvestorActivationService {
 			projection.append("investorName", 1.0);
 			projection.append("company", 1.0);
 			projection.append("individual", 1.0);
+			projection.append("contact", 1.0);
 			projection.append("cqgInfo", 1.0);
 			projection.append("orderLimit", 1.0);
 			projection.append("marginMultiplier", 1.0);

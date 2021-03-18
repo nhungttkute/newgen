@@ -47,7 +47,7 @@ public class CommonController {
         response.setData(new AdminDataObj());
         response.getData().setDepartmentList(departmentList);
 
-		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT: OK");
 		return response;
 	}
 	
@@ -63,7 +63,7 @@ public class CommonController {
         response.setData(new AdminDataObj());
         response.getData().setMemberList(memberList);
 
-		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT: OK");
 		return response;
 	}
 	
@@ -79,7 +79,7 @@ public class CommonController {
         response.setData(new AdminDataObj());
         response.getData().setBrokerList(brokerList);
 
-		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT: OK");
 		return response;
 	}
 	
@@ -95,7 +95,7 @@ public class CommonController {
         response.setData(new AdminDataObj());
         response.getData().setCollaboratorList(collaboratorList);
 
-		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT: OK");
 		return response;
 	}
 	
@@ -111,7 +111,7 @@ public class CommonController {
         response.setData(new AdminDataObj());
         response.getData().setInvestorList(investorList);
 
-		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT: OK");
 		return response;
 	}
 	
@@ -127,7 +127,7 @@ public class CommonController {
         response.setData(new AdminDataObj());
         response.getData().setAdminUserList(userList);
 
-		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT: OK");
 		return response;
 	}
 	
@@ -143,7 +143,7 @@ public class CommonController {
         response.setData(new AdminDataObj());
         response.getData().setMemberUserList(userList);
 
-		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT: OK");
 		return response;
 	}
 	
@@ -159,7 +159,7 @@ public class CommonController {
         response.setData(new AdminDataObj());
         response.getData().setBrokerUserList(userList);
 
-		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT: OK");
 		return response;
 	}
 	
@@ -175,7 +175,7 @@ public class CommonController {
         response.setData(new AdminDataObj());
         response.getData().setCollaboratorUserList(userList);
 
-		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT: OK");
 		return response;
 	}
 	
@@ -191,7 +191,7 @@ public class CommonController {
         response.setData(new AdminDataObj());
         response.getData().setInvestorUserList(userList);
 
-		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT: OK");
 		return response;
 	}
 	
@@ -209,7 +209,7 @@ public class CommonController {
         response.setData(new AdminDataObj());
         response.getData().setAdminUserList(userList);
 
-		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT: OK");
 		return response;
 	}
 	
@@ -227,7 +227,7 @@ public class CommonController {
         response.setData(new AdminDataObj());
         response.getData().setMemberUserList(userList);
 
-		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT: OK");
 		return response;
 	}
 	
@@ -245,7 +245,7 @@ public class CommonController {
         response.setData(new AdminDataObj());
         response.getData().setBrokerUserList(userList);
 
-		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT: OK");
 		return response;
 	}
 	
@@ -263,7 +263,7 @@ public class CommonController {
         response.setData(new AdminDataObj());
         response.getData().setCollaboratorUserList(userList);
 
-		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT: OK");
 		return response;
 	}
 	
@@ -281,7 +281,7 @@ public class CommonController {
         response.setData(new AdminDataObj());
         response.getData().setInvestorUserList(userList);
 
-		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT: OK");
 		return response;
 	}
 	
@@ -297,11 +297,11 @@ public class CommonController {
         response.setData(new AdminDataObj());
         response.getData().setAdminUserList(userList);
 
-		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT: OK");
 		return response;
 	}
 	
-	@GetMapping("/admin/usersByMemberCode/{memberCode}/")
+	@GetMapping("/admin/usersByMemberCode/{memberCode}")
 	public AdminResponseObj getUsersByMemberCode(@PathVariable String memberCode) {
 		String methodName = "getUsersByMemberCode";
 		long refId = System.currentTimeMillis();
@@ -313,11 +313,11 @@ public class CommonController {
         response.setData(new AdminDataObj());
         response.getData().setMemberUserList(userList);
 
-		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT: OK");
 		return response;
 	}
 	
-	@GetMapping("/admin/usersByBrokerCode/{brokerCode}/")
+	@GetMapping("/admin/usersByBrokerCode/{brokerCode}")
 	public AdminResponseObj getUsersByBrokerCode(@PathVariable String brokerCode) {
 		String methodName = "getUsersByBrokerCode";
 		long refId = System.currentTimeMillis();
@@ -333,7 +333,7 @@ public class CommonController {
 		return response;
 	}
 	
-	@GetMapping("/admin/usersByCollaboratorCode/{collaboratorCode}/")
+	@GetMapping("/admin/usersByCollaboratorCode/{collaboratorCode}")
 	public AdminResponseObj getUsersByCollaboratorCode(@PathVariable String collaboratorCode) {
 		String methodName = "getUsersByCollaboratorCode";
 		long refId = System.currentTimeMillis();
@@ -349,7 +349,7 @@ public class CommonController {
 		return response;
 	}
 	
-	@GetMapping("/admin/usersByInvestorCode/{investorCode}/")
+	@GetMapping("/admin/usersByInvestorCode/{investorCode}")
 	public AdminResponseObj getUsersByInvestorCode(@PathVariable String investorCode) {
 		String methodName = "getUsersByInvestorCode";
 		long refId = System.currentTimeMillis();
@@ -361,7 +361,7 @@ public class CommonController {
         response.setData(new AdminDataObj());
         response.getData().setInvestorUserList(userList);
 
-		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT: OK");
 		return response;
 	}
 }

@@ -58,8 +58,9 @@ public class LoginAdminUserController {
     public AdminResponseObj login(HttpServletRequest request, @RequestBody LoginUserDataInputDTO userDto) {
         String methodName = "login";
         long refId = System.currentTimeMillis();
-        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [POST]/admin/users/login");
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(userDto));
+        LoginUserDataInputDTO logUserDto = (LoginUserDataInputDTO) SerializationUtils.clone(userDto);
+        logUserDto.setPassword("******");
+        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [POST]/admin/users/login, INPUT:" + Utility.getGson().toJson(logUserDto));
         
         LoginAdminUserOutputDTO loginUserDto = loginAdmUserService.signin(request, userDto.getUsername(), userDto.getPassword(), refId);
         
@@ -72,6 +73,7 @@ public class LoginAdminUserController {
         if (logResponse != null && logResponse.getData() != null && logResponse.getData().getUser() != null) {
         	logResponse.getData().setLayout("");
         	logResponse.getData().getUser().setFunctions(null);
+        	logResponse.getData().getUser().setTableSetting("");
         }
         
         AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(logResponse));
@@ -82,8 +84,7 @@ public class LoginAdminUserController {
     public AdminResponseObj logout(HttpServletRequest request, @PathVariable String userId) {
         String methodName = "logout";
         long refId = System.currentTimeMillis();
-        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [POST]/admin/users/logout");
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + userId);
+        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [POST]/admin/users/logout, INPUT:" + userId);
         
         loginAdmUserService.logout(request, userId, refId);
         
@@ -99,7 +100,6 @@ public class LoginAdminUserController {
         String methodName = "verifyPin";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [POST]/admin/users/verifyPin/" + userId);
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(user));
         
         AdminResponseObj response = new AdminResponseObj();
         if (loginAdmUserService.verifyPin(userId, user.getPin(), refId)) {
@@ -118,7 +118,6 @@ public class LoginAdminUserController {
         String methodName = "changePassword";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, "REQUEST_API: " + String.format("[POST]/admin/users/%s/password", userId));
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(input));
         
         loginAdmUserService.changePassword(request, userId, input.getOldPassword(), input.getNewPassword(), refId);
         
@@ -134,7 +133,6 @@ public class LoginAdminUserController {
         String methodName = "saveLayout";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [POST]/admin/users/layout");
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(input));
         
         AdminResponseObj response = new AdminResponseObj();
         try {
@@ -154,7 +152,6 @@ public class LoginAdminUserController {
         String methodName = "saveLayout";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [POST]/admin/users/tableSetting");
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(input));
         
         AdminResponseObj response = new AdminResponseObj();
         try {
@@ -174,7 +171,6 @@ public class LoginAdminUserController {
         String methodName = "saveWatchList";
         long refId = System.currentTimeMillis();
         AMLogger.logMessage(className, methodName, refId, "REQUEST_API: " + String.format("[POST]/admin/users/%s/watchlist", userId));
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(input));
         
         AdminResponseObj response = new AdminResponseObj();
         try {
@@ -202,8 +198,7 @@ public class LoginAdminUserController {
     public AdminResponseObj resetPassword(HttpServletRequest request, @Validated(ValidationSequence.class) @RequestBody LoginUserDataInputDTO userDto) {
         String methodName = "resetPassword";
         long refId = System.currentTimeMillis();
-        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [PUT]/admin/users/resetPassword");
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(userDto));
+        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [PUT]/admin/users/resetPassword, INPUT:" + Utility.getGson().toJson(userDto));
         
         loginAdmUserService.resetAdminUserPassword(request, userDto, refId);
         
@@ -218,8 +213,7 @@ public class LoginAdminUserController {
     public AdminResponseObj resetPin(HttpServletRequest request, @Validated(ValidationSequence.class) @RequestBody LoginUserDataInputDTO userDto) {
         String methodName = "resetPin";
         long refId = System.currentTimeMillis();
-        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [PUT]/admin/users/resetPin");
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(userDto));
+        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [PUT]/admin/users/resetPin, INPUT:" + Utility.getGson().toJson(userDto));
         
         loginAdmUserService.resetAdminUserPin(request, userDto, refId);
         
@@ -234,8 +228,7 @@ public class LoginAdminUserController {
     public AdminResponseObj resetInvestorUserPassword(HttpServletRequest request, @Validated(ValidationSequence.class) @RequestBody LoginUserDataInputDTO userDto) {
         String methodName = "resetInvestorUserPassword";
         long refId = System.currentTimeMillis();
-        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [PUT]/admin/users/resetInvestorUserPassword");
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(userDto));
+        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [PUT]/admin/users/resetInvestorUserPassword, INPUT:" + Utility.getGson().toJson(userDto));
         
         loginAdmUserService.resetInvestorUserPassword(request, userDto, refId);
         
@@ -250,8 +243,7 @@ public class LoginAdminUserController {
     public AdminResponseObj resetInvestorUserPin(HttpServletRequest request, @Validated(ValidationSequence.class) @RequestBody LoginUserDataInputDTO userDto) {
         String methodName = "resetPin";
         long refId = System.currentTimeMillis();
-        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [PUT]/admin/users/resetInvestorUserPin");
-        AMLogger.logMessage(className, methodName, refId, "INPUT:" + Utility.getGson().toJson(userDto));
+        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [PUT]/admin/users/resetInvestorUserPin, INPUT:" + Utility.getGson().toJson(userDto));
         
         loginAdmUserService.resetInvestorUserPin(request, userDto, refId);
         
@@ -287,7 +279,7 @@ public class LoginAdminUserController {
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 		
-		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT: OK");
 		return response;
 	}
     
@@ -313,7 +305,7 @@ public class LoginAdminUserController {
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 		
-		AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
+		AMLogger.logMessage(className, methodName, refId, "OUTPUT: OK");
 		return response;
 	}
 }

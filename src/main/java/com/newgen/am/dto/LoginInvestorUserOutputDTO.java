@@ -36,6 +36,7 @@ public class LoginInvestorUserOutputDTO implements Serializable {
     private String layout;
     private String language;
     private String theme;
+    private String tableSetting;
     @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     private int fontSize;
     private List<String> functions;

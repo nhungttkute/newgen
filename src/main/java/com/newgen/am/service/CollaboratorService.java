@@ -454,10 +454,17 @@ public class CollaboratorService {
 			
 			boolean isUserUpdated = false;
 			boolean isStatusUpdated = false;
+			boolean isNameUpdated = false;
 			
-			if (Utility.isNotNull(collaboratorDto.getName())) collaboratorMember.append("name", collaboratorDto.getName());
+			if (Utility.isNotNull(collaboratorDto.getName())) {
+				collaboratorMember.append("name", collaboratorDto.getName());
+				updateLoginAdmUser.append("collaboratorName", collaboratorDto.getName());
+				isNameUpdated = true;
+			}
 			if (Utility.isNotNull(collaboratorDto.getStatus())) {
 				collaboratorMember.append("status", collaboratorDto.getStatus().toUpperCase());
+				collaboratorMember.append("user.status", collaboratorDto.getStatus().toUpperCase());
+				updateLoginAdmUser.append("status", collaboratorDto.getStatus().toUpperCase());
 				isStatusUpdated = true;
 			}
 			if (Utility.isNotNull(collaboratorDto.getNote())) {
@@ -531,39 +538,22 @@ public class CollaboratorService {
 				}
 				
 				if (isStatusUpdated) {
-					// update status of broker user
-					Document collaboratorQuery = new Document();
-					collaboratorQuery.append("code", collaboratorCode);
-					
-					Document updateDoc = new Document();
-					updateDoc.append("user.status", collaboratorDto.getStatus().toUpperCase());
-					
-					Document collaboratorUpdate = new Document();
-					collaboratorUpdate.append("$set", updateDoc);
-					
-					collection.updateMany(collaboratorQuery, collaboratorUpdate);
-					
-					// update status of all login broker user
-					MongoCollection<Document> loginAdmCollection = database.getCollection("login_admin_users");
-					
 					String collaboratorUsername = Constant.COLLABORATOR_USER_PREFIX + collaboratorCode;
-					Document loginAdmQuery = new Document();
-					loginAdmQuery.append("username", collaboratorUsername);
-					
-					Document loginAdmUpdateDoc = new Document();
-					loginAdmUpdateDoc.append("status", collaboratorDto.getStatus().toUpperCase());
-					
-					Document loginAdmUpdate = new Document();
-					loginAdmUpdate.append("$set", loginAdmUpdateDoc);
-					
-					loginAdmCollection.updateMany(loginAdmQuery, loginAdmUpdate);
-					
 					// logout all users if status is invactive
 					if (Constant.STATUS_INACTIVE.equalsIgnoreCase(collaboratorDto.getStatus())) {
 						List<String> userList = new ArrayList<String>();
 						userList.add(collaboratorUsername);
 						Utility.sendHandleLogout(userList, refId);
 					}
+				}
+				
+				if (isNameUpdated) {
+					// update investors's collaboratorName
+					updateInvestorCollaboratorName(collaboratorCode, collaboratorDto.getName());
+					// update login_investor_users' collaboratorName
+					updateLoginInvestorUserCollaboratorName(collaboratorCode, collaboratorDto.getName());
+					// update investor_margin_info's collaboratorName
+					updateInvestorMarginInfoCollaboratorName(collaboratorCode, collaboratorDto.getName());
 				}
 			}
 		} catch (CustomException e) {
@@ -574,6 +564,53 @@ public class CollaboratorService {
 		}
 	}
 	
+	private void updateInvestorCollaboratorName(String collaboratorCode, String collaboratorName) {
+		MongoDatabase database = MongoDBConnection.getMongoDatabase();
+		MongoCollection<Document> collection = database.getCollection("investors");
+		
+		Document query = new Document();
+		query.append("collaboratorCode", collaboratorCode);
+		
+		Document updateDoc = new Document();
+		updateDoc.append("collaboratorName", collaboratorName);
+		
+		Document update = new Document();
+		update.append("$set", updateDoc);
+		
+		collection.updateMany(query, update);
+	}
+	
+	private void updateLoginInvestorUserCollaboratorName(String collaboratorCode, String collaboratorName) {
+		MongoDatabase database = MongoDBConnection.getMongoDatabase();
+		MongoCollection<Document> collection = database.getCollection("login_investor_users");
+		
+		Document query = new Document();
+		query.append("collaboratorCode", collaboratorCode);
+		
+		Document updateDoc = new Document();
+		updateDoc.append("collaboratorName", collaboratorName);
+		
+		Document update = new Document();
+		update.append("$set", updateDoc);
+		
+		collection.updateMany(query, update);
+	}
+	
+	private void updateInvestorMarginInfoCollaboratorName(String collaboratorCode, String collaboratorName) {
+		MongoDatabase database = MongoDBConnection.getMongoDatabase();
+		MongoCollection<Document> collection = database.getCollection("investor_margin_info");
+		
+		Document query = new Document();
+		query.append("collaboratorCode", collaboratorCode);
+		
+		Document updateDoc = new Document();
+		updateDoc.append("collaboratorName", collaboratorName);
+		
+		Document update = new Document();
+		update.append("$set", updateDoc);
+		
+		collection.updateMany(query, update);
+	}
 	public void updateCollaboratorPA(HttpServletRequest request, String collaboratorCode, ApprovalUpdateCollaboratorDTO collaboratorDto, long refId) {
 		String methodName = "updateCollaboratorPA";
 		try {

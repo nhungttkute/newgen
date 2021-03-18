@@ -7,6 +7,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Size;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.newgen.am.model.Commodity;
 import com.newgen.am.model.Contact;
 import com.newgen.am.model.CqgInfo;
@@ -28,6 +29,7 @@ import com.newgen.am.validation.ValidUpdateStringField;
 import lombok.Data;
 
 @Data
+//@JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class InvestorDTO implements Serializable {
 	private static final long serialVersionUID = 1L;
 	private String _id;

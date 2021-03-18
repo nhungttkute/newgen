@@ -6,6 +6,7 @@ import com.newgen.am.validation.FormatGroup;
 
 import lombok.Data;
 
+import java.io.Serializable;
 import java.util.List;
 
 import javax.validation.constraints.Email;
@@ -13,7 +14,8 @@ import javax.validation.constraints.NotEmpty;
 
 @Data
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-public class LoginUserDataInputDTO {
+public class LoginUserDataInputDTO implements Serializable {
+	private static final long serialVersionUID = 1L;
 	@NotEmpty(message = "Required.")
     private String username;
     private String password;

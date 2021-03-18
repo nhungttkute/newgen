@@ -52,4 +52,8 @@ public class LocalServiceConnection extends BaseConnection {
     public String getCMSServiceURL(String cmsUrl) {
         return domain + cmsUrl;
     }
+    
+    public String getInvestorNotificationServiceURL() {
+        return domain + ConfigLoader.getMainConfig().getString(Constant.SERVICE_NOTIFICATION_INVESTOR);
+    }
 }

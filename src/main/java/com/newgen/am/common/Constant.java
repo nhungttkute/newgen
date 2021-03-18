@@ -69,6 +69,7 @@ public class Constant {
     public static final String SERVICE_NOTIFICATION_EMAIL = "SERVICE_NOTIFICATION_EMAIL";
     public static final String SERVICE_NOTIFICATION_SMS = "SERVICE_NOTIFICATION_SMS";
     public static final String SERVICE_NOTIFICATION_LOGOUT = "SERVICE_NOTIFICATION_LOGOUT";
+    public static final String SERVICE_NOTIFICATION_INVESTOR = "SERVICE_NOTIFICATION_INVESTOR";
     public static final String SERVICE_CONFIG_SESSION_DATE = "SERVICE_CONFIG_SESSION_DATE";
     public static final String SERVICE_MARGIN_WITHDRAWAL_AMOUNT = "SERVICE_MARGIN_WITHDRAWAL_AMOUNT";
     public static final String SERVICE_EXCHANGE_RATE = "SERVICE_EXCHANGE_RATE";
@@ -173,4 +174,6 @@ public class Constant {
     
     public static final String REDIS_APPROVAL_ID_TIMEOUT = "REDIS_APPROVAL_ID_TIMEOUT";
     public static final String REDIS_APPROVAL_DEFAULT_VALUE = "L";
+    
+    public static final String NOTIFICATION_FROM = "MSystem";
 }

@@ -110,6 +110,9 @@ public class MultipleLoginSecurityConfig {
             ).antMatchers(
                     HttpMethod.GET,
                     "/admin/investorUserListLocal"
+            ).antMatchers(
+                    HttpMethod.GET,
+                    "/admin/investorInfoList"
             );
         }
 
