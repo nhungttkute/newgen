@@ -106,13 +106,21 @@ public class Constant {
     public static final String CSV_DEPARTMENT_USERS = "department_users.csv";
     public static final String CSV_SYSTEM_ROLES = "system_roles.csv";
     public static final String CSV_MEMBERS = "members.csv";
+    public static final String EXCEL_MEMBERS = "members.xlsx";
     public static final String CSV_MEMBER_USERS = "member_users.csv";
     public static final String CSV_MEMBER_ROLES = "member_roles.csv";
     public static final String CSV_BROKERS = "brokers.csv";
+    public static final String EXCEL_BROKERS = "brokers.xlsx";
     public static final String CSV_COLLABORATORS = "collaborators.csv";
+    public static final String EXCEL_COLLABORATORS = "collaborators.xlsx";
     public static final String CSV_INVESTORS = "investors.csv";
+    public static final String EXCEL_INVESTORS = "investors.xlsx";
     public static final String CSV_INVESTOR_USERS = "investor_users.csv";
     public static final String CSV_INVESTOR_MARGIN_TRANS = "investor_margin_transactions.csv";
+    public static final String EXCEL_INVESTOR_MARGIN_TRANS = "investor_margin_transactions.xlsx";
+    public static final String EXCEL_ADMIN_USERS = "admin_users.xlsx";
+    public static final String EXCEL_INV_USER_EXCHANGES = "investor_user_exchanges.xlsx";
+    public static final String EXCEL_ADM_USER_EXCHANGES = "admin_user_exchanges.xlsx";
     
     public static final String POSITION_LIMITED = "LIMITED";
     public static final String POSITION_INHERITED = "INHERITED";

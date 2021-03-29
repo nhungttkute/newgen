@@ -7,34 +7,31 @@ import lombok.Data;
 
 @Data
 public class CollaboratorCSV {
-	@CsvBindByName(column = "ID")
+	@CsvBindByName(column = "Mã TVKD")
 	@CsvBindByPosition(position = 0)
-    private String _id;
-	@CsvBindByName(column = "MEMBER_CODE")
-	@CsvBindByPosition(position = 1)
     private String memberCode;
-	@CsvBindByName(column = "MEMBER_NAME")
-	@CsvBindByPosition(position = 2)
+	@CsvBindByName(column = "Tên TVKD")
+	@CsvBindByPosition(position = 1)
     private String memberName;
-	@CsvBindByName(column = "BROKER_CODE")
-	@CsvBindByPosition(position = 3)
+	@CsvBindByName(column = "Mã Môi giới")
+	@CsvBindByPosition(position = 2)
     private String brokerCode;
-	@CsvBindByName(column = "BROKER_NAME")
-	@CsvBindByPosition(position = 4)
+	@CsvBindByName(column = "Tên Môi giới")
+	@CsvBindByPosition(position = 3)
     private String brokerName;
-	@CsvBindByName(column = "CODE")
-	@CsvBindByPosition(position = 5)
+	@CsvBindByName(column = "Mã CTV")
+	@CsvBindByPosition(position = 4)
     private String code;
-	@CsvBindByName(column = "NAME")
-	@CsvBindByPosition(position = 6)
+	@CsvBindByName(column = "Tên CTV")
+	@CsvBindByPosition(position = 5)
     private String name;
-	@CsvBindByName(column = "STATUS")
-	@CsvBindByPosition(position = 7)
+	@CsvBindByName(column = "Trạng thái")
+	@CsvBindByPosition(position = 6)
     private String status;
-	@CsvBindByName(column = "NOTE")
-	@CsvBindByPosition(position = 8)
+	@CsvBindByName(column = "Ghi chú")
+	@CsvBindByPosition(position = 7)
     private String note;
-	@CsvBindByName(column = "CREATED_DATE")
-	@CsvBindByPosition(position = 9)
+	@CsvBindByName(column = "Ngày tạo")
+	@CsvBindByPosition(position = 8)
 	private String createdDate;
 }

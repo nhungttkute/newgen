@@ -5,10 +5,9 @@
  */
 package com.newgen.am.service;
 
-import java.text.SimpleDateFormat;
+import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -25,7 +24,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.mongodb.BasicDBObject;
 import com.mongodb.client.MongoCollection;
@@ -37,7 +35,7 @@ import com.newgen.am.common.ApprovalConstant;
 import com.newgen.am.common.ConfigLoader;
 import com.newgen.am.common.Constant;
 import com.newgen.am.common.ErrorMessage;
-import com.newgen.am.common.FileUtility;
+import com.newgen.am.common.ExcelHelper;
 import com.newgen.am.common.LocalServiceConnection;
 import com.newgen.am.common.MongoDBConnection;
 import com.newgen.am.common.RequestParamsParser;
@@ -53,7 +51,6 @@ import com.newgen.am.dto.CQGCMSCommodityDTO;
 import com.newgen.am.dto.ChangeGroupDTO;
 import com.newgen.am.dto.CommoditiesDTO;
 import com.newgen.am.dto.DefaultSettingDTO;
-import com.newgen.am.dto.EmailDTO;
 import com.newgen.am.dto.ExchangeRateDTO;
 import com.newgen.am.dto.ExchangeRateReponseDTO;
 import com.newgen.am.dto.GeneralFeeDTO;
@@ -325,29 +322,6 @@ public class InvestorService {
 		}
 		return query;
 	}
-
-	public List<InvestorDTO> listInvestors() {
-		List<InvestorDTO> investorList = new ArrayList<InvestorDTO>();
-		
-		List<? extends Bson> pipeline = Arrays.asList(
-                new Document()
-                        .append("$project", new Document()
-                                .append("_id", 0.0)
-                                .append("investorCode", 1.0)
-                                .append("contact.email", 1.0)
-                        )
-        );
-		
-		MongoDatabase database = MongoDBConnection.getMongoDatabase();
-		MongoCollection<Document> collection = database.getCollection("investors");
-		MongoCursor<Document> cur = collection.aggregate(pipeline).allowDiskUse(true).iterator();
-		while (cur.hasNext()) {
-			InvestorDTO investorDto = mongoTemplate.getConverter().read(InvestorDTO.class, cur.next());
-			if (investorDto != null)
-				investorList.add(investorDto);
-		}
-		return investorList;
-	}
 	
 	public BasePagination<InvestorDTO> list(HttpServletRequest request, long refId) {
 		String methodName = "list";
@@ -356,12 +330,18 @@ public class InvestorService {
 			RequestParamsParser.SearchCriteria searchCriteria = rqParamsParser
 					.getSearchCriteria(request.getQueryString(), "", refId);
 
+			Document sortQuery = searchCriteria.getSort();
+			sortQuery.remove(Constant.SORT_DETAUL_FIELD);
+			if (!sortQuery.containsKey("investorCode")) {
+				sortQuery.append("investorCode", 1);
+			}
+			
 			// get redis user info
 			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
 
 			List<? extends Bson> pipeline = Arrays.asList(
 					new Document().append("$match", getQueryDocument(searchCriteria, userInfo)),
-					new Document().append("$sort", searchCriteria.getSort()),
+					new Document().append("$sort", sortQuery),
 					new Document().append("$project",
 							new Document().append("_id", new Document().append("$toString", "$_id"))
 									.append("memberCode", 1.0).append("memberName", 1.0).append("brokerCode", 1.0)
@@ -394,15 +374,21 @@ public class InvestorService {
 		try {
 			RequestParamsParser.SearchCriteria searchCriteria = rqParamsParser
 					.getSearchCriteria(request.getQueryString(), "", refId);
-
+			
+			Document sortQuery = searchCriteria.getSort();
+			sortQuery.remove(Constant.SORT_DETAUL_FIELD);
+			if (!sortQuery.containsKey("investorCode")) {
+				sortQuery.append("investorCode", 1);
+			}
+			
 			// get redis user info
 			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
 
 			List<? extends Bson> pipeline = Arrays.asList(
 					new Document().append("$match", getQueryDocument(searchCriteria, userInfo)),
-					new Document().append("$sort", searchCriteria.getSort()),
+					new Document().append("$sort", sortQuery),
 					new Document().append("$project", new Document()
-							.append("_id", new Document().append("$toString", "$_id")).append("memberCode", 1.0)
+							.append("_id", 0.0).append("memberCode", 1.0)
 							.append("memberName", 1.0).append("brokerCode", 1.0).append("brokerName", 1.0)
 							.append("collaboratorCode", 1.0).append("collaboratorName", 1.0).append("investorCode", 1.0)
 							.append("investorName", 1.0).append("status", 1.0).append("note", 1.0).append("createdDate",
@@ -414,8 +400,10 @@ public class InvestorService {
 			MongoCursor<Document> cur = collection.aggregate(pipeline).allowDiskUse(true).iterator();
 			while (cur.hasNext()) {
 				InvestorCSV investorCsv = mongoTemplate.getConverter().read(InvestorCSV.class, cur.next());
-				if (investorCsv != null)
+				if (investorCsv != null) {
+					investorCsv.setStatus(Utility.getStatusVnStr(investorCsv.getStatus()));
 					investorList.add(investorCsv);
+				}
 			}
 		} catch (Exception e) {
 			AMLogger.logError(className, methodName, refId, e);
@@ -424,6 +412,51 @@ public class InvestorService {
 		return investorList;
 	}
 
+	public ByteArrayInputStream loadInvestorsExcel(HttpServletRequest request, long refId) {
+		String methodName = "loadInvestorsExcel";
+		List<InvestorCSV> investorList = new ArrayList<InvestorCSV>();
+		ByteArrayInputStream investorExcel = null;
+		try {
+			RequestParamsParser.SearchCriteria searchCriteria = rqParamsParser
+					.getSearchCriteria(request.getQueryString(), "", refId);
+
+			Document sortQuery = searchCriteria.getSort();
+			sortQuery.remove(Constant.SORT_DETAUL_FIELD);
+			if (!sortQuery.containsKey("investorCode")) {
+				sortQuery.append("investorCode", 1);
+			}
+			
+			// get redis user info
+			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
+
+			List<? extends Bson> pipeline = Arrays.asList(
+					new Document().append("$match", getQueryDocument(searchCriteria, userInfo)),
+					new Document().append("$sort", sortQuery),
+					new Document().append("$project", new Document()
+							.append("_id", 0.0).append("memberCode", 1.0)
+							.append("memberName", 1.0).append("brokerCode", 1.0).append("brokerName", 1.0)
+							.append("collaboratorCode", 1.0).append("collaboratorName", 1.0).append("investorCode", 1.0)
+							.append("investorName", 1.0).append("status", 1.0).append("note", 1.0).append("createdDate",
+									new Document().append("$dateToString",
+											new Document().append("format", "%d/%m/%Y %H:%M:%S").append("date",
+													new Document().append("$toDate", "$createdDate"))))));
+			MongoDatabase database = MongoDBConnection.getMongoDatabase();
+			MongoCollection<Document> collection = database.getCollection("investors");
+			MongoCursor<Document> cur = collection.aggregate(pipeline).allowDiskUse(true).iterator();
+			while (cur.hasNext()) {
+				InvestorCSV investor = mongoTemplate.getConverter().read(InvestorCSV.class, cur.next());
+				if (investor != null)
+					investorList.add(investor);
+			}
+			investorExcel = ExcelHelper.investorsToExcel(investorList, refId);
+		} catch (Exception e) {
+			AMLogger.logError(className, methodName, refId, e);
+			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		return investorExcel;
+	}
+
+	
 	public void createInvestor(HttpServletRequest request, PendingApproval pendingApproval, long refId) {
 		String methodName = "createInvestor";
 		try {
@@ -2918,11 +2951,6 @@ public class InvestorService {
 		return approvalId;
 	}
 
-	private String getCurrentSessionDate() {
-		SimpleDateFormat formater = new SimpleDateFormat("yyyy-MM-dd");
-		return formater.format(new Date());
-	}
-
 	public BasePagination<InvestorMarginTransaction> listMarginTransactions(HttpServletRequest request, long refId) {
 		String methodName = "listMarginTransactions";
 		BasePagination<InvestorMarginTransaction> pagination = null;
@@ -2941,15 +2969,15 @@ public class InvestorService {
 				for (Document doc : queryDocList) {
 					if (Utility.isNotNull(doc) && doc.containsKey("sessionDate")) {
 						sessionDateQueryExist = true;
-						Document opeartor = (Document) doc.get("sessionDate");
-						if (opeartor.containsKey("$gte")) {
-							Long timestamp = opeartor.getLong("$gte");
+						Document operator = (Document) doc.get("sessionDate");
+						if (operator.containsKey("$gte")) {
+							Long timestamp = operator.getLong("$gte");
 							doc.remove("sessionDate");
 							doc.append("sessionDate",
 									new Document("$gte", Utility.convertSessionDateFromLong(timestamp)));
 						}
-						if (opeartor.containsKey("$lte")) {
-							Long timestamp = opeartor.getLong("$lte");
+						if (operator.containsKey("$lte")) {
+							Long timestamp = operator.getLong("$lte");
 							doc.remove("sessionDate");
 							doc.append("sessionDate",
 									new Document("$lte", Utility.convertSessionDateFromLong(timestamp)));
@@ -2959,7 +2987,7 @@ public class InvestorService {
 			}
 
 			if (!sessionDateQueryExist) {
-				queryDoc.append("sessionDate", getCurrentSessionDate());
+				queryDoc.append("sessionDate", Utility.getSessionDate(refId));
 			}
 
 			Document sortDoc = new Document("approvalDate", -1);
@@ -3030,7 +3058,7 @@ public class InvestorService {
 			}
 
 			if (!sessionDateQueryExist) {
-				queryDoc.append("sessionDate", getCurrentSessionDate());
+				queryDoc.append("sessionDate", Utility.getSessionDate(refId));
 			}
 
 			Document sortDoc = new Document("approvalDate", -1);
@@ -3065,6 +3093,81 @@ public class InvestorService {
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 		return marginTrans;
+	}
+	
+	public ByteArrayInputStream loadMarginTransactionsExcel(HttpServletRequest request, long refId) {
+		String methodName = "loadMarginTransactionsExcel";
+		List<MarginTransCSV> marginTrans = new ArrayList<MarginTransCSV>();
+		ByteArrayInputStream marginTransExcel = null;
+		try {
+			RequestParamsParser.SearchCriteria searchCriteria = rqParamsParser
+					.getSearchCriteria(request.getQueryString(), "", refId);
+			// get redis user info
+			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
+
+			Document queryDoc = getQueryDocument(searchCriteria, userInfo);
+			boolean sessionDateQueryExist = false;
+
+			ArrayList<Document> queryDocList = (ArrayList<Document>) queryDoc.get("$and");
+
+			if (queryDocList != null && queryDocList.size() > 0) {
+				for (Document doc : queryDocList) {
+					if (Utility.isNotNull(doc) && doc.containsKey("sessionDate")) {
+						sessionDateQueryExist = true;
+						Document opeartor = (Document) doc.get("sessionDate");
+						if (opeartor.containsKey("$gte")) {
+							Long timestamp = opeartor.getLong("$gte");
+							doc.remove("sessionDate");
+							doc.append("sessionDate",
+									new Document("$gte", Utility.convertSessionDateFromLong(timestamp)));
+						}
+						if (opeartor.containsKey("$lte")) {
+							Long timestamp = opeartor.getLong("$lte");
+							doc.remove("sessionDate");
+							doc.append("sessionDate",
+									new Document("$lte", Utility.convertSessionDateFromLong(timestamp)));
+						}
+					}
+				}
+			}
+
+			if (!sessionDateQueryExist) {
+				queryDoc.append("sessionDate", Utility.getSessionDate(refId));
+			}
+
+			Document sortDoc = new Document("approvalDate", -1);
+
+			List<? extends Bson> pipeline = Arrays.asList(new Document().append("$match", queryDoc),
+					new Document().append("$sort", sortDoc),
+					new Document().append("$project", new Document()
+							.append("_id", 0.0).append("memberCode", 1.0)
+							.append("memberName", 1.0).append("brokerCode", 1.0).append("brokerName", 1.0)
+							.append("collaboratorCode", 1.0).append("collaboratorName", 1.0).append("investorCode", 1.0)
+							.append("investorName", 1.0).append("transactionType", 1.0).append("amount", 1.0)
+							.append("currency", 1.0).append("approvalUser", 1.0)
+							.append("approvalDate", new Document().append("$dateToString",
+									new Document().append("format", "%d/%m/%Y %H:%M:%S").append("timezone", "+07")
+											.append("date", new Document().append("$toDate", "$approvalDate"))))
+							.append("createdUser", 1.0)
+							.append("createdDate", new Document().append("$dateToString",
+									new Document().append("format", "%d/%m/%Y %H:%M:%S").append("timezone", "+07")
+											.append("date", new Document().append("$toDate", "$createdDate"))))
+							.append("note", 1.0).append("sessionDate", 1.0)));
+
+			MongoDatabase database = MongoDBConnection.getMongoDatabase();
+			MongoCollection<Document> collection = database.getCollection("investor_margin_trans");
+			MongoCursor<Document> cur = collection.aggregate(pipeline).iterator();
+			while (cur.hasNext()) {
+				MarginTransCSV marginTran = mongoTemplate.getConverter().read(MarginTransCSV.class, cur.next());
+				if (marginTran != null)
+					marginTrans.add(marginTran);
+			}
+			marginTransExcel = ExcelHelper.marginTransToExcel(marginTrans, refId);
+		} catch (Exception e) {
+			AMLogger.logError(className, methodName, refId, e);
+			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		return marginTransExcel;
 	}
 
 	public void refundDepositMargin(HttpServletRequest request, InvestorMarginTransApproval pendingApproval,

@@ -70,6 +70,7 @@ public class InvestorDTO implements Serializable {
     @Size(max = 20, message = "Invalid format.", groups = LengthGroup.class)
     private String type;
     private long createdDate;
+    private String createdDateStr;
     @Valid
     private InvestorCompany company;
     @Valid

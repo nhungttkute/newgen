@@ -733,4 +733,12 @@ public class Utility {
     public static String convertDoubleToString(double d) {
     	return new DecimalFormat("#.##").format(d);
     }
+    
+    public static String getStatusVnStr(String status) {
+		return Constant.STATUS_ACTIVE.equalsIgnoreCase(status) ? "Hoạt động" : "Không hoạt động";
+	}
+	
+    public static String getLoginedVnStr(boolean logined) {
+		return logined ? "Đang hoạt động" : "Không hoạt động";
+	}
 }

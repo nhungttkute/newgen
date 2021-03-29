@@ -5,6 +5,7 @@
  */
 package com.newgen.am.service;
 
+import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -24,22 +25,18 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.google.gson.Gson;
 import com.mongodb.BasicDBObject;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 import com.newgen.am.common.AMLogger;
-import com.newgen.am.common.ConfigLoader;
 import com.newgen.am.common.Constant;
 import com.newgen.am.common.ErrorMessage;
-import com.newgen.am.common.FileUtility;
-import com.newgen.am.common.LocalServiceConnection;
+import com.newgen.am.common.ExcelHelper;
 import com.newgen.am.common.MongoDBConnection;
 import com.newgen.am.common.RequestParamsParser;
 import com.newgen.am.common.Utility;
 import com.newgen.am.dto.BasePagination;
-import com.newgen.am.dto.EmailDTO;
 import com.newgen.am.dto.LoginAdminUserOutputDTO;
 import com.newgen.am.dto.LoginAdminUsersDTO;
 import com.newgen.am.dto.LoginUserDataInputDTO;
@@ -812,6 +809,11 @@ public class LoginAdminUserService {
 			RequestParamsParser.SearchCriteria searchCriteria = rqParamsParser
 					.getSearchCriteria(request.getQueryString(), "", refId);
 
+			Document sortQuery = searchCriteria.getSort();
+			sortQuery.remove(Constant.SORT_DETAUL_FIELD);
+			if (!sortQuery.containsKey("logonTime")) {
+				sortQuery.append("logonTime", -1);
+			}
 			List<? extends Bson> pipeline = Arrays.asList(new Document().append("$match", searchCriteria.getQuery()),
 					new Document().append("$sort", searchCriteria.getSort()),
 					new Document().append("$project",
@@ -836,6 +838,52 @@ public class LoginAdminUserService {
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 		return pagination;
+	}
+	
+	public ByteArrayInputStream loadAdminUsersExcel(HttpServletRequest request, long refId) {
+		String methodName = "loadAdminUsers";
+		ByteArrayInputStream adminUsersExcel = null;
+		try {
+			RequestParamsParser.SearchCriteria searchCriteria = rqParamsParser
+					.getSearchCriteria(request.getQueryString(), "", refId);
+
+			Document sortQuery = searchCriteria.getSort();
+			sortQuery.remove(Constant.SORT_DETAUL_FIELD);
+			if (!sortQuery.containsKey("logonTime")) {
+				sortQuery.append("logonTime", -1);
+			}
+			List<? extends Bson> pipeline = Arrays.asList(new Document().append("$match", searchCriteria.getQuery()),
+					new Document().append("$sort", searchCriteria.getSort()),
+					new Document().append("$project",
+							new Document().append("_id", 0.0).append("deptCode", 1.0).append("memberCode", 1.0)
+									.append("brokerCode", 1.0).append("collaboratorCode", 1.0).append("username", 1.0)
+									.append("fullName", 1.0).append("email", 1.0).append("phoneNumber", 1.0)
+									.append("status", 1.0).append("logined", 1.0).append("logonCounts", 1.0)
+									.append("logonTimeStr", new Document()
+                                            .append("$dateToString", new Document()
+                                                    .append("format", "%Y-%m-%d %H:%M:%S")
+                                                    .append("date", new Document()
+                                                            .append("$toDate", "$logonTime")
+                                                    )
+                                            )
+                                    )));
+					
+			MongoDatabase database = MongoDBConnection.getMongoDatabase();
+			MongoCollection<Document> collection = database.getCollection("login_admin_users");
+			MongoCursor<Document> cur = collection.aggregate(pipeline).allowDiskUse(true).iterator();
+			List<LoginAdminUsersDTO> admUserList = new ArrayList<LoginAdminUsersDTO>();
+			while (cur.hasNext()) {
+				LoginAdminUsersDTO loginAdmUser = mongoTemplate.getConverter().read(LoginAdminUsersDTO.class, cur.next());
+				if (loginAdmUser != null)
+					admUserList.add(loginAdmUser);
+			}
+			
+			adminUsersExcel = ExcelHelper.adminUsersToExcel(admUserList, refId);
+		} catch (Exception e) {
+			AMLogger.logError(className, methodName, refId, e);
+			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		return adminUsersExcel;
 	}
 	
 	public void saveAdmUserLayout(String layout, long refId) {

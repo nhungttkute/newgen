@@ -45,6 +45,7 @@ public class MemberDTO implements Serializable{
     @Size(max = 200, message = "Invalid format.", groups = LengthGroup.class)
     private String note;
     private long createdDate;
+    private long createdDateStr;
     @NotNull(message = "Required.")
     @Valid
     private MemberCompany company;

@@ -16,4 +16,5 @@ public class LoginAdminUsersDTO {
     private Boolean logined = false;
     private int logonCounts;
     private long logonTime;
+    private String logonTimeStr;
 }

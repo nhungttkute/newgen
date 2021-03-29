@@ -83,10 +83,14 @@ public class SystemRoleService {
 		try {
 			RequestParamsParser.SearchCriteria searchCriteria = rqParamsParser
 					.getSearchCriteria(request.getQueryString(), "", refId);
-
+			Document sortQuery = searchCriteria.getSort();
+			sortQuery.remove(Constant.SORT_DETAUL_FIELD);
+			if (!sortQuery.containsKey("name")) {
+				sortQuery.append("name", 1);
+			}
 			List<? extends Bson> pipeline = Arrays
 					.asList(new Document().append("$match", searchCriteria.getQuery()),
-							new Document().append("$sort", searchCriteria.getSort()),
+							new Document().append("$sort", sortQuery),
 							new Document().append("$project",
 									new Document().append("_id", new Document().append("$toString", "$_id")).append("name", 1.0).append("description", 1.0).append("status", 1.0)
 											.append("createdDate", 1.0).append("functions", 1.0)),

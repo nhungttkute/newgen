@@ -13,8 +13,12 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.SerializationUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -219,6 +223,24 @@ public class InvestorController {
 
 			// write all users to csv file
 			writer.write(investorService.listCsv(request, refId));
+		} catch (Exception e) {
+			AMLogger.logError(className, methodName, refId, e);
+			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+	
+	@GetMapping("/admin/investors/excel")
+	@PreAuthorize("hasAuthority('clientManagement.investorManagementinvestorList.view')")
+	public ResponseEntity<Resource> downloadInvestorsExcel(HttpServletRequest request, HttpServletResponse response) {
+		String methodName = "downloadInvestorsExcel";
+		long refId = System.currentTimeMillis();
+		AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [GET]/admin/investors/excel");
+
+		try {
+			InputStreamResource file = new InputStreamResource(investorService.loadInvestorsExcel(request, refId));
+
+			return ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + Constant.EXCEL_INVESTORS)
+					.contentType(MediaType.parseMediaType("application/vnd.ms-excel")).body(file);
 		} catch (Exception e) {
 			AMLogger.logError(className, methodName, refId, e);
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -744,12 +766,30 @@ public class InvestorController {
 		}
 	}
 	
+	@GetMapping("/admin/investors/marginTransactionHistory/excel")
+	@PreAuthorize("hasAuthority('clientManagement.marginMoneyTransHistory')")
+	public ResponseEntity<Resource> downloadMarginTransExcel(HttpServletRequest request, HttpServletResponse response) {
+		String methodName = "downloadMarginTransExcel";
+		long refId = System.currentTimeMillis();
+		AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [GET]/admin/investors/marginTransactionHistory/excel");
+
+		try {
+			InputStreamResource file = new InputStreamResource(investorService.loadMarginTransactionsExcel(request, refId));
+
+			return ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + Constant.EXCEL_INVESTOR_MARGIN_TRANS)
+					.contentType(MediaType.parseMediaType("application/vnd.ms-excel")).body(file);
+		} catch (Exception e) {
+			AMLogger.logError(className, methodName, refId, e);
+			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+	
 	@PostMapping("/admin/investors/refundMarginDeposit/{approvalId}")
     @PreAuthorize("hasAuthority('clientManagement.marginDepositWithdrawalManagement.investorMarginDeposit.refund')")
     public AdminResponseObj refundDepositMargin(HttpServletRequest request, @PathVariable String approvalId) {
         String methodName = "refundDepositMargin";
         long refId = System.currentTimeMillis();
-        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [POST]/am/admin/investors/reufndMarginDeposit/" + approvalId);
+        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [POST]/am/admin/investors/refundMarginDeposit/" + approvalId);
         
         investorService.refundDepositMarginPA(request, approvalId, refId);
         

@@ -7,22 +7,19 @@ import lombok.Data;
 
 @Data
 public class MemberCSV {
-	@CsvBindByName(column = "ID")
+	@CsvBindByName(column = "Mã TVKD")
 	@CsvBindByPosition(position = 0)
-    private String _id;
-	@CsvBindByName(column = "CODE")
-	@CsvBindByPosition(position = 1)
     private String code;
-	@CsvBindByName(column = "NAME")
-	@CsvBindByPosition(position = 2)
+	@CsvBindByName(column = "Tên TVKD")
+	@CsvBindByPosition(position = 1)
     private String name;
-	@CsvBindByName(column = "STATUS")
-	@CsvBindByPosition(position = 3)
+	@CsvBindByName(column = "Trạng thái")
+	@CsvBindByPosition(position = 2)
     private String status;
-	@CsvBindByName(column = "NOTE")
-	@CsvBindByPosition(position = 4)
+	@CsvBindByName(column = "Ghi chú")
+	@CsvBindByPosition(position = 3)
     private String note;
-	@CsvBindByName(column = "CREATED_DATE")
-	@CsvBindByPosition(position = 5)
+	@CsvBindByName(column = "Ngày tạo")
+	@CsvBindByPosition(position = 4)
 	private String createdDate;
 }

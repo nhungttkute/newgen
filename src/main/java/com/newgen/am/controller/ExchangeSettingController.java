@@ -3,7 +3,12 @@ package com.newgen.am.controller;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -94,6 +99,24 @@ public class ExchangeSettingController {
 		return response;
 	}
 	
+	@GetMapping("/admin/adminUserExchanges/excel")
+	@PreAuthorize("hasAuthority('exchangeSetting.list')")
+	public ResponseEntity<Resource> downloadLoginAdmUserExchangesExcel(HttpServletRequest request) {
+		String methodName = "downloadLoginAdmUserExchangesExcel";
+		long refId = System.currentTimeMillis();
+		AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [GET]/admin/adminUserExchanges/excel");
+		
+		try {
+			InputStreamResource file = new InputStreamResource(exchangeSettingService.loadLoginAdmUserExchangesExcel(request, refId));
+
+			return ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + Constant.EXCEL_ADM_USER_EXCHANGES)
+					.contentType(MediaType.parseMediaType("application/vnd.ms-excel")).body(file);
+		} catch (Exception e) {
+			AMLogger.logError(className, methodName, refId, e);
+			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+	
 	@GetMapping("/admin/investorUserExchanges")
 	@PreAuthorize("hasAuthority('exchangeSetting.list')")
 	public AdminResponseObj listLoginInvUserExchanges(HttpServletRequest request) {
@@ -120,6 +143,24 @@ public class ExchangeSettingController {
 		
 		AMLogger.logMessage(className, methodName, refId, "OUTPUT: OK");
 		return response;
+	}
+	
+	@GetMapping("/admin/investorUserExchanges/excel")
+	@PreAuthorize("hasAuthority('exchangeSetting.list')")
+	public ResponseEntity<Resource> downloadLoginInvUserExchangesExcel(HttpServletRequest request) {
+		String methodName = "downloadLoginInvUserExchangesExcel";
+		long refId = System.currentTimeMillis();
+		AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [GET]/admin/investorUserExchanges/excel");
+		
+		try {
+			InputStreamResource file = new InputStreamResource(exchangeSettingService.loadLoginInvUserExchangesExcel(request, refId));
+
+			return ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + Constant.EXCEL_INV_USER_EXCHANGES)
+					.contentType(MediaType.parseMediaType("application/vnd.ms-excel")).body(file);
+		} catch (Exception e) {
+			AMLogger.logError(className, methodName, refId, e);
+			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
 	}
 	
 	@GetMapping("/admin/exchangeSetting/{username}/{investorCode}")

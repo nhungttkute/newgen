@@ -7,8 +7,12 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.SerializationUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -100,6 +104,24 @@ private String className = "CollaboratorController";
 
 			// write all users to csv file
 			writer.write(collaboratorService.listCsv(request, refId));
+		} catch (Exception e) {
+			AMLogger.logError(className, methodName, refId, e);
+			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+	
+	@GetMapping("/admin/collaborators/excel")
+	@PreAuthorize("hasAuthority('clientManagement.brokerCollaboratorManagement.collaboratorList.view')")
+	public ResponseEntity<Resource> downloadCollaboratorsExcel(HttpServletRequest request, HttpServletResponse response) {
+		String methodName = "downloadCollaboratorsCsv";
+		long refId = System.currentTimeMillis();
+		AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [GET]/admin/collaborators/excel");
+
+		try {
+			InputStreamResource file = new InputStreamResource(collaboratorService.loadCollaboratorsExcel(request, refId));
+
+			return ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + Constant.EXCEL_COLLABORATORS)
+					.contentType(MediaType.parseMediaType("application/vnd.ms-excel")).body(file);
 		} catch (Exception e) {
 			AMLogger.logError(className, methodName, refId, e);
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);

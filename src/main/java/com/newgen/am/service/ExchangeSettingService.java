@@ -1,5 +1,6 @@
 package com.newgen.am.service;
 
+import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -22,6 +23,7 @@ import com.newgen.am.common.AMLogger;
 import com.newgen.am.common.ApprovalConstant;
 import com.newgen.am.common.Constant;
 import com.newgen.am.common.ErrorMessage;
+import com.newgen.am.common.ExcelHelper;
 import com.newgen.am.common.MongoDBConnection;
 import com.newgen.am.common.RequestParamsParser;
 import com.newgen.am.common.SystemFunctionCode;
@@ -31,6 +33,7 @@ import com.newgen.am.dto.BasePagination;
 import com.newgen.am.dto.BrokerCommodity;
 import com.newgen.am.dto.BrokerDTO;
 import com.newgen.am.dto.ExchangeSettingDTO;
+import com.newgen.am.dto.InvestorCSV;
 import com.newgen.am.dto.MemberCSV;
 import com.newgen.am.dto.UserBaseInfo;
 import com.newgen.am.dto.UserInfoDTO;
@@ -291,7 +294,7 @@ public class ExchangeSettingService {
 	}
 	
 	private String insertUpdateExchangeSettingPA(UserInfoDTO userInfo, ApprovalExchangeSettingDTO exchangeDto, long refId) {
-		String methodName = "insertExchangeSettingPA";
+		String methodName = "insertUpdateExchangeSettingPA";
 		String approvalId = "";
 		try {
 			NestedObjectInfo nestedObjInfo = new NestedObjectInfo();
@@ -320,12 +323,18 @@ public class ExchangeSettingService {
 	}
 	
 	public BasePagination<ExchangeSettingDTO> listLoginAdmUserExchanges(HttpServletRequest request, long refId) {
-		String methodName = "list";
+		String methodName = "listLoginAdmUserExchanges";
 		BasePagination<ExchangeSettingDTO> pagination = null;
 		try {
 			RequestParamsParser.SearchCriteria searchCriteria = rqParamsParser
 					.getSearchCriteria(request.getQueryString(), "", refId);
 
+			Document sortQuery = searchCriteria.getSort();
+			sortQuery.remove(Constant.SORT_DETAUL_FIELD);
+			if (!sortQuery.containsKey("username")) {
+				sortQuery.append("username", 1);
+			}
+			
 			List<? extends Bson> pipeline = Arrays.asList(
                     new Document()
                             .append("$match", searchCriteria.getQuery()), 
@@ -336,7 +345,7 @@ public class ExchangeSettingService {
                                     )
                             ), 
                     new Document()
-                            .append("$sort", searchCriteria.getSort()), 
+                            .append("$sort", sortQuery), 
                     new Document()
                             .append("$project", new Document()
                                     .append("_id", new Document().append("$toString", "$_id"))
@@ -393,13 +402,20 @@ public class ExchangeSettingService {
 		return pagination;
 	}
 	
-	public BasePagination<ExchangeSettingDTO> listLoginInvUserExchanges(HttpServletRequest request, long refId) {
-		String methodName = "list";
-		BasePagination<ExchangeSettingDTO> pagination = null;
+	public ByteArrayInputStream loadLoginAdmUserExchangesExcel(HttpServletRequest request, long refId) {
+		String methodName = "loadLoginAdmUserExchangesExcel";
+		List<ExchangeSettingDTO> admUserExchangeList = new ArrayList<ExchangeSettingDTO>();
+		ByteArrayInputStream admUserExchangesExcel = null;
 		try {
 			RequestParamsParser.SearchCriteria searchCriteria = rqParamsParser
 					.getSearchCriteria(request.getQueryString(), "", refId);
 
+			Document sortQuery = searchCriteria.getSort();
+			sortQuery.remove(Constant.SORT_DETAUL_FIELD);
+			if (!sortQuery.containsKey("username")) {
+				sortQuery.append("username", 1);
+			}
+			
 			List<? extends Bson> pipeline = Arrays.asList(
                     new Document()
                             .append("$match", searchCriteria.getQuery()), 
@@ -410,7 +426,68 @@ public class ExchangeSettingService {
                                     )
                             ), 
                     new Document()
-                            .append("$sort", searchCriteria.getSort()), 
+                            .append("$sort", sortQuery), 
+                    new Document()
+                            .append("$project", new Document()
+                                    .append("_id", new Document().append("$toString", "$_id"))
+                                    .append("deptCode", 1.0)
+                                    .append("deptName", 1.0)
+                                    .append("memberCode", 1.0)
+                                    .append("memberName", 1.0)
+                                    .append("brokerCode", 1.0)
+                                    .append("brokerName", 1.0)
+                                    .append("collaboratorCode", 1.0)
+                                    .append("collaboratorName", 1.0)
+                                    .append("investorCode", 1.0)
+                                    .append("investorName", 1.0)
+                                    .append("username", 1.0)
+                                    .append("fullName", 1.0)
+                            )
+            );
+			
+			MongoDatabase database = MongoDBConnection.getMongoDatabase();
+			MongoCollection<Document> collection = database.getCollection("login_admin_users");
+			MongoCursor<Document> cur = collection.aggregate(pipeline).allowDiskUse(true).iterator();
+			while (cur.hasNext()) {
+				ExchangeSettingDTO adminUserExchange = mongoTemplate.getConverter().read(ExchangeSettingDTO.class, cur.next());
+				if (adminUserExchange != null)
+					admUserExchangeList.add(adminUserExchange);
+			}
+			
+			admUserExchangesExcel = ExcelHelper.userExchangesToExcel(admUserExchangeList, refId);
+		} catch (CustomException e) {
+			throw e;
+		} catch (Exception e) {
+			AMLogger.logError(className, methodName, refId, e);
+			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		return admUserExchangesExcel;
+	}
+	
+	public BasePagination<ExchangeSettingDTO> listLoginInvUserExchanges(HttpServletRequest request, long refId) {
+		String methodName = "listLoginInvUserExchanges";
+		BasePagination<ExchangeSettingDTO> pagination = null;
+		try {
+			RequestParamsParser.SearchCriteria searchCriteria = rqParamsParser
+					.getSearchCriteria(request.getQueryString(), "", refId);
+
+			Document sortQuery = searchCriteria.getSort();
+			sortQuery.remove(Constant.SORT_DETAUL_FIELD);
+			if (!sortQuery.containsKey("investorCode")) {
+				sortQuery.append("investorCode", 1);
+			}
+			
+			List<? extends Bson> pipeline = Arrays.asList(
+                    new Document()
+                            .append("$match", searchCriteria.getQuery()), 
+                    new Document()
+                            .append("$match", new Document()
+                                    .append("exchanges", new Document()
+                                            .append("$exists", true)
+                                    )
+                            ), 
+                    new Document()
+                            .append("$sort", sortQuery), 
                     new Document()
                             .append("$project", new Document()
                                     .append("_id", new Document().append("$toString", "$_id"))
@@ -465,6 +542,68 @@ public class ExchangeSettingService {
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 		return pagination;
+	}
+	
+	public ByteArrayInputStream loadLoginInvUserExchangesExcel(HttpServletRequest request, long refId) {
+		String methodName = "loadLoginInvUserExchangesExcel";
+		List<ExchangeSettingDTO> invUserExchangeList = new ArrayList<ExchangeSettingDTO>();
+		ByteArrayInputStream invUserExchangeExcel = null;
+		try {
+			RequestParamsParser.SearchCriteria searchCriteria = rqParamsParser
+					.getSearchCriteria(request.getQueryString(), "", refId);
+
+			Document sortQuery = searchCriteria.getSort();
+			sortQuery.remove(Constant.SORT_DETAUL_FIELD);
+			if (!sortQuery.containsKey("investorCode")) {
+				sortQuery.append("investorCode", 1);
+			}
+			
+			List<? extends Bson> pipeline = Arrays.asList(
+                    new Document()
+                            .append("$match", searchCriteria.getQuery()), 
+                    new Document()
+                            .append("$match", new Document()
+                                    .append("exchanges", new Document()
+                                            .append("$exists", true)
+                                    )
+                            ), 
+                    new Document()
+                            .append("$sort", sortQuery), 
+                    new Document()
+                            .append("$project", new Document()
+                                    .append("_id", new Document().append("$toString", "$_id"))
+                                    .append("deptCode", 1.0)
+                                    .append("deptName", 1.0)
+                                    .append("memberCode", 1.0)
+                                    .append("memberName", 1.0)
+                                    .append("brokerCode", 1.0)
+                                    .append("brokerName", 1.0)
+                                    .append("collaboratorCode", 1.0)
+                                    .append("collaboratorName", 1.0)
+                                    .append("investorCode", 1.0)
+                                    .append("investorName", 1.0)
+                                    .append("username", 1.0)
+                                    .append("fullName", 1.0)
+                            )
+            );
+			
+			MongoDatabase database = MongoDBConnection.getMongoDatabase();
+			MongoCollection<Document> collection = database.getCollection("login_investor_users");
+			MongoCursor<Document> cur = collection.aggregate(pipeline).allowDiskUse(true).iterator();
+			while (cur.hasNext()) {
+				ExchangeSettingDTO invUserExchange = mongoTemplate.getConverter().read(ExchangeSettingDTO.class, cur.next());
+				if (invUserExchange != null)
+					invUserExchangeList.add(invUserExchange);
+			}
+			
+			invUserExchangeExcel = ExcelHelper.userExchangesToExcel(invUserExchangeList, refId);
+		} catch (CustomException e) {
+			throw e;
+		} catch (Exception e) {
+			AMLogger.logError(className, methodName, refId, e);
+			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		return invUserExchangeExcel;
 	}
 	
 	public ExchangeSettingDTO getExchangeSetting(String username, String investorCode, long refId) {

@@ -2,6 +2,8 @@ package com.newgen.am.service;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -454,13 +456,23 @@ public class CommonService {
 			projection.append("users.fullName", 1.0);
 			projection.append("users.email", 1.0);
 			projection.append("users.phoneNumber", 1.0);
-
+			
 			Document result = collection.find(query).projection(projection).first();
 			DepartmentDTO deptDto = mongoTemplate.getConverter().read(DepartmentDTO.class, result);
 			if (deptDto != null && deptDto.getUsers() != null) {
 				userList = modelMapper.map(deptDto.getUsers(), new TypeToken<List<UserBaseInfo>>() {
 				}.getType());
 			}
+			
+			// default sort ascending username
+			Comparator<UserBaseInfo> compareByUsername = new Comparator<UserBaseInfo>() {
+			    @Override
+			    public int compare(UserBaseInfo o1, UserBaseInfo o2) {
+			        return o1.getUsername().compareTo(o2.getUsername());
+			    }
+			};
+			
+			Collections.sort(userList, compareByUsername);
 		} catch (Exception e) {
 			AMLogger.logError(className, methodName, refId, e);
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -486,13 +498,23 @@ public class CommonService {
 			projection.append("users.fullName", 1.0);
 			projection.append("users.email", 1.0);
 			projection.append("users.phoneNumber", 1.0);
-
+			
 			Document result = collection.find(query).projection(projection).first();
 			MemberDTO memberDto = mongoTemplate.getConverter().read(MemberDTO.class, result);
 			if (memberDto != null && memberDto.getUsers() != null) {
 				userList = modelMapper.map(memberDto.getUsers(), new TypeToken<List<UserBaseInfo>>() {
 				}.getType());
 			}
+			
+			// default sort ascending username
+			Comparator<UserBaseInfo> compareByUsername = new Comparator<UserBaseInfo>() {
+			    @Override
+			    public int compare(UserBaseInfo o1, UserBaseInfo o2) {
+			        return o1.getUsername().compareTo(o2.getUsername());
+			    }
+			};
+			
+			Collections.sort(userList, compareByUsername);
 		} catch (Exception e) {
 			AMLogger.logError(className, methodName, refId, e);
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -518,12 +540,22 @@ public class CommonService {
 			projection.append("user.fullName", 1.0);
 			projection.append("user.email", 1.0);
 			projection.append("user.phoneNumber", 1.0);
-
+			
 			Document result = collection.find(query).projection(projection).first();
 			BrokerDTO brokerDto = mongoTemplate.getConverter().read(BrokerDTO.class, result);
 			if (brokerDto != null && brokerDto.getUser() != null) {
 				userList.add(modelMapper.map(brokerDto.getUser(), UserBaseInfo.class));
 			}
+			
+			// default sort ascending username
+			Comparator<UserBaseInfo> compareByUsername = new Comparator<UserBaseInfo>() {
+			    @Override
+			    public int compare(UserBaseInfo o1, UserBaseInfo o2) {
+			        return o1.getUsername().compareTo(o2.getUsername());
+			    }
+			};
+			
+			Collections.sort(userList, compareByUsername);
 		} catch (Exception e) {
 			AMLogger.logError(className, methodName, refId, e);
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -555,6 +587,16 @@ public class CommonService {
 			if (collaboratorDto != null && collaboratorDto.getUser() != null) {
 				userList.add(modelMapper.map(collaboratorDto.getUser(), UserBaseInfo.class));
 			}
+			
+			// default sort ascending username
+			Comparator<UserBaseInfo> compareByUsername = new Comparator<UserBaseInfo>() {
+			    @Override
+			    public int compare(UserBaseInfo o1, UserBaseInfo o2) {
+			        return o1.getUsername().compareTo(o2.getUsername());
+			    }
+			};
+			
+			Collections.sort(userList, compareByUsername);
 		} catch (Exception e) {
 			AMLogger.logError(className, methodName, refId, e);
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -587,6 +629,16 @@ public class CommonService {
 				userList = modelMapper.map(investorDto.getUsers(), new TypeToken<List<UserBaseInfo>>() {
 				}.getType());
 			}
+			
+			// default sort ascending username
+			Comparator<UserBaseInfo> compareByUsername = new Comparator<UserBaseInfo>() {
+			    @Override
+			    public int compare(UserBaseInfo o1, UserBaseInfo o2) {
+			        return o1.getUsername().compareTo(o2.getUsername());
+			    }
+			};
+			
+			Collections.sort(userList, compareByUsername);
 		} catch (Exception e) {
 			AMLogger.logError(className, methodName, refId, e);
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);

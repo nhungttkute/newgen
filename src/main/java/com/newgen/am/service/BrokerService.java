@@ -1,5 +1,6 @@
 package com.newgen.am.service;
 
+import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -28,6 +29,7 @@ import com.newgen.am.common.ApprovalConstant;
 import com.newgen.am.common.ConfigLoader;
 import com.newgen.am.common.Constant;
 import com.newgen.am.common.ErrorMessage;
+import com.newgen.am.common.ExcelHelper;
 import com.newgen.am.common.FileUtility;
 import com.newgen.am.common.LocalServiceConnection;
 import com.newgen.am.common.MongoDBConnection;
@@ -121,6 +123,12 @@ public class BrokerService {
 			RequestParamsParser.SearchCriteria searchCriteria = rqParamsParser
 					.getSearchCriteria(request.getQueryString(), "", refId);
 
+			Document sortQuery = searchCriteria.getSort();
+			sortQuery.remove(Constant.SORT_DETAUL_FIELD);
+			if (!sortQuery.containsKey("code")) {
+				sortQuery.append("code", 1);
+			}
+			
 			// get redis user info
 			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
 			
@@ -128,7 +136,7 @@ public class BrokerService {
                     new Document()
                             .append("$match", getQueryDocument(searchCriteria, userInfo)), 
                     new Document()
-                            .append("$sort", searchCriteria.getSort()), 
+                            .append("$sort", sortQuery), 
                     new Document()
                             .append("$project", new Document()
                             		.append("_id", new Document().append("$toString", "$_id"))
@@ -185,6 +193,12 @@ public class BrokerService {
 			RequestParamsParser.SearchCriteria searchCriteria = rqParamsParser
 					.getSearchCriteria(request.getQueryString(), "", refId);
 
+			Document sortQuery = searchCriteria.getSort();
+			sortQuery.remove(Constant.SORT_DETAUL_FIELD);
+			if (!sortQuery.containsKey("code")) {
+				sortQuery.append("code", 1);
+			}
+			
 			// get redis user info
 			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
 			
@@ -192,10 +206,10 @@ public class BrokerService {
                     new Document()
                             .append("$match", getQueryDocument(searchCriteria, userInfo)), 
                     new Document()
-                            .append("$sort", searchCriteria.getSort()), 
+                            .append("$sort", sortQuery), 
                     new Document()
                             .append("$project", new Document()
-                            		.append("_id", new Document().append("$toString", "$_id"))
+                            		.append("_id", 0.0)
                             		.append("memberCode", 1.0)
                             		.append("memberName", 1.0)
                                     .append("code", 1.0)
@@ -216,8 +230,10 @@ public class BrokerService {
 			MongoCursor<Document> cur = collection.aggregate(pipeline).allowDiskUse(true).iterator();
 			while (cur.hasNext()) {
 				BrokerCSV brokerCsv = mongoTemplate.getConverter().read(BrokerCSV.class, cur.next());
-				if (brokerCsv != null)
+				if (brokerCsv != null) {
+					brokerCsv.setStatus(Utility.getStatusVnStr(brokerCsv.getStatus()));
 					brokerList.add(brokerCsv);
+				}
 			}
 		} catch (CustomException e) {
 			throw e;
@@ -226,6 +242,67 @@ public class BrokerService {
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 		return brokerList;
+	}
+	
+	public ByteArrayInputStream loadBrokersExcel(HttpServletRequest request, long refId) {
+		String methodName = "listCsv";
+		List<BrokerCSV> brokerList = new ArrayList<>();
+		ByteArrayInputStream brokersExcel = null;
+		
+		try {
+			RequestParamsParser.SearchCriteria searchCriteria = rqParamsParser
+					.getSearchCriteria(request.getQueryString(), "", refId);
+
+			Document sortQuery = searchCriteria.getSort();
+			sortQuery.remove(Constant.SORT_DETAUL_FIELD);
+			if (!sortQuery.containsKey("code")) {
+				sortQuery.append("code", 1);
+			}
+			
+			// get redis user info
+			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
+			
+			List<? extends Bson> pipeline = Arrays.asList(
+                    new Document()
+                            .append("$match", getQueryDocument(searchCriteria, userInfo)), 
+                    new Document()
+                            .append("$sort", sortQuery), 
+                    new Document()
+                            .append("$project", new Document()
+                            		.append("_id", 0.0)
+                            		.append("memberCode", 1.0)
+                            		.append("memberName", 1.0)
+                                    .append("code", 1.0)
+                                    .append("name", 1.0)
+                                    .append("status", 1.0)
+                                    .append("note", 1.0)
+                                    .append("createdDate", new Document()
+                                            .append("$dateToString", new Document()
+                                                    .append("format", "%d/%m/%Y %H:%M:%S")
+                                                    .append("date", new Document()
+                                                            .append("$toDate", "$createdDate")
+                                                    )
+                                            )
+                                    )
+                            ));
+			MongoDatabase database = MongoDBConnection.getMongoDatabase();
+			MongoCollection<Document> collection = database.getCollection("brokers");
+			MongoCursor<Document> cur = collection.aggregate(pipeline).allowDiskUse(true).iterator();
+			while (cur.hasNext()) {
+				BrokerCSV brokerCsv = mongoTemplate.getConverter().read(BrokerCSV.class, cur.next());
+				if (brokerCsv != null) {
+					brokerCsv.setStatus(Utility.getStatusVnStr(brokerCsv.getStatus()));
+					brokerList.add(brokerCsv);
+				}
+			}
+			brokersExcel = ExcelHelper.brokersToExcel(brokerList, refId);
+		} catch (CustomException e) {
+			throw e;
+		} catch (Exception e) {
+			AMLogger.logError(className, methodName, refId, e);
+			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		return brokersExcel;
 	}
 	
 	public void createBroker(HttpServletRequest request, PendingApproval pendingApproval, long refId) {
