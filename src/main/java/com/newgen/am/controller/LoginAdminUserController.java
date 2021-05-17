@@ -311,7 +311,7 @@ public class LoginAdminUserController {
 		try {
 			InputStreamResource file = new InputStreamResource(loginAdmUserService.loadAdminUsersExcel(request, refId));
 
-			return ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + Constant.EXCEL_ADMIN_USERS)
+			return ResponseEntity.ok().header("Access-Control-Expose-Headers", "Content-Disposition").header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + Constant.EXCEL_ADMIN_USERS)
 					.contentType(MediaType.parseMediaType("application/vnd.ms-excel")).body(file);
 		} catch (Exception e) {
 			AMLogger.logError(className, methodName, refId, e);

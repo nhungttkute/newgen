@@ -184,7 +184,7 @@ public class InvestorController {
 				response.setData(new AdminDataObj());
 				response.getData().setInvestors(pagination.getData());
 				response.setPagination(Utility.getPagination(request, pagination.getCount()));
-				response.setFilterList(Arrays.asList(Constant.STATUS_ACTIVE, Constant.STATUS_INACTIVE));
+				response.setFilterList(Arrays.asList(Constant.STATUS_ACTIVE, Constant.STATUS_INACTIVE, Constant.STATUS_INCOMPLETE, Constant.STATUS_PENDING_ACTIVATE));
 			} else {
 				response.setStatus(Constant.RESPONSE_ERROR);
 				response.setErrMsg(ErrorMessage.RESULT_NOT_FOUND);
@@ -239,7 +239,7 @@ public class InvestorController {
 		try {
 			InputStreamResource file = new InputStreamResource(investorService.loadInvestorsExcel(request, refId));
 
-			return ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + Constant.EXCEL_INVESTORS)
+			return ResponseEntity.ok().header("Access-Control-Expose-Headers", "Content-Disposition").header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + Constant.EXCEL_INVESTORS)
 					.contentType(MediaType.parseMediaType("application/vnd.ms-excel")).body(file);
 		} catch (Exception e) {
 			AMLogger.logError(className, methodName, refId, e);
@@ -342,13 +342,13 @@ public class InvestorController {
 
 	@GetMapping("/admin/investors/{investorCode}")
 	@PreAuthorize("hasAuthority('clientManagement.investorManagementinvestorInfo.view')")
-	public AdminResponseObj getInvestorDetail(@PathVariable String investorCode) {
+	public AdminResponseObj getInvestorDetail(HttpServletRequest request, @PathVariable String investorCode) {
 		String methodName = "getInvestorDetail";
 		long refId = System.currentTimeMillis();
 		AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [GET]/admin/investors/" + investorCode);
 		AdminResponseObj response = new AdminResponseObj();
 
-		InvestorDTO investorDto = investorService.getInvestorDetail(investorCode, refId);
+		InvestorDTO investorDto = investorService.getInvestorDetail(request, investorCode, refId);
 		if (investorDto != null) {
 			response.setStatus(Constant.RESPONSE_OK);
 			response.setData(new AdminDataObj());
@@ -435,14 +435,14 @@ public class InvestorController {
 	
 	@GetMapping("/admin/investors/{investorCode}/users/{username}")
 	@PreAuthorize("hasAuthority('clientManagement.investorManagement.investorUserInfo.view')")
-	public AdminResponseObj getInvestorUser(@PathVariable String investorCode, @PathVariable String username) {
+	public AdminResponseObj getInvestorUser(HttpServletRequest request, @PathVariable String investorCode, @PathVariable String username) {
 		String methodName = "getInvestorUser";
 		long refId = System.currentTimeMillis();
 		AMLogger.logMessage(className, methodName, refId,
 				String.format("REQUEST_API: [GET]/admin/investors/%s/users/%s", investorCode, username));
 		AdminResponseObj response = new AdminResponseObj();
 
-		UserDTO userDto = investorService.getInvestorUser(investorCode, username, refId);
+		UserDTO userDto = investorService.getInvestorUser(request, investorCode, username, refId);
 		if (userDto != null) {
 			response.setStatus(Constant.RESPONSE_OK);
 			response.setData(new AdminDataObj());
@@ -776,7 +776,7 @@ public class InvestorController {
 		try {
 			InputStreamResource file = new InputStreamResource(investorService.loadMarginTransactionsExcel(request, refId));
 
-			return ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + Constant.EXCEL_INVESTOR_MARGIN_TRANS)
+			return ResponseEntity.ok().header("Access-Control-Expose-Headers", "Content-Disposition").header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + Constant.EXCEL_INVESTOR_MARGIN_TRANS)
 					.contentType(MediaType.parseMediaType("application/vnd.ms-excel")).body(file);
 		} catch (Exception e) {
 			AMLogger.logError(className, methodName, refId, e);

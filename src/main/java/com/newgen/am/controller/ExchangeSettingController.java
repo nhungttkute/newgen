@@ -109,7 +109,7 @@ public class ExchangeSettingController {
 		try {
 			InputStreamResource file = new InputStreamResource(exchangeSettingService.loadLoginAdmUserExchangesExcel(request, refId));
 
-			return ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + Constant.EXCEL_ADM_USER_EXCHANGES)
+			return ResponseEntity.ok().header("Access-Control-Expose-Headers", "Content-Disposition").header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + Constant.EXCEL_ADM_USER_EXCHANGES)
 					.contentType(MediaType.parseMediaType("application/vnd.ms-excel")).body(file);
 		} catch (Exception e) {
 			AMLogger.logError(className, methodName, refId, e);
@@ -155,7 +155,7 @@ public class ExchangeSettingController {
 		try {
 			InputStreamResource file = new InputStreamResource(exchangeSettingService.loadLoginInvUserExchangesExcel(request, refId));
 
-			return ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + Constant.EXCEL_INV_USER_EXCHANGES)
+			return ResponseEntity.ok().header("Access-Control-Expose-Headers", "Content-Disposition").header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + Constant.EXCEL_INV_USER_EXCHANGES)
 					.contentType(MediaType.parseMediaType("application/vnd.ms-excel")).body(file);
 		} catch (Exception e) {
 			AMLogger.logError(className, methodName, refId, e);

@@ -11,7 +11,6 @@ package com.newgen.am.common;
  */
 public class Constant {
     public static final String CONFIG_DIR = "/opt/account-management/settings/properties/";
-//    public static final String CONFIG_DIR = "C:/u01/apps/AM/settings/properties/";
     public static final String PROD_FLAG = "PROD_FLAG";
     public static final String NOTIFY_FLAG = "NOTIFY_FLAG";
     public static final String CQG_SYNC_FLAG = "CQG_SYNC_FLAG";
@@ -49,6 +48,7 @@ public class Constant {
     
     public static final String STATUS_ACTIVE = "ACTIVE";
     public static final String STATUS_INACTIVE = "INACTIVE";
+    public static final String STATUS_INCOMPLETE = "INCOMPLETE";
     public static final String STATUS_PENDING = "PENDING";
     public static final String STATUS_PENDING_ACTIVATE = "PENDING_ACTIVATE";
     
@@ -95,6 +95,9 @@ public class Constant {
     public static final String SERVICE_NOTIFICATION_SENDING_OBJ="Thông báo tự động từ hệ thống";
 
     public static final String OPT_CONTAINS = "$contains";
+    public static final String OPT_NOT_CONTAINS = "$ncontains";
+    public static final String OPT_START = "$start";
+    public static final String OPT_END = "$end";
     public static final String OPT_EQUALS = "$eq";
     public static final String OPT_IN = "$in";
     public static final String OPT_NOT_IN = "$nin";
@@ -184,4 +187,9 @@ public class Constant {
     public static final String REDIS_APPROVAL_DEFAULT_VALUE = "L";
     
     public static final String NOTIFICATION_FROM = "MSystem";
+    
+    public static final String FUNC_INV_EMAIL_VIEW = "clientManagement.investorManagement.investorEmail.view";
+    public static final String FUNC_INV_PHONE_VIEW = "clientManagement.investorManagement.investorPhoneNumber.view";
+    
+    public static final String REDIS_KEY_SESSION_DATE = "tradingSessionDate";
 }

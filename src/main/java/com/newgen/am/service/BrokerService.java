@@ -575,6 +575,7 @@ public class BrokerService {
 			pendingApproval.setStatus(Constant.APPROVAL_STATUS_PENDING);
 			pendingApproval.setNestedObjInfo(nestedObjInfo);
 			pendingApproval.setPendingData(pendingData);
+			pendingApproval.setSessionDate(Utility.getSessionDateRedis(template));
 			approvalId = pendingApprovalRepo.save(pendingApproval).getId();
 		} catch (Exception e) {
 			AMLogger.logError(className, methodName, refId, e);
@@ -887,6 +888,7 @@ public class BrokerService {
 			pendingApproval.setStatus(Constant.APPROVAL_STATUS_PENDING);
 			pendingApproval.setNestedObjInfo(nestedObjInfo);
 			pendingApproval.setPendingData(pendingData);
+			pendingApproval.setSessionDate(Utility.getSessionDateRedis(template));
 			approvalId = pendingApprovalRepo.save(pendingApproval).getId();
 		} catch (Exception e) {
 			AMLogger.logError(className, methodName, refId, e);
@@ -895,11 +897,26 @@ public class BrokerService {
 		return approvalId;
 	}
 	
-	public BrokerDTO getBrokerDetail(String brokerCode, long refId) {
+	public BrokerDTO getBrokerDetail(HttpServletRequest request, String brokerCode, long refId) {
 		String methodName = "getBrokerDetail";
 		try {
 			Document query = new Document();
             query.append("code", brokerCode);
+            UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
+            if (Utility.isNotNull(userInfo.getBrokerCode())) {
+            	query = new Document();
+                query.append("$and", Arrays.asList(
+                        new Document()
+                                .append("code", brokerCode),
+                        new Document()
+                                .append("code", userInfo.getBrokerCode())
+                    )
+                );
+            }
+            if (Utility.isNotNull(userInfo.getMemberCode())) {
+            	query.append("memberCode", userInfo.getMemberCode());
+            }
+            
             
             MongoDatabase database = MongoDBConnection.getMongoDatabase();
 			MongoCollection<Document> collection = database.getCollection("brokers");
@@ -919,17 +936,31 @@ public class BrokerService {
 		}
 	}
 	
-	public UserDTO getBrokerUserDetail(String brokerCode, long refId) {
+	public UserDTO getBrokerUserDetail(HttpServletRequest request, String brokerCode, long refId) {
 		String methodName = "getBrokerUserDetail";
 		try {
             MongoDatabase database = MongoDBConnection.getMongoDatabase();
 			MongoCollection<Document> collection = database.getCollection("brokers");
 			
+			Document query = new Document().append("code", brokerCode);
+			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
+			if (Utility.isNotNull(userInfo.getBrokerCode())) {
+				query = new Document();
+			    query.append("$and", Arrays.asList(
+			            new Document()
+			                    .append("code", brokerCode),
+			            new Document()
+			                    .append("code", userInfo.getBrokerCode())
+			        )
+			    );
+			}
+			if (Utility.isNotNull(userInfo.getMemberCode())) {
+				query.append("memberCode", userInfo.getMemberCode());
+			}
+			
 			List<? extends Bson> pipeline = Arrays.asList(
                     new Document()
-                            .append("$match", new Document()
-                                    .append("code", brokerCode)
-                            ), 
+                            .append("$match", query), 
                     new Document()
                             .append("$project", new Document()
                                     .append("_id", 0.0)
@@ -1057,6 +1088,7 @@ public class BrokerService {
 			pendingApproval.setStatus(Constant.APPROVAL_STATUS_PENDING);
 			pendingApproval.setNestedObjInfo(nestedObjInfo);
 			pendingApproval.setPendingData(pendingData);
+			pendingApproval.setSessionDate(Utility.getSessionDateRedis(template));
 			approvalId = pendingApprovalRepo.save(pendingApproval).getId();
 		} catch (Exception e) {
 			AMLogger.logError(className, methodName, refId, e);
@@ -1174,7 +1206,7 @@ public class BrokerService {
 		}
 	}
 	
-	public BrokerCommoditiesDTO getBrokerCommodities(String brokerCode, long refId) {
+	public BrokerCommoditiesDTO getBrokerCommodities(HttpServletRequest request, String brokerCode, long refId) {
 		String methodName = "getBrokerCommodities";
 		try {
 			if (!brokerRepository.existsBrokerByCode(brokerCode)) {
@@ -1186,6 +1218,20 @@ public class BrokerService {
 			
 			Document query = new Document();
             query.append("code", brokerCode);
+            UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
+            if (Utility.isNotNull(userInfo.getBrokerCode())) {
+            	query = new Document();
+                query.append("$and", Arrays.asList(
+                        new Document()
+                                .append("code", brokerCode),
+                        new Document()
+                                .append("code", userInfo.getBrokerCode())
+                    )
+                );
+            }
+            if (Utility.isNotNull(userInfo.getMemberCode())) {
+            	query.append("memberCode", userInfo.getMemberCode());
+            }
             
             Document projection = new Document();
             projection.append("_id", 0.0);

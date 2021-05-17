@@ -1,10 +1,7 @@
 package com.newgen.am;
 
-import java.util.List;
-
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
@@ -12,18 +9,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.data.domain.AuditorAware;
 import org.springframework.data.mongodb.config.EnableMongoAuditing;
 
-import com.newgen.am.common.Constant;
-import com.newgen.am.dto.InvestorDTO;
-import com.newgen.am.dto.LoginUserDataInputDTO;
 import com.newgen.am.model.AuditorAwareImpl;
-import com.newgen.am.model.Broker;
-import com.newgen.am.model.Investor;
-import com.newgen.am.model.InvestorMarginInfo;
-import com.newgen.am.model.InvestorMarginTransaction;
 import com.newgen.am.repository.BrokerRepository;
-import com.newgen.am.repository.InvestorMarginTransactionRepository;
 import com.newgen.am.repository.InvestorRepository;
-import com.newgen.am.service.InvestorMarginInfoService;
 import com.newgen.am.service.InvestorService;
 import com.newgen.am.service.LoginAdminUserService;
 import com.newgen.am.service.RedisTestService;

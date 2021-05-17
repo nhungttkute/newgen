@@ -696,7 +696,7 @@ public class Utility {
 		template.delete(approvalId);
     }
     
-    public static String getSessionDate(long refId) {
+    public static String getSessionDateAPI(long refId) {
 		String methodName = "getSessionDate";
 		String sessionDate = "";
 		try {
@@ -715,6 +715,10 @@ public class Utility {
 			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
+    
+    public static String getSessionDateRedis(RedisTemplate template) {
+    	return (String) template.opsForValue().get(Constant.REDIS_KEY_SESSION_DATE);
+    }
     
     public static String formatAmount(String input) {
 		String formatted = "";
@@ -735,7 +739,21 @@ public class Utility {
     }
     
     public static String getStatusVnStr(String status) {
-		return Constant.STATUS_ACTIVE.equalsIgnoreCase(status) ? "Hoạt động" : "Không hoạt động";
+    	String vnStatus = "";
+    	switch (status) {
+		case Constant.STATUS_ACTIVE:
+			vnStatus = "Hoạt động";
+			break;
+		case Constant.STATUS_INACTIVE:
+			vnStatus = "Không hoạt động";
+			break;
+		case Constant.STATUS_INCOMPLETE:
+			vnStatus = "Chưa kích hoạt";
+			break;
+		default:
+			break;
+		}
+    	return vnStatus;
 	}
 	
     public static String getLoginedVnStr(boolean logined) {

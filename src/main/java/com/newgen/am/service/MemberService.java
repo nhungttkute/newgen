@@ -489,6 +489,7 @@ public class MemberService {
 			pendingApproval.setStatus(Constant.APPROVAL_STATUS_PENDING);
 			pendingApproval.setNestedObjInfo(nestedObjInfo);
 			pendingApproval.setPendingData(pendingData);
+			pendingApproval.setSessionDate(Utility.getSessionDateRedis(template));
 			approvalId = pendingApprovalRepo.save(pendingApproval).getId();
 		} catch (Exception e) {
 			AMLogger.logError(className, methodName, refId, e);
@@ -869,6 +870,7 @@ public class MemberService {
 			pendingApproval.setStatus(Constant.APPROVAL_STATUS_PENDING);
 			pendingApproval.setNestedObjInfo(nestedObjInfo);
 			pendingApproval.setPendingData(pendingData);
+			pendingApproval.setSessionDate(Utility.getSessionDateRedis(template));
 			approvalId = pendingApprovalRepo.save(pendingApproval).getId();
 		} catch (Exception e) {
 			AMLogger.logError(className, methodName, refId, e);
@@ -878,12 +880,25 @@ public class MemberService {
 	}
 
 	
-	public MemberDTO getMemberDetail(String memberCode, long refId) {
+	public MemberDTO getMemberDetail(HttpServletRequest request, String memberCode, long refId) {
 		String methodName = "getMemberDetail";
 		try {
 			Document query = new Document();
             query.append("code", memberCode);
             
+            // get redis user info
+            UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
+            if (Utility.isNotNull(userInfo.getMemberCode())) {
+            	query = new Document();
+                query.append("$and", Arrays.asList(
+                        new Document()
+                                .append("code", memberCode),
+                        new Document()
+                                .append("code", userInfo.getMemberCode())
+                    )
+                );
+            }
+         			
             MongoDatabase database = MongoDBConnection.getMongoDatabase();
 			MongoCollection<Document> collection = database.getCollection("members");
 			
@@ -902,16 +917,29 @@ public class MemberService {
 		}
 	}
 	
-	public UserDTO getMemberMasterUserDetail(String memberCode, long refId) {
+	public UserDTO getMemberMasterUserDetail(HttpServletRequest request, String memberCode, long refId) {
 		String methodName = "getMemberMasterUserDetail";
 		try {
             MongoDatabase database = MongoDBConnection.getMongoDatabase();
 			MongoCollection<Document> collection = database.getCollection("members");
 			
+			Document matchQuery = new Document().append("code", memberCode);
+			// get redis user info
+			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
+			if (Utility.isNotNull(userInfo.getMemberCode())) {
+				matchQuery = new Document();
+				matchQuery.append("$and", Arrays.asList(
+			            new Document()
+			                    .append("code", memberCode),
+			            new Document()
+			                    .append("code", userInfo.getMemberCode())
+			        )
+			    );
+			}
+            
 			List<? extends Bson> pipeline = Arrays.asList(
                     new Document()
-                            .append("$match", new Document()
-                                    .append("code", memberCode)
+                            .append("$match", matchQuery
                             ), 
                     new Document()
                             .append("$unwind", new Document()
@@ -1048,6 +1076,7 @@ public class MemberService {
 			pendingApproval.setStatus(Constant.APPROVAL_STATUS_PENDING);
 			pendingApproval.setNestedObjInfo(nestedObjInfo);
 			pendingApproval.setPendingData(pendingData);
+			pendingApproval.setSessionDate(Utility.getSessionDateRedis(template));
 			approvalId = pendingApprovalRepo.save(pendingApproval).getId();
 		} catch (Exception e) {
 			AMLogger.logError(className, methodName, refId, e);
@@ -1356,6 +1385,7 @@ public class MemberService {
 			pendingApproval.setStatus(Constant.APPROVAL_STATUS_PENDING);
 			pendingApproval.setNestedObjInfo(nestedObjInfo);
 			pendingApproval.setPendingData(pendingData);
+			pendingApproval.setSessionDate(Utility.getSessionDateRedis(template));
 			approvalId = pendingApprovalRepo.save(pendingApproval).getId();
 		} catch (Exception e) {
 			AMLogger.logError(className, methodName, refId, e);
@@ -1617,6 +1647,7 @@ public class MemberService {
 			pendingApproval.setStatus(Constant.APPROVAL_STATUS_PENDING);
 			pendingApproval.setNestedObjInfo(nestedObjInfo);
 			pendingApproval.setPendingData(pendingData);
+			pendingApproval.setSessionDate(Utility.getSessionDateRedis(template));
 			approvalId = pendingApprovalRepo.save(pendingApproval).getId();
 		} catch (Exception e) {
 			AMLogger.logError(className, methodName, refId, e);
@@ -1651,6 +1682,7 @@ public class MemberService {
 			pendingApproval.setStatus(Constant.APPROVAL_STATUS_PENDING);
 			pendingApproval.setNestedObjInfo(nestedObjInfo);
 			pendingApproval.setPendingData(pendingData);
+			pendingApproval.setSessionDate(Utility.getSessionDateRedis(template));
 			approvalId = pendingApprovalRepo.save(pendingApproval).getId();
 		} catch (Exception e) {
 			AMLogger.logError(className, methodName, refId, e);
@@ -1744,6 +1776,7 @@ public class MemberService {
 			pendingApproval.setStatus(Constant.APPROVAL_STATUS_PENDING);
 			pendingApproval.setNestedObjInfo(nestedObjInfo);
 			pendingApproval.setPendingData(pendingData);
+			pendingApproval.setSessionDate(Utility.getSessionDateRedis(template));
 			approvalId = pendingApprovalRepo.save(pendingApproval).getId();
 		} catch (Exception e) {
 			AMLogger.logError(className, methodName, refId, e);
@@ -1837,6 +1870,7 @@ public class MemberService {
 			pendingApproval.setStatus(Constant.APPROVAL_STATUS_PENDING);
 			pendingApproval.setNestedObjInfo(nestedObjInfo);
 			pendingApproval.setPendingData(pendingData);
+			pendingApproval.setSessionDate(Utility.getSessionDateRedis(template));
 			approvalId = pendingApprovalRepo.save(pendingApproval).getId();
 		} catch (Exception e) {
 			AMLogger.logError(className, methodName, refId, e);
@@ -1930,6 +1964,7 @@ public class MemberService {
 			pendingApproval.setStatus(Constant.APPROVAL_STATUS_PENDING);
 			pendingApproval.setNestedObjInfo(nestedObjInfo);
 			pendingApproval.setPendingData(pendingData);
+			pendingApproval.setSessionDate(Utility.getSessionDateRedis(template));
 			approvalId = pendingApprovalRepo.save(pendingApproval).getId();
 		} catch (Exception e) {
 			AMLogger.logError(className, methodName, refId, e);
@@ -2073,6 +2108,7 @@ public class MemberService {
 			pendingApproval.setStatus(Constant.APPROVAL_STATUS_PENDING);
 			pendingApproval.setNestedObjInfo(nestedObjInfo);
 			pendingApproval.setPendingData(pendingData);
+			pendingApproval.setSessionDate(Utility.getSessionDateRedis(template));
 			approvalId = pendingApprovalRepo.save(pendingApproval).getId();
 		} catch (Exception e) {
 			AMLogger.logError(className, methodName, refId, e);
@@ -2194,6 +2230,7 @@ public class MemberService {
 			pendingApproval.setStatus(Constant.APPROVAL_STATUS_PENDING);
 			pendingApproval.setNestedObjInfo(nestedObjInfo);
 			pendingApproval.setPendingData(pendingData);
+			pendingApproval.setSessionDate(Utility.getSessionDateRedis(template));
 			approvalId = pendingApprovalRepo.save(pendingApproval).getId();
 		} catch (Exception e) {
 			AMLogger.logError(className, methodName, refId, e);
@@ -2315,6 +2352,7 @@ public class MemberService {
 			pendingApproval.setStatus(Constant.APPROVAL_STATUS_PENDING);
 			pendingApproval.setNestedObjInfo(nestedObjInfo);
 			pendingApproval.setPendingData(pendingData);
+			pendingApproval.setSessionDate(Utility.getSessionDateRedis(template));
 			approvalId = pendingApprovalRepo.save(pendingApproval).getId();
 		} catch (Exception e) {
 			AMLogger.logError(className, methodName, refId, e);
@@ -2426,6 +2464,7 @@ public class MemberService {
 			pendingApproval.setStatus(Constant.APPROVAL_STATUS_PENDING);
 			pendingApproval.setNestedObjInfo(nestedObjInfo);
 			pendingApproval.setPendingData(pendingData);
+			pendingApproval.setSessionDate(Utility.getSessionDateRedis(template));
 			approvalId = pendingApprovalRepo.save(pendingApproval).getId();
 		} catch (Exception e) {
 			AMLogger.logError(className, methodName, refId, e);
@@ -2601,6 +2640,7 @@ public class MemberService {
 			pendingApproval.setStatus(Constant.APPROVAL_STATUS_PENDING);
 			pendingApproval.setNestedObjInfo(nestedObjInfo);
 			pendingApproval.setPendingData(pendingData);
+			pendingApproval.setSessionDate(Utility.getSessionDateRedis(template));
 			approvalId = pendingApprovalRepo.save(pendingApproval).getId();
 		} catch (Exception e) {
 			AMLogger.logError(className, methodName, refId, e);
@@ -2766,6 +2806,7 @@ public class MemberService {
 			pendingApproval.setStatus(Constant.APPROVAL_STATUS_PENDING);
 			pendingApproval.setNestedObjInfo(nestedObjInfo);
 			pendingApproval.setPendingData(pendingData);
+			pendingApproval.setSessionDate(Utility.getSessionDateRedis(template));
 			approvalId = pendingApprovalRepo.save(pendingApproval).getId();
 		} catch (Exception e) {
 			AMLogger.logError(className, methodName, refId, e);
@@ -2784,10 +2825,23 @@ public class MemberService {
 			
 			Document query1 = new Document();
 			query1.append("code", memberCode);
+			
+			// get redis user info
+			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
+			if (Utility.isNotNull(userInfo.getMemberCode())) {
+				query1 = new Document();
+				query1.append("$and", Arrays.asList(
+			            new Document()
+			                    .append("code", memberCode),
+			            new Document()
+			                    .append("code", userInfo.getMemberCode())
+			        )
+			    );
+			}
 
 			RequestParamsParser.SearchCriteria searchCriteria = rqParamsParser
 					.getSearchCriteria(request.getQueryString(), "users.", refId);
-
+            
 			List<? extends Bson> pipeline = Arrays.asList(
                     new Document()
                             .append("$match", query1), 
@@ -2870,6 +2924,19 @@ public class MemberService {
 			Document query1 = new Document();
 			query1.append("code", memberCode);
 
+			// get redis user info
+			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
+			if (Utility.isNotNull(userInfo.getMemberCode())) {
+				query1 = new Document();
+			    query1.append("$and", Arrays.asList(
+			            new Document()
+			                    .append("code", memberCode),
+			            new Document()
+			                    .append("code", userInfo.getMemberCode())
+			        )
+			    );
+			}
+            
 			RequestParamsParser.SearchCriteria searchCriteria = rqParamsParser
 					.getSearchCriteria(request.getQueryString(), "users.", refId);
 
@@ -3041,6 +3108,7 @@ public class MemberService {
 			pendingApproval.setStatus(Constant.APPROVAL_STATUS_PENDING);
 			pendingApproval.setNestedObjInfo(nestedObjInfo);
 			pendingApproval.setPendingData(pendingData);
+			pendingApproval.setSessionDate(Utility.getSessionDateRedis(template));
 			approvalId = pendingApprovalRepo.save(pendingApproval).getId();
 		} catch (Exception e) {
 			AMLogger.logError(className, methodName, refId, e);
@@ -3158,6 +3226,7 @@ public class MemberService {
 			pendingApproval.setStatus(Constant.APPROVAL_STATUS_PENDING);
 			pendingApproval.setNestedObjInfo(nestedObjInfo);
 			pendingApproval.setPendingData(pendingData);
+			pendingApproval.setSessionDate(Utility.getSessionDateRedis(template));
 			approvalId = pendingApprovalRepo.save(pendingApproval).getId();
 		} catch (Exception e) {
 			AMLogger.logError(className, methodName, refId, e);
@@ -3166,7 +3235,7 @@ public class MemberService {
 		return approvalId;
 	}
 	
-	public UserDTO getMemberUser(String memberCode, String username, long refId) {
+	public UserDTO getMemberUser(HttpServletRequest request, String memberCode, String username, long refId) {
 		String methodName = "getMemberUser";
 		try {
 			if (!memberRepository.existsMemberByCode(memberCode)) {
@@ -3176,15 +3245,28 @@ public class MemberService {
 			MongoDatabase database = MongoDBConnection.getMongoDatabase();
 			MongoCollection<Document> collection = database.getCollection("members");
 
+			Document query = new Document().append("code", memberCode);
+			// get redis user info
+			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
+			if (Utility.isNotNull(userInfo.getMemberCode())) {
+				query = new Document();
+			    query.append("$and", Arrays.asList(
+			            new Document()
+			                    .append("code", memberCode),
+			            new Document()
+			                    .append("code", userInfo.getMemberCode())
+			        )
+			    );
+			}
+            
 			List<? extends Bson> pipeline = Arrays.asList(
-					new Document().append("$match", new Document().append("code", memberCode)),
+					new Document().append("$match", query),
 					new Document().append("$unwind", new Document().append("path", "$users")),
 					new Document().append("$match", new Document().append("users.username", username)),
 					new Document().append("$project", new Document().append("_id", 0.0).append("users", 1.0)),
 					new Document().append("$replaceRoot", new Document().append("newRoot", "$users")));
 
 			Document resultDoc = collection.aggregate(pipeline).first();
-//			System.out.println("resultDoc: " + resultDoc);
 			UserDTO memberUserDto = mongoTemplate.getConverter().read(UserDTO.class, resultDoc);
 			return memberUserDto;
 		} catch (CustomException e) {
@@ -3295,6 +3377,7 @@ public class MemberService {
 			pendingApproval.setStatus(Constant.APPROVAL_STATUS_PENDING);
 			pendingApproval.setNestedObjInfo(nestedObjInfo);
 			pendingApproval.setPendingData(pendingData);
+			pendingApproval.setSessionDate(Utility.getSessionDateRedis(template));
 			approvalId = pendingApprovalRepo.save(pendingApproval).getId();
 		} catch (Exception e) {
 			AMLogger.logError(className, methodName, refId, e);
@@ -3403,6 +3486,7 @@ public class MemberService {
 			pendingApproval.setStatus(Constant.APPROVAL_STATUS_PENDING);
 			pendingApproval.setNestedObjInfo(nestedObjInfo);
 			pendingApproval.setPendingData(pendingData);
+			pendingApproval.setSessionDate(Utility.getSessionDateRedis(template));
 			approvalId = pendingApprovalRepo.save(pendingApproval).getId();
 		} catch (Exception e) {
 			AMLogger.logError(className, methodName, refId, e);
@@ -3411,7 +3495,7 @@ public class MemberService {
 		return approvalId;
 	}
 	
-	public List<RoleFunction> getMemberFunctions(String memberCode, long refId) {
+	public List<RoleFunction> getMemberFunctions(HttpServletRequest request, String memberCode, long refId) {
 		String methodName = "getMemberFunctions";
 		try {
 			if (!memberRepository.existsMemberByCode(memberCode)) {
@@ -3421,11 +3505,23 @@ public class MemberService {
 			MongoDatabase database = MongoDBConnection.getMongoDatabase();
 			MongoCollection<Document> collection = database.getCollection("members");
 			
+			Document query = new Document().append("code", memberCode);
+			// get redis user info
+			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
+			if (Utility.isNotNull(userInfo.getMemberCode())) {
+				query = new Document();
+			    query.append("$and", Arrays.asList(
+			            new Document()
+			                    .append("code", memberCode),
+			            new Document()
+			                    .append("code", userInfo.getMemberCode())
+			        )
+			    );
+			}
+            
 			List<? extends Bson> pipeline = Arrays.asList(
                     new Document()
-                            .append("$match", new Document()
-                                    .append("code", memberCode)
-                            ), 
+                            .append("$match", query), 
                     new Document()
                             .append("$lookup", new Document()
                                     .append("from", "system_roles")
@@ -3466,7 +3562,7 @@ public class MemberService {
 		}
 	}
 	
-	public MemberCommoditiesDTO getMemberCommodities(String memberCode, long refId) {
+	public MemberCommoditiesDTO getMemberCommodities(HttpServletRequest request, String memberCode, long refId) {
 		String methodName = "getMemberCommodities";
 		try {
 			if (!memberRepository.existsMemberByCode(memberCode)) {
@@ -3476,8 +3572,19 @@ public class MemberService {
 			MongoDatabase database = MongoDBConnection.getMongoDatabase();
 			MongoCollection<Document> collection = database.getCollection("members");
 			
-			Document query = new Document();
-            query.append("code", memberCode);
+			Document query = new Document().append("code", memberCode);
+			// get redis user info
+			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
+			if (Utility.isNotNull(userInfo.getMemberCode())) {
+				query = new Document();
+			    query.append("$and", Arrays.asList(
+			            new Document()
+			                    .append("code", memberCode),
+			            new Document()
+			                    .append("code", userInfo.getMemberCode())
+			        )
+			    );
+			}
             
             Document projection = new Document();
             projection.append("_id", 0.0);
@@ -3503,6 +3610,18 @@ public class MemberService {
 		
 		Document query = new Document();
 		query.append("memberCode", memberCode);
+		// get redis user info
+		UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
+		if (Utility.isNotNull(userInfo.getMemberCode())) {
+			query = new Document();
+		    query.append("$and", Arrays.asList(
+		            new Document()
+		                    .append("memberCode", memberCode),
+		            new Document()
+		                    .append("memberCode", userInfo.getMemberCode())
+		        )
+		    );
+		}
 		
 		Document projection = new Document();
 		projection.append("_id", 0.0);
@@ -3526,6 +3645,18 @@ public class MemberService {
 		
 		Document query = new Document();
 		query.append("memberCode", memberCode);
+		// get redis user info
+		UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
+		if (Utility.isNotNull(userInfo.getMemberCode())) {
+			query = new Document();
+		    query.append("$and", Arrays.asList(
+		            new Document()
+		                    .append("memberCode", memberCode),
+		            new Document()
+		                    .append("memberCode", userInfo.getMemberCode())
+		        )
+		    );
+		}
 		
 		Document projection = new Document();
 		projection.append("_id", 0.0);
@@ -3662,6 +3793,7 @@ public class MemberService {
 			pendingApproval.setStatus(Constant.APPROVAL_STATUS_PENDING);
 			pendingApproval.setNestedObjInfo(nestedObjInfo);
 			pendingApproval.setPendingData(pendingData);
+			pendingApproval.setSessionDate(Utility.getSessionDateRedis(template));
 			approvalId = pendingApprovalRepo.save(pendingApproval).getId();
 		} catch (Exception e) {
 			AMLogger.logError(className, methodName, refId, e);

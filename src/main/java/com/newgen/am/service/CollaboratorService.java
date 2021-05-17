@@ -509,6 +509,7 @@ public class CollaboratorService {
 			pendingApproval.setStatus(Constant.APPROVAL_STATUS_PENDING);
 			pendingApproval.setNestedObjInfo(nestedObjInfo);
 			pendingApproval.setPendingData(pendingData);
+			pendingApproval.setSessionDate(Utility.getSessionDateRedis(template));
 			approvalId = pendingApprovalRepo.save(pendingApproval).getId();
 		} catch (Exception e) {
 			AMLogger.logError(className, methodName, refId, e);
@@ -739,6 +740,7 @@ public class CollaboratorService {
 			pendingApproval.setStatus(Constant.APPROVAL_STATUS_PENDING);
 			pendingApproval.setNestedObjInfo(nestedObjInfo);
 			pendingApproval.setPendingData(pendingData);
+			pendingApproval.setSessionDate(Utility.getSessionDateRedis(template));
 			approvalId = pendingApprovalRepo.save(pendingApproval).getId();
 		} catch (Exception e) {
 			AMLogger.logError(className, methodName, refId, e);
@@ -747,11 +749,28 @@ public class CollaboratorService {
 		return approvalId;
 	}
 	
-	public CollaboratorDTO getCollaboratorDetail(String collaboratorCode, long refId) {
+	public CollaboratorDTO getCollaboratorDetail(HttpServletRequest request, String collaboratorCode, long refId) {
 		String methodName = "getCollaboratorDetail";
 		try {
 			Document query = new Document();
             query.append("code", collaboratorCode);
+            UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
+            if (Utility.isNotNull(userInfo.getCollaboratorCode())) {
+            	query = new Document();
+                query.append("$and", Arrays.asList(
+                        new Document()
+                                .append("code", collaboratorCode),
+                        new Document()
+                                .append("code", userInfo.getCollaboratorCode())
+                    )
+                );
+            }
+            if (Utility.isNotNull(userInfo.getMemberCode())) {
+            	query.append("memberCode", userInfo.getMemberCode());
+            }
+            if (Utility.isNotNull(userInfo.getBrokerCode())) {
+            	query.append("brokerCode", userInfo.getBrokerCode());
+            }
             
             MongoDatabase database = MongoDBConnection.getMongoDatabase();
 			MongoCollection<Document> collection = database.getCollection("collaborators");
@@ -771,17 +790,34 @@ public class CollaboratorService {
 		}
 	}
 	
-	public UserDTO getCollaboratorUserDetail(String collaboratorCode, long refId) {
+	public UserDTO getCollaboratorUserDetail(HttpServletRequest request, String collaboratorCode, long refId) {
 		String methodName = "getCollaboratorUserDetail";
 		try {
             MongoDatabase database = MongoDBConnection.getMongoDatabase();
 			MongoCollection<Document> collection = database.getCollection("collaborators");
 			
+			Document query = new Document().append("code", collaboratorCode);
+			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
+			if (Utility.isNotNull(userInfo.getCollaboratorCode())) {
+				query = new Document();
+			    query.append("$and", Arrays.asList(
+			            new Document()
+			                    .append("code", collaboratorCode),
+			            new Document()
+			                    .append("code", userInfo.getCollaboratorCode())
+			        )
+			    );
+			}
+			if (Utility.isNotNull(userInfo.getMemberCode())) {
+				query.append("memberCode", userInfo.getMemberCode());
+			}
+			if (Utility.isNotNull(userInfo.getBrokerCode())) {
+				query.append("brokerCode", userInfo.getBrokerCode());
+			}
+			
 			List<? extends Bson> pipeline = Arrays.asList(
                     new Document()
-                            .append("$match", new Document()
-                                    .append("code", collaboratorCode)
-                            ), 
+                            .append("$match", query), 
                     new Document()
                             .append("$project", new Document()
                                     .append("_id", 0.0)
@@ -904,6 +940,7 @@ public class CollaboratorService {
 			pendingApproval.setStatus(Constant.APPROVAL_STATUS_PENDING);
 			pendingApproval.setNestedObjInfo(nestedObjInfo);
 			pendingApproval.setPendingData(pendingData);
+			pendingApproval.setSessionDate(Utility.getSessionDateRedis(template));
 			approvalId = pendingApprovalRepo.save(pendingApproval).getId();
 		} catch (Exception e) {
 			AMLogger.logError(className, methodName, refId, e);

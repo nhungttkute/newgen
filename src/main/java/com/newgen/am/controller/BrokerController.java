@@ -123,7 +123,7 @@ public class BrokerController {
 		try {
 			InputStreamResource file = new InputStreamResource(brokerService.loadBrokersExcel(request, refId));
 
-			return ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + Constant.EXCEL_BROKERS)
+			return ResponseEntity.ok().header("Access-Control-Expose-Headers", "Content-Disposition").header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + Constant.EXCEL_BROKERS)
 					.contentType(MediaType.parseMediaType("application/vnd.ms-excel")).body(file);
 		} catch (Exception e) {
 			AMLogger.logError(className, methodName, refId, e);
@@ -208,13 +208,13 @@ public class BrokerController {
 
 	@GetMapping("/admin/brokers/{brokerCode}")
 	@PreAuthorize("hasAuthority('clientManagement.brokerManagement.brokerInfo.view')")
-	public AdminResponseObj getBrokerDetail(@PathVariable String brokerCode) {
+	public AdminResponseObj getBrokerDetail(HttpServletRequest request, @PathVariable String brokerCode) {
 		String methodName = "getBrokerDetail";
 		long refId = System.currentTimeMillis();
 		AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [GET]/admin/brokers/" + brokerCode);
 		AdminResponseObj response = new AdminResponseObj();
 
-		BrokerDTO brokerDto = brokerService.getBrokerDetail(brokerCode, refId);
+		BrokerDTO brokerDto = brokerService.getBrokerDetail(request, brokerCode, refId);
 		if (brokerDto != null) {
 			response.setStatus(Constant.RESPONSE_OK);
 			response.setData(new AdminDataObj());
@@ -241,13 +241,13 @@ public class BrokerController {
 	
 	@GetMapping("/admin/brokers/{brokerCode}/user")
 	@PreAuthorize("hasAuthority('clientManagement.brokerManagement.brokerUserInfo.view')")
-	public AdminResponseObj getBrokerUser(@PathVariable String brokerCode) {
+	public AdminResponseObj getBrokerUser(HttpServletRequest request, @PathVariable String brokerCode) {
 		String methodName = "getBrokerUser";
 		long refId = System.currentTimeMillis();
 		AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [GET]/admin/brokers/" + brokerCode + "/user");
 		AdminResponseObj response = new AdminResponseObj();
 
-		UserDTO brokerUserDto = brokerService.getBrokerUserDetail(brokerCode, refId);
+		UserDTO brokerUserDto = brokerService.getBrokerUserDetail(request, brokerCode, refId);
 		if (brokerUserDto != null) {
 			response.setStatus(Constant.RESPONSE_OK);
 			response.setData(new AdminDataObj());
@@ -310,15 +310,14 @@ public class BrokerController {
     }
 	
 	@GetMapping("/admin/brokers/{brokerCode}/commodities")
-//	@PreAuthorize("hasAuthority('clientManagement.brokerManagement.brokerCommoditiesAssign.create')")
-	public AdminResponseObj getBrokerCommodities(@PathVariable String brokerCode) {
+	public AdminResponseObj getBrokerCommodities(HttpServletRequest request, @PathVariable String brokerCode) {
 		String methodName = "getBrokerCommodities";
 		long refId = System.currentTimeMillis();
 		AMLogger.logMessage(className, methodName, refId,
 				String.format("REQUEST_API: [GET]/admin/brokers/%s/commodities", brokerCode));
 		
 		AdminResponseObj response = new AdminResponseObj();
-		BrokerCommoditiesDTO brokerDto = brokerService.getBrokerCommodities(brokerCode, refId);
+		BrokerCommoditiesDTO brokerDto = brokerService.getBrokerCommodities(request, brokerCode, refId);
 		if (brokerDto != null) {
 			response.setStatus(Constant.RESPONSE_OK);
 			response.setData(new AdminDataObj());

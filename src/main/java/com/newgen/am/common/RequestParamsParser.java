@@ -187,6 +187,21 @@ public class RequestParamsParser {
 					Document queryDoc = new Document();
 					queryDoc.append(filter.getFieldName(), new BsonRegularExpression(queryValue, "i"));
 					queryList.add(queryDoc);
+				} else if (Constant.OPT_NOT_CONTAINS.equals(filter.getOperator())) {
+					String queryValue = String.format(".*%s.*", filter.getValue());
+					Document queryDoc = new Document();
+					queryDoc.append(filter.getFieldName(), new Document().append("$not", new BsonRegularExpression(queryValue, "i")));
+					queryList.add(queryDoc);
+				} else if (Constant.OPT_START.equals(filter.getOperator())) {
+					String queryValue = String.format("^%s.*", filter.getValue());
+					Document queryDoc = new Document();
+					queryDoc.append(filter.getFieldName(), new BsonRegularExpression(queryValue, "i"));
+					queryList.add(queryDoc);
+				} else if (Constant.OPT_END.equals(filter.getOperator())) {
+					String queryValue = String.format(".*%s$", filter.getValue());
+					Document queryDoc = new Document();
+					queryDoc.append(filter.getFieldName(), new BsonRegularExpression(queryValue, "i"));
+					queryList.add(queryDoc);
 				} else if (Constant.OPT_EQUALS.equals(filter.getOperator())) {
 					Document queryDoc = new Document();
 					if (Utility.getNumberQueryFieldNames().contains(filter.getFieldName())) {

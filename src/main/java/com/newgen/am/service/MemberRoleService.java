@@ -252,6 +252,7 @@ public class MemberRoleService {
 			pendingApproval.setStatus(Constant.APPROVAL_STATUS_PENDING);
 			pendingApproval.setNestedObjInfo(nestedObjInfo);
 			pendingApproval.setPendingData(pendingData);
+			pendingApproval.setSessionDate(Utility.getSessionDateRedis(template));
 			approvalId = pendingApprovalRepo.save(pendingApproval).getId();
 		} catch (Exception e) {
 			AMLogger.logError(className, methodName, refId, e);
@@ -348,6 +349,7 @@ public class MemberRoleService {
 			pendingApproval.setStatus(Constant.APPROVAL_STATUS_PENDING);
 			pendingApproval.setNestedObjInfo(nestedObjInfo);
 			pendingApproval.setPendingData(pendingData);
+			pendingApproval.setSessionDate(Utility.getSessionDateRedis(template));
 			approvalId = pendingApprovalRepo.save(pendingApproval).getId();
 		} catch (Exception e) {
 			AMLogger.logError(className, methodName, refId, e);
@@ -446,6 +448,7 @@ public class MemberRoleService {
 			pendingApproval.setStatus(Constant.APPROVAL_STATUS_PENDING);
 			pendingApproval.setNestedObjInfo(nestedObjInfo);
 			pendingApproval.setPendingData(pendingData);
+			pendingApproval.setSessionDate(Utility.getSessionDateRedis(template));
 			approvalId = pendingApprovalRepo.save(pendingApproval).getId();
 		} catch (Exception e) {
 			AMLogger.logError(className, methodName, refId, e);

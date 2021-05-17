@@ -22,7 +22,6 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.google.gson.Gson;
 import com.newgen.am.common.AMLogger;
 import com.newgen.am.common.Constant;
 import com.newgen.am.common.CustomMappingStrategy;
@@ -120,7 +119,7 @@ private String className = "CollaboratorController";
 		try {
 			InputStreamResource file = new InputStreamResource(collaboratorService.loadCollaboratorsExcel(request, refId));
 
-			return ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + Constant.EXCEL_COLLABORATORS)
+			return ResponseEntity.ok().header("Access-Control-Expose-Headers", "Content-Disposition").header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + Constant.EXCEL_COLLABORATORS)
 					.contentType(MediaType.parseMediaType("application/vnd.ms-excel")).body(file);
 		} catch (Exception e) {
 			AMLogger.logError(className, methodName, refId, e);
@@ -187,13 +186,13 @@ private String className = "CollaboratorController";
 
 	@GetMapping("/admin/collaborators/{collaboratorCode}")
 	@PreAuthorize("hasAuthority('clientManagement.brokerCollaboratorManagement.collaboratorInfo.view')")
-	public AdminResponseObj getCollaboratorDetail(@PathVariable String collaboratorCode) {
+	public AdminResponseObj getCollaboratorDetail(HttpServletRequest request, @PathVariable String collaboratorCode) {
 		String methodName = "getCollaboratorDetail";
 		long refId = System.currentTimeMillis();
 		AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [GET]/admin/collaborators/" + collaboratorCode);
 		AdminResponseObj response = new AdminResponseObj();
 
-		CollaboratorDTO collaboratorDto = collaboratorService.getCollaboratorDetail(collaboratorCode, refId);
+		CollaboratorDTO collaboratorDto = collaboratorService.getCollaboratorDetail(request, collaboratorCode, refId);
 		if (collaboratorDto != null) {
 			response.setStatus(Constant.RESPONSE_OK);
 			response.setData(new AdminDataObj());
@@ -216,13 +215,13 @@ private String className = "CollaboratorController";
 	
 	@GetMapping("/admin/collaborators/{collaboratorCode}/user")
 	@PreAuthorize("hasAuthority('clientManagement.brokerCollaboratorManagement.collaboratorUserInfo.view')")
-	public AdminResponseObj getCollaboratorUser(@PathVariable String collaboratorCode) {
+	public AdminResponseObj getCollaboratorUser(HttpServletRequest request, @PathVariable String collaboratorCode) {
 		String methodName = "getCollaboratorUser";
 		long refId = System.currentTimeMillis();
 		AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [GET]/admin/collaborators/" + collaboratorCode + "/user");
 		AdminResponseObj response = new AdminResponseObj();
 
-		UserDTO collaboratorUserDto = collaboratorService.getCollaboratorUserDetail(collaboratorCode, refId);
+		UserDTO collaboratorUserDto = collaboratorService.getCollaboratorUserDetail(request, collaboratorCode, refId);
 		if (collaboratorUserDto != null) {
 			response.setStatus(Constant.RESPONSE_OK);
 			response.setData(new AdminDataObj());

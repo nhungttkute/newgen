@@ -26,4 +26,5 @@ public class ErrorMessage {
     public static final String INACTIVE_USER = "Inactive User.";
     public static final String CQG_INFO_CREATED_UNSUCCESSFULLY = "Cannot create cqg info.";
     public static final String INVESTOR_IS_NOT_ACTIVATED = "Investor is not activated.";
+    public static final String INVESTOR_CHANGE_BROKER_ERROR = "Lack of new broker's commodities.";
 }

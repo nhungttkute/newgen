@@ -136,7 +136,7 @@ public class MemberController {
 		try {
 			InputStreamResource file = new InputStreamResource(memberService.loadMembersExcel(request, refId));
 
-			return ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + Constant.EXCEL_MEMBERS)
+			return ResponseEntity.ok().header("Access-Control-Expose-Headers", "Content-Disposition").header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + Constant.EXCEL_MEMBERS)
 					.contentType(MediaType.parseMediaType("application/vnd.ms-excel")).body(file);
 		} catch (Exception e) {
 			AMLogger.logError(className, methodName, refId, e);
@@ -201,13 +201,13 @@ public class MemberController {
 
 	@GetMapping("/admin/members/{memberCode}")
 	@PreAuthorize("hasAuthority('clientManagement.memberManagement.memberInfo.view')")
-	public AdminResponseObj getMemberDetail(@PathVariable String memberCode) {
+	public AdminResponseObj getMemberDetail(HttpServletRequest request, @PathVariable String memberCode) {
 		String methodName = "getMemberDetail";
 		long refId = System.currentTimeMillis();
 		AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [GET]/admin/members/" + memberCode);
 		AdminResponseObj response = new AdminResponseObj();
 
-		MemberDTO memberDto = memberService.getMemberDetail(memberCode, refId);
+		MemberDTO memberDto = memberService.getMemberDetail(request, memberCode, refId);
 		if (memberDto != null) {
 			response.setStatus(Constant.RESPONSE_OK);
 			response.setData(new AdminDataObj());
@@ -233,13 +233,13 @@ public class MemberController {
 	
 	@GetMapping("/admin/members/{memberCode}/masterUser")
 	@PreAuthorize("hasAuthority('clientManagement.memberManagement.memberMasterUserInfo.view')")
-	public AdminResponseObj getMemberUserMaster(@PathVariable String memberCode) {
+	public AdminResponseObj getMemberUserMaster(HttpServletRequest request, @PathVariable String memberCode) {
 		String methodName = "getMemberUserMaster";
 		long refId = System.currentTimeMillis();
 		AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [GET]/admin/members/" + memberCode + "/masterUser");
 		AdminResponseObj response = new AdminResponseObj();
 
-		UserDTO memberUserDto = memberService.getMemberMasterUserDetail(memberCode, refId);
+		UserDTO memberUserDto = memberService.getMemberMasterUserDetail(request, memberCode, refId);
 		if (memberUserDto != null) {
 			response.setStatus(Constant.RESPONSE_OK);
 			response.setData(new AdminDataObj());
@@ -567,14 +567,14 @@ public class MemberController {
 	
 	@GetMapping("/admin/members/{memberCode}/users/{username}")
 	@PreAuthorize("hasAuthority('clientManagement.memberManagement.memberUserManagement.memberUserInfo.view')")
-	public AdminResponseObj getMemberUser(@PathVariable String memberCode, @PathVariable String username) {
+	public AdminResponseObj getMemberUser(HttpServletRequest request, @PathVariable String memberCode, @PathVariable String username) {
 		String methodName = "getMemberUser";
 		long refId = System.currentTimeMillis();
 		AMLogger.logMessage(className, methodName, refId,
 				String.format("REQUEST_API: [GET]/admin/members/%s/users/%s", memberCode, username));
 		AdminResponseObj response = new AdminResponseObj();
 
-		UserDTO userDto = memberService.getMemberUser(memberCode, username, refId);
+		UserDTO userDto = memberService.getMemberUser(request, memberCode, username, refId);
 		if (userDto != null) {
 			response.setStatus(Constant.RESPONSE_OK);
 			response.setData(new AdminDataObj());
@@ -626,13 +626,13 @@ public class MemberController {
 	
 	@GetMapping("/admin/members/{memberCode}/functions")
 	@PreAuthorize("hasAuthority('clientManagement.memberManagement.memberRoleManagement.memberRoleFunctionsAssign.create') or hasAuthority('clientManagement.memberManagement.memberUserManagement.memberUserRole.view') or hasAuthority('clientManagement.memberManagement.memberUserManagement.memberUserFunctionsAssign.create')")
-	public AdminResponseObj getMemberFunctions(@PathVariable String memberCode) {
+	public AdminResponseObj getMemberFunctions(HttpServletRequest request, @PathVariable String memberCode) {
 		String methodName = "getMemberFunctions";
 		long refId = System.currentTimeMillis();
 		AMLogger.logMessage(className, methodName, refId,
 				String.format("REQUEST_API: [GET]/admin/members/%s/functions", memberCode));
 
-		List<RoleFunction> functions = memberService.getMemberFunctions(memberCode, refId);
+		List<RoleFunction> functions = memberService.getMemberFunctions(request, memberCode, refId);
 
 		AdminResponseObj response = new AdminResponseObj();
 		if (functions != null && functions.size() > 0) {
@@ -650,14 +650,14 @@ public class MemberController {
 	
 	@GetMapping("/admin/members/{memberCode}/commodities")
 //	@PreAuthorize("hasAuthority('clientManagement.brokerManagement.brokerCommoditiesAssign.create')")
-	public AdminResponseObj getMemberCommodities(@PathVariable String memberCode) {
+	public AdminResponseObj getMemberCommodities(HttpServletRequest request, @PathVariable String memberCode) {
 		String methodName = "getMemberCommodities";
 		long refId = System.currentTimeMillis();
 		AMLogger.logMessage(className, methodName, refId,
 				String.format("REQUEST_API: [GET]/admin/members/%s/commodities", memberCode));
 		
 		AdminResponseObj response = new AdminResponseObj();
-		MemberCommoditiesDTO memberDto = memberService.getMemberCommodities(memberCode, refId);
+		MemberCommoditiesDTO memberDto = memberService.getMemberCommodities(request, memberCode, refId);
 		if (memberDto != null) {
 			response.setStatus(Constant.RESPONSE_OK);
 			response.setData(new AdminDataObj());
