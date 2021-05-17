@@ -139,8 +139,8 @@ public class ExcelHelper {
 				row.createCell(6).setCellValue(marginTran.getCollaboratorName());
 				row.createCell(7).setCellValue(marginTran.getInvestorCode());
 				row.createCell(8).setCellValue(marginTran.getInvestorName());
-				row.createCell(9).setCellValue(marginTran.getTransactionType());
-				row.createCell(10).setCellValue(marginTran.getAmount());
+				row.createCell(9).setCellValue(Utility.getTransTypeVnStr(marginTran.getTransactionType()));
+				row.createCell(10).setCellValue(Utility.formatAmount(String.valueOf(marginTran.getAmount())));
 				row.createCell(11).setCellValue(marginTran.getCurrency());
 				row.createCell(12).setCellValue(marginTran.getApprovalUser());
 				row.createCell(13).setCellValue(marginTran.getApprovalDate());

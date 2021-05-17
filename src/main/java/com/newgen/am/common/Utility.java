@@ -725,7 +725,7 @@ public class Utility {
 		if (isNotNull(input)) {
 			for (int i = 0; i < input.length(); i++) {
 				if (((i + 1) % 3 == input.length() % 3) && (i != input.length() - 1)) {
-					formatted += input.charAt(i) + ".";
+					formatted += input.charAt(i) + ",";
 				} else {
 					formatted += input.charAt(i);
 				}
@@ -750,13 +750,42 @@ public class Utility {
 		case Constant.STATUS_INCOMPLETE:
 			vnStatus = "Chưa kích hoạt";
 			break;
+		case Constant.STATUS_PENDING_ACTIVATE:
+			vnStatus = "Chờ kích hoạt";
+			break;
+		case Constant.STATUS_PENDING:
+			vnStatus = "Chờ phê duyệt";
+			break;
 		default:
 			break;
 		}
     	return vnStatus;
 	}
+    
+    public static String getTransTypeVnStr(String transType) {
+    	String vnTransType = "";
+    	switch (transType) {
+		case Constant.MARGIN_TRANS_TYPE_DEPOSIT:
+			vnTransType = "Nộp tiền";
+			break;
+		case Constant.MARGIN_TRANS_TYPE_WITHDRAW:
+			vnTransType = "Rút tiền";
+			break;
+		case Constant.MARGIN_TRANS_TYPE_REFUND:
+			vnTransType = "Hoàn nộp tiền";
+			break;
+		default:
+			break;
+		}
+    	return vnTransType;
+	}
 	
     public static String getLoginedVnStr(boolean logined) {
 		return logined ? "Đang hoạt động" : "Không hoạt động";
 	}
+    
+    public static void main(String[] args) {
+    	String amount = "1000000000";
+    	System.out.println("formated amount: " + formatAmount(amount));
+    }
 }

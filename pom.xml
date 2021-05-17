@@ -10,7 +10,7 @@
 		<relativePath /> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.newgen.am</groupId>
-	<artifactId>NEWGEN_AM_8898</artifactId>
+	<artifactId>NEWGEN_AM_8899</artifactId>
 	<version>0.1.1</version>
 	<name>NEWGEN_AM</name>
 	<description>Newgen account management</description>
