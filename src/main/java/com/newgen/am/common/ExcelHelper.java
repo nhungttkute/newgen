@@ -5,7 +5,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.List;
 
+import org.apache.poi.hssf.usermodel.HSSFCellStyle;
+import org.apache.poi.hssf.usermodel.HSSFDataFormat;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -140,7 +143,12 @@ public class ExcelHelper {
 				row.createCell(7).setCellValue(marginTran.getInvestorCode());
 				row.createCell(8).setCellValue(marginTran.getInvestorName());
 				row.createCell(9).setCellValue(Utility.getTransTypeVnStr(marginTran.getTransactionType()));
+				
+				CellStyle numberStyle = workbook.createCellStyle();
+				numberStyle.setDataFormat(HSSFDataFormat.getBuiltinFormat("#,##0"));
+				row.createCell(10).setCellStyle(numberStyle);
 				row.createCell(10).setCellValue(Utility.formatAmount(String.valueOf(marginTran.getAmount())));
+				
 				row.createCell(11).setCellValue(marginTran.getCurrency());
 				row.createCell(12).setCellValue(marginTran.getApprovalUser());
 				row.createCell(13).setCellValue(marginTran.getApprovalDate());

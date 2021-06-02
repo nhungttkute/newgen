@@ -63,6 +63,7 @@ public class PendingApprovalService {
             			pendingApproval.setStatus(Constant.APPROVAL_STATUS_APPROVED);
             			pendingApproval.setApprovalUser(Utility.getCurrentUsername());
             			pendingApproval.setApprovalDate(System.currentTimeMillis());
+            			pendingApproval.setSessionDate(Utility.getSessionDateRedis(redisTemplate));
             			pendingApprovalRepo.save(pendingApproval);
             	    } else {
             	    	throw new CustomException(ErrorMessage.ACCESS_DENIED, HttpStatus.FORBIDDEN);
@@ -100,6 +101,8 @@ public class PendingApprovalService {
             			marginTransApproval.setStatus(Constant.APPROVAL_STATUS_APPROVED);
             			marginTransApproval.setApprovalUser(Utility.getCurrentUsername());
             			marginTransApproval.setApprovalDate(System.currentTimeMillis());
+//            			marginTransApproval.setSessionDate(Utility.getSessionDateRedis(redisTemplate));
+            			marginTransApproval.setSessionDate(Utility.getSessionDateAPI(refId));
             			invMarginTransApprovalRepo.save(marginTransApproval);
             	    } else {
             	    	throw new CustomException(ErrorMessage.ACCESS_DENIED, HttpStatus.FORBIDDEN);

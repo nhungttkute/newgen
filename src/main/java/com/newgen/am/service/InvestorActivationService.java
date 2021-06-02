@@ -159,6 +159,7 @@ public class InvestorActivationService {
             			invActivationApproval.setMarginDeficitInterestRate(interestRateDto.getMarginDeficitInterestRate());
             			invActivationApproval.setApprovalUser(Utility.getCurrentUsername());
             			invActivationApproval.setApprovalDate(System.currentTimeMillis());
+            			invActivationApproval.setSessionDate(Utility.getSessionDateRedis(redisTemplate));
             			invActivationApprovalRepo.save(invActivationApproval);
             			
             			// insert to investor_margin_info
@@ -189,9 +190,6 @@ public class InvestorActivationService {
         				if (Utility.isNotifyOn()) {
         					Utility.sendCreateNewUserEmail(Constant.INVESTOR_USER_PREFIX, "", investorDto.getInvestorCode(), password, pin, refId);
         				}
-        				
-//            			// update investor_login_users status to ACTIVE
-//            			updateLoginInvestorUser(database, investorCode, refId);
             	    } else {
             	    	throw new CustomException(ErrorMessage.ACCESS_DENIED, HttpStatus.FORBIDDEN);
             	    }

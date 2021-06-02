@@ -808,29 +808,29 @@ public class InvestorService {
 
 				collection.updateOne(query, Updates.addToSet("users", investorUser));
 
-				// insert loginAdminUser
-				UserInfoDTO investorUserDto = new UserInfoDTO();
-				investorUserDto.setMemberCode(investorDto.getMemberCode());
-				investorUserDto.setMemberName(investorDto.getMemberName());
-				investorUserDto.setBrokerCode(investorDto.getBrokerCode());
-				investorUserDto.setBrokerName(investorDto.getBrokerName());
-				investorUserDto.setCollaboratorCode(investorDto.getCollaboratorCode());
-				investorUserDto.setCollaboratorName(investorDto.getCollaboratorName());
-				investorUserDto.setInvestorCode(investorDto.getInvestorCode());
-				investorUserDto.setInvestorName(investorDto.getInvestorName());
-				investorUserDto.setUsername(username);
-				investorUserDto.setFullName(fullName);
-				investorUserDto.setEmail(email);
-				investorUserDto.setPhoneNumber(phoneNumber);
-
-				String password = Utility.generateRandomPassword();
-				String pin = Utility.generateRandomPin();
-				createDefaultLoginInvestorUser(investorDto.getInvestorCode(), investorUserDto, password, pin, refId);
-
-				// send email
-				if (Utility.isNotifyOn()) {
-					Utility.sendCreateNewUserEmail(Constant.INVESTOR_USER_PREFIX, "", username, password, pin, refId);
-				}
+//				// insert loginAdminUser
+//				UserInfoDTO investorUserDto = new UserInfoDTO();
+//				investorUserDto.setMemberCode(investorDto.getMemberCode());
+//				investorUserDto.setMemberName(investorDto.getMemberName());
+//				investorUserDto.setBrokerCode(investorDto.getBrokerCode());
+//				investorUserDto.setBrokerName(investorDto.getBrokerName());
+//				investorUserDto.setCollaboratorCode(investorDto.getCollaboratorCode());
+//				investorUserDto.setCollaboratorName(investorDto.getCollaboratorName());
+//				investorUserDto.setInvestorCode(investorDto.getInvestorCode());
+//				investorUserDto.setInvestorName(investorDto.getInvestorName());
+//				investorUserDto.setUsername(username);
+//				investorUserDto.setFullName(fullName);
+//				investorUserDto.setEmail(email);
+//				investorUserDto.setPhoneNumber(phoneNumber);
+//
+//				String password = Utility.generateRandomPassword();
+//				String pin = Utility.generateRandomPin();
+//				createDefaultLoginInvestorUser(investorDto.getInvestorCode(), investorUserDto, password, pin, refId);
+//
+//				// send email
+//				if (Utility.isNotifyOn()) {
+//					Utility.sendCreateNewUserEmail(Constant.INVESTOR_USER_PREFIX, "", username, password, pin, refId);
+//				}
 			} catch (Exception e) {
 				AMLogger.logError(className, methodName, refId, e);
 				throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -2539,7 +2539,8 @@ public class InvestorService {
 			temp.setOldBrokerName(oldGroupDto.getGroupName());
 			temp.setNewBrokerCode(changeGroupDto.getGroupCode());
 			temp.setNewBrokerName(changeGroupDto.getGroupName());
-			temp.setSessionDate(Utility.getSessionDateRedis(template));
+//			temp.setSessionDate(Utility.getSessionDateRedis(template));
+			temp.setSessionDate(Utility.getSessionDateAPI(refId));
 			brokerChangingTempRepo.save(temp);
 		} catch (CustomException e) {
 			throw e;
@@ -2886,7 +2887,8 @@ public class InvestorService {
 				marginTrans.setCreatedDate(pendingApproval.getCreatedDate());
 				marginTrans.setApprovalDate(System.currentTimeMillis());
 				marginTrans.setApprovalUser(userInfo.getUsername());
-				marginTrans.setSessionDate(Utility.getSessionDateRedis(template));
+//				marginTrans.setSessionDate(Utility.getSessionDateRedis(template));
+				marginTrans.setSessionDate(Utility.getSessionDateAPI(refId));
 				invMarginTransRepo.save(marginTrans);
 				
 				// notify
@@ -3031,7 +3033,8 @@ public class InvestorService {
 				marginTrans.setCreatedDate(pendingApproval.getCreatedDate());
 				marginTrans.setApprovalDate(System.currentTimeMillis());
 				marginTrans.setApprovalUser(userInfo.getUsername());
-				marginTrans.setSessionDate(Utility.getSessionDateRedis(template));
+//				marginTrans.setSessionDate(Utility.getSessionDateRedis(template));
+				marginTrans.setSessionDate(Utility.getSessionDateAPI(refId));
 				invMarginTransRepo.save(marginTrans);
 
 				// call checking margin ratio
@@ -3227,7 +3230,8 @@ public class InvestorService {
 			}
 
 			if (!sessionDateQueryExist) {
-				queryDoc.append("sessionDate", Utility.getSessionDateRedis(template));
+//				queryDoc.append("sessionDate", Utility.getSessionDateRedis(template));
+				queryDoc.append("sessionDate", Utility.getSessionDateAPI(refId));
 			}
 
 			Document sortDoc = new Document("approvalDate", -1);
@@ -3298,7 +3302,8 @@ public class InvestorService {
 			}
 
 			if (!sessionDateQueryExist) {
-				queryDoc.append("sessionDate", Utility.getSessionDateRedis(template));
+//				queryDoc.append("sessionDate", Utility.getSessionDateRedis(template));
+				queryDoc.append("sessionDate", Utility.getSessionDateAPI(refId));
 			}
 
 			Document sortDoc = new Document("approvalDate", -1);
@@ -3372,7 +3377,8 @@ public class InvestorService {
 			}
 
 			if (!sessionDateQueryExist) {
-				queryDoc.append("sessionDate", Utility.getSessionDateRedis(template));
+//				queryDoc.append("sessionDate", Utility.getSessionDateRedis(template));
+				queryDoc.append("sessionDate", Utility.getSessionDateAPI(refId));
 			}
 
 			Document sortDoc = new Document("approvalDate", -1);
@@ -3449,7 +3455,8 @@ public class InvestorService {
 			marginTrans.setCurrency(Constant.CURRENCY_VND);
 			marginTrans.setApprovalDate(System.currentTimeMillis());
 			marginTrans.setApprovalUser(userInfo.getUsername());
-			marginTrans.setSessionDate(Utility.getSessionDateRedis(template));
+//			marginTrans.setSessionDate(Utility.getSessionDateRedis(template));
+			marginTrans.setSessionDate(Utility.getSessionDateAPI(refId));
 			invMarginTransRepo.save(marginTrans);
 			
 			// notify
