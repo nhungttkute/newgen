@@ -292,7 +292,6 @@ public class BrokerService {
 			while (cur.hasNext()) {
 				BrokerCSV brokerCsv = mongoTemplate.getConverter().read(BrokerCSV.class, cur.next());
 				if (brokerCsv != null) {
-					brokerCsv.setStatus(Utility.getStatusVnStr(brokerCsv.getStatus()));
 					brokerList.add(brokerCsv);
 				}
 			}

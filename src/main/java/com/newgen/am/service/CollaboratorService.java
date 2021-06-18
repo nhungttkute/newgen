@@ -293,9 +293,9 @@ public class CollaboratorService {
 			MongoCollection<Document> collection = database.getCollection("collaborators");
 			MongoCursor<Document> cur = collection.aggregate(pipeline).allowDiskUse(true).iterator();
 			while (cur.hasNext()) {
-				CollaboratorCSV brokerCsv = mongoTemplate.getConverter().read(CollaboratorCSV.class, cur.next());
-				if (brokerCsv != null) {
-					collaboratorList.add(brokerCsv);
+				CollaboratorCSV collaboratorCsv = mongoTemplate.getConverter().read(CollaboratorCSV.class, cur.next());
+				if (collaboratorCsv != null) {
+					collaboratorList.add(collaboratorCsv);
 				}
 			}
 			

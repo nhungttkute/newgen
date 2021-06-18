@@ -5,10 +5,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.List;
 
-import org.apache.poi.hssf.usermodel.HSSFCellStyle;
-import org.apache.poi.hssf.usermodel.HSSFDataFormat;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.DataFormat;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -122,6 +121,10 @@ public class ExcelHelper {
 		try (Workbook workbook = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream();) {
 			Sheet sheet = workbook.createSheet(SHEET);
 
+			DataFormat format = workbook.createDataFormat();
+			CellStyle numberStyle = workbook.createCellStyle();
+			numberStyle.setDataFormat(format.getFormat("#,##0"));
+			
 			// Header
 			Row headerRow = sheet.createRow(0);
 
@@ -144,10 +147,9 @@ public class ExcelHelper {
 				row.createCell(8).setCellValue(marginTran.getInvestorName());
 				row.createCell(9).setCellValue(Utility.getTransTypeVnStr(marginTran.getTransactionType()));
 				
-				CellStyle numberStyle = workbook.createCellStyle();
-				numberStyle.setDataFormat(HSSFDataFormat.getBuiltinFormat("#,##0"));
-				row.createCell(10).setCellStyle(numberStyle);
-				row.createCell(10).setCellValue(Utility.formatAmount(String.valueOf(marginTran.getAmount())));
+				Cell cell = row.createCell(10);
+				cell.setCellValue(marginTran.getAmount());
+				cell.setCellStyle(numberStyle);
 				
 				row.createCell(11).setCellValue(marginTran.getCurrency());
 				row.createCell(12).setCellValue(marginTran.getApprovalUser());
@@ -242,7 +244,7 @@ public class ExcelHelper {
 	}
 	
 	public static ByteArrayInputStream collaboratorsToExcel(List<CollaboratorCSV> collaboratorList, long refId) {
-		String methodName = "brokersToExcel";
+		String methodName = "collaboratorsToExcel";
 		String[] HEADERs = {"Số TT", "Mã TVKD", "Tên TVKD", "Mã Môi giới", "Tên Môi giới", "Mã CTV", "Tên CTV", "Trạng thái", "Ghi chú", "Ngày tham gia"};
 		String SHEET = "info";
 		
