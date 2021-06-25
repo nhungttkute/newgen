@@ -285,6 +285,10 @@ public class ActivityLogService {
     public static final String ACTIVITY_USER_EXCHANGE_SETTING_UPDATE = "Cập nhật kích hoạt giá cho đăng nhập";
     public static final String ACTIVITY_APPROVAL_USER_EXCHANGE_SETTING_UPDATE = "Phê duyệt cập nhật kích hoạt giá cho đăng nhập";
     
+    public static final String ACTIVITY_ACTIVATE_INVESTOR = "Kích hoạt TKGD";
+    public static final String ACTIVITY_ACTIVATE_INVESTOR_DESC = "Kích hoạt TKGD %s - mã phê duyệt %s";
+    public static final String ACTIVITY_REACTIVATE_INVESTOR = "Kích hoạt lại TKGD";
+    public static final String ACTIVITY_REACTIVATE_INVESTOR_DESC = "Kích hoạt lại TKGD %s - mã phê duyệt %s";
     @Autowired
     private RedisMessagePublisher redisMessagePublisher;
     

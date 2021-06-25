@@ -50,6 +50,7 @@ import com.newgen.am.dto.BasePagination;
 import com.newgen.am.dto.CQGCMSCommodityDTO;
 import com.newgen.am.dto.ChangeGroupDTO;
 import com.newgen.am.dto.CommoditiesDTO;
+import com.newgen.am.dto.CompleteInvestorDTO;
 import com.newgen.am.dto.DefaultSettingDTO;
 import com.newgen.am.dto.ExchangeRateDTO;
 import com.newgen.am.dto.ExchangeRateReponseDTO;
@@ -725,6 +726,46 @@ public class InvestorService {
 		}
 	}
 
+	public void completeInvestorPA(HttpServletRequest request, CompleteInvestorDTO investorDto, long refId) {
+		String methodName = "completeInvestorPA";
+		try {
+			if (Utility.isInvestorCompany(investorDto.getType())) {
+				if (Utility.isNull(investorDto.getCompany())) {
+					throw new CustomException(ErrorMessage.INVALID_REQUEST, HttpStatus.BAD_REQUEST);
+				}
+				
+				// check unique taxCode
+				if (Utility.checkExistedInvestorTaxCode(investorDto.getMemberCode(), investorDto.getCompany().getTaxCode())) {
+					throw new CustomException(ErrorMessage.TAX_CODE_ALREADY_EXISTED, HttpStatus.BAD_REQUEST);
+				}
+			} else if (Utility.isInvestorIndividual(investorDto.getType())) {
+				if (Utility.isNull(investorDto.getIndividual())) {
+					throw new CustomException(ErrorMessage.INVALID_REQUEST, HttpStatus.BAD_REQUEST);
+				}
+				
+				// check unique indentityCard
+				if (Utility.checkExistedInvestorIdentityCard(investorDto.getMemberCode(), investorDto.getIndividual().getIdentityCard())) {
+					throw new CustomException(ErrorMessage.IDENTITY_CARD_ALREADY_EXISTED, HttpStatus.BAD_REQUEST);
+				}
+			} else {
+				throw new CustomException(ErrorMessage.INVALID_REQUEST, HttpStatus.BAD_REQUEST);
+			}
+
+			// get redis user info
+			UserInfoDTO userInfo = Utility.getRedisUserInfo(template, Utility.getAccessToken(request), refId);
+			// insert data to pending_approvals
+			String approvalId = insertCompleteInvestorCreatePA(userInfo, investorDto, refId);
+			// send activity log
+			activityLogService.sendActivityLog(userInfo, request, ActivityLogService.ACTIVITY_CREATE_INVESTOR,
+					ActivityLogService.ACTIVITY_CREATE_INVESTOR_DESC, investorDto.getInvestorCode(), approvalId);
+		} catch (CustomException e) {
+			throw e;
+		} catch (Exception e) {
+			AMLogger.logError(className, methodName, refId, e);
+			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+	
 	private String insertInvestorCreatePA(UserInfoDTO userInfo, InvestorDTO investorDto, long refId) {
 		String methodName = "insertInvestorCreatePA";
 		String approvalId = "";
@@ -756,6 +797,39 @@ public class InvestorService {
 		}
 		return approvalId;
 	}
+	
+	private String insertCompleteInvestorCreatePA(UserInfoDTO userInfo, CompleteInvestorDTO investorDto, long refId) {
+		String methodName = "insertInvestorCreatePA";
+		String approvalId = "";
+		try {
+			NestedObjectInfo nestedObjInfo = new NestedObjectInfo();
+			nestedObjInfo.setDeptCode(userInfo.getDeptCode());
+			nestedObjInfo.setMemberCode(userInfo.getMemberCode());
+
+			PendingData pendingData = new PendingData();
+			pendingData.setServiceFunctionName(ApprovalConstant.INVESTOR_CREATE);
+			pendingData.setCollectionName("investors");
+			pendingData.setAction(Constant.APPROVAL_ACTION_CREATE);
+			pendingData.setPendingValue(Utility.getGson().toJson(investorDto));
+
+			PendingApproval pendingApproval = new PendingApproval();
+			pendingApproval.setApiUrl(String.format(ApprovalConstant.APPROVAL_PENDING_URL, approvalId));
+			pendingApproval.setFunctionCode(SystemFunctionCode.APPROVAL_INVESTOR_CREATE_CODE);
+			pendingApproval.setFunctionName(SystemFunctionCode.INVESTOR_CREATE_NAME);
+			pendingApproval.setDescription(SystemFunctionCode.getApprovalDescription(pendingApproval.getFunctionName(),
+					investorDto.getInvestorCode()));
+			pendingApproval.setStatus(Constant.APPROVAL_STATUS_PENDING);
+			pendingApproval.setNestedObjInfo(nestedObjInfo);
+			pendingApproval.setPendingData(pendingData);
+			pendingApproval.setSessionDate(Utility.getSessionDateRedis(template));
+			approvalId = pendingApprovalRepo.save(pendingApproval).getId();
+		} catch (Exception e) {
+			AMLogger.logError(className, methodName, refId, e);
+			throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		return approvalId;
+	}
+
 
 	private void createDefaultInvestorUser(HttpServletRequest request, InvestorDTO investorDto, Document investorRole,
 			long refId) {
@@ -807,30 +881,6 @@ public class InvestorService {
 				query.append("investorCode", investorDto.getInvestorCode());
 
 				collection.updateOne(query, Updates.addToSet("users", investorUser));
-
-//				// insert loginAdminUser
-//				UserInfoDTO investorUserDto = new UserInfoDTO();
-//				investorUserDto.setMemberCode(investorDto.getMemberCode());
-//				investorUserDto.setMemberName(investorDto.getMemberName());
-//				investorUserDto.setBrokerCode(investorDto.getBrokerCode());
-//				investorUserDto.setBrokerName(investorDto.getBrokerName());
-//				investorUserDto.setCollaboratorCode(investorDto.getCollaboratorCode());
-//				investorUserDto.setCollaboratorName(investorDto.getCollaboratorName());
-//				investorUserDto.setInvestorCode(investorDto.getInvestorCode());
-//				investorUserDto.setInvestorName(investorDto.getInvestorName());
-//				investorUserDto.setUsername(username);
-//				investorUserDto.setFullName(fullName);
-//				investorUserDto.setEmail(email);
-//				investorUserDto.setPhoneNumber(phoneNumber);
-//
-//				String password = Utility.generateRandomPassword();
-//				String pin = Utility.generateRandomPin();
-//				createDefaultLoginInvestorUser(investorDto.getInvestorCode(), investorUserDto, password, pin, refId);
-//
-//				// send email
-//				if (Utility.isNotifyOn()) {
-//					Utility.sendCreateNewUserEmail(Constant.INVESTOR_USER_PREFIX, "", username, password, pin, refId);
-//				}
 			} catch (Exception e) {
 				AMLogger.logError(className, methodName, refId, e);
 				throw new CustomException(ErrorMessage.ERROR_OCCURRED, HttpStatus.INTERNAL_SERVER_ERROR);

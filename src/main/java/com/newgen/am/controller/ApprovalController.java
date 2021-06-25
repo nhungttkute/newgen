@@ -82,4 +82,19 @@ public class ApprovalController {
         AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
         return response;
     }
+    
+    @PostMapping("/admin/reactivateInvestor/{approvalId}")
+    public AdminResponseObj reactivateInvestor(HttpServletRequest request, @PathVariable String approvalId) {
+        String methodName = "reactivateInvestor";
+        long refId = System.currentTimeMillis();
+        AMLogger.logMessage(className, methodName, refId, "REQUEST_API: [POST]/admin/reactivateInvestor/" + approvalId);
+        
+        invActivationService.reactivateInvestor(request, approvalId, refId);
+        
+        AdminResponseObj response = new AdminResponseObj();
+        response.setStatus(Constant.RESPONSE_OK);
+        
+        AMLogger.logMessage(className, methodName, refId, "OUTPUT:" + Utility.getGson().toJson(response));
+        return response;
+    }
 }
